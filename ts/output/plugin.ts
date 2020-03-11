@@ -1,6 +1,3 @@
-/** @zh-cn
- * @ignore
- */
 /** 
  * @ignore
  */
@@ -9,11 +6,8 @@ export interface PluginInfo {
   path: string;
 }
 
-/** @zh-cn
- * @ignore 
- */
 /** 
- * @ignore
+ * @ignore 
  */
 export interface Plugin {
   id: string;
