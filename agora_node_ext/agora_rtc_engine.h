@@ -13,10 +13,12 @@
 
 #include "IAgoraMediaEngine.h"
 #include "IAgoraRtcEngine.h"
+#include "IAgoraRtcChannel.h"
 #include <node.h>
 #include <node_object_wrap.h>
 #include "node_log.h"
 #include "node_event_handler.h"
+#include "node_channel_event_handler.h"
 #include "node_napi_api.h"
 #include "agora_video_source.h"
 #include <functional>
@@ -30,13 +32,13 @@
 * Used to declare native interface to nodejs
 */
 #define NAPI_API(m) \
-    static void (m)(const FunctionCallbackInfo<Value>& args)
+    static void (m)(const Nan::FunctionCallbackInfo<Value>& args)
 
 /*
 * Used to define native interface which is exposed to nodejs
 */
 #define NAPI_API_DEFINE(cls, method) \
-    void cls::method(const FunctionCallbackInfo<Value>& args)
+    void cls::method(const Nan::FunctionCallbackInfo<Value>& args)
 
 namespace agora {
     namespace rtc {
@@ -245,6 +247,8 @@ namespace agora {
             NAPI_API(videoSourceSetLogFile);
             NAPI_API(videoSourceSetParameter);
             NAPI_API(videoSourceUpdateScreenCaptureRegion);
+            NAPI_API(videoSourceEnableLoopbackRecording);
+            NAPI_API(videoSourceEnableAudio);
 
             /*
             * Native interface used to setup local and remote video canvas.
@@ -268,6 +272,7 @@ namespace agora {
             NAPI_API(enablePlugin);
             NAPI_API(getPlugins);
             NAPI_API(setPluginParameter);
+            NAPI_API(getPluginParameter);
 
             /**
              * 2.3.3 apis
@@ -313,6 +318,16 @@ namespace agora {
             NAPI_API(startChannelMediaRelay);
             NAPI_API(updateChannelMediaRelay);
             NAPI_API(stopChannelMediaRelay);
+
+            /**
+             * 2.9.0.100 Apis
+             */
+            NAPI_API(createChannel);
+            NAPI_API(startScreenCaptureByScreen);
+            NAPI_API(startScreenCaptureByWindow);
+            NAPI_API(updateScreenCaptureParameters);
+            NAPI_API(setScreenCaptureContentHint);
+
         public:
             Isolate* getIsolate() { return m_isolate; }
             IRtcEngine* getRtcEngine() { return m_engine; }
@@ -339,11 +354,79 @@ namespace agora {
             std::unique_ptr<IAVFramePluginManager> m_avPluginManager;
         };
 
+
+        class NodeRtcChannel : public node::ObjectWrap
+        {
+        public:
+            /*
+            * Constructor
+            */
+            static void createInstance(const FunctionCallbackInfo<Value>& args);
+
+            /*
+            * Helper function, used to declare all supported native interface that are exposed to nodejs.
+            */
+            static Local<Object> Init(Isolate* isolate, IChannel* pChannel);
+
+            NAPI_API(onEvent);
+            NAPI_API(joinChannel);
+            NAPI_API(joinChannelWithUserAccount);
+            NAPI_API(publish);
+            NAPI_API(unpublish);
+            NAPI_API(channelId);
+            NAPI_API(getCallId);
+            NAPI_API(renewToken);
+            NAPI_API(setEncryptionMode);
+            NAPI_API(setEncryptionSecret);
+            NAPI_API(setClientRole);
+            NAPI_API(setRemoteUserPriority);
+            NAPI_API(setRemoteVoicePosition);
+            NAPI_API(setRemoteRenderMode);
+            NAPI_API(setDefaultMuteAllRemoteAudioStreams);
+            NAPI_API(setDefaultMuteAllRemoteVideoStreams);
+            NAPI_API(muteAllRemoteAudioStreams);
+            NAPI_API(muteRemoteAudioStream);
+            NAPI_API(muteAllRemoteVideoStreams);
+            NAPI_API(muteRemoteVideoStream);
+            NAPI_API(setRemoteVideoStreamType);
+            NAPI_API(setRemoteDefaultVideoStreamType);
+            NAPI_API(createDataStream);
+            NAPI_API(sendStreamMessage);
+            NAPI_API(addPublishStreamUrl);
+            NAPI_API(removePublishStreamUrl);
+            NAPI_API(setLiveTranscoding);
+            NAPI_API(addInjectStreamUrl);
+            NAPI_API(removeInjectStreamUrl);
+            NAPI_API(startChannelMediaRelay);
+            NAPI_API(updateChannelMediaRelay);
+            NAPI_API(stopChannelMediaRelay);
+            NAPI_API(getConnectionState);
+            NAPI_API(leaveChannel);
+            NAPI_API(release);
+        public:
+            Isolate* getIsolate() { return m_isolate; }
+
+        protected:
+            NodeRtcChannel(Isolate *isolate, IChannel* pChannel);
+            ~NodeRtcChannel();
+        private:
+            DECLARE_CLASS;
+            IChannel* m_channel;
+            Isolate *m_isolate;
+            std::unique_ptr<NodeChannelEventHandler> m_eventHandler;
+        };
+
 /*
 * Use to extract native this pointer from JS object
 */
 #define napi_get_native_this(args, native) \
             native = ObjectWrap::Unwrap<NodeRtcEngine>(args.Holder());
+
+/*
+* Use to extract native this pointer from JS object
+*/
+#define napi_get_native_channel(args, native) \
+            native = ObjectWrap::Unwrap<NodeRtcChannel>(args.Holder());
 
 /*
 * to extract one parameter from JS call parameters.
@@ -479,6 +562,11 @@ namespace agora {
             break; \
         }
 
+#define CHECK_ARG_NUM(engine, args, num) \
+        if(args.Length() < num) { \
+            CHECK_NAPI_STATUS(engine, napi_invalid_arg); \
+        }
+
 /**
  * Helper MACRO to check whether the extracted object is emptry;
  */
@@ -494,6 +582,12 @@ namespace agora {
 #define CHECK_NATIVE_THIS(engine) \
         if(!engine || !engine->m_engine) { \
             LOG_ERROR("m_engine is null.\n");\
+            break;\
+        }
+
+#define CHECK_NATIVE_CHANNEL(channel) \
+        if(!channel || !channel->m_channel) { \
+            LOG_ERROR("m_channel is null.\n");\
             break;\
         }
 
@@ -515,11 +609,19 @@ namespace agora {
             break; \
       }
 
+#ifdef _WIN32
 #define CHECK_PLUGIN_MODULE_EXIST(pluginInfo) \
         if (pluginInfo.pluginModule == NULL) { \
             LOG_ERROR("Error :%s, :%d, not unload plugin \"%s\"\n", __FUNCTION__, __LINE__, pluginInfo.id); \
             break;\
         }
+#else
+#define CHECK_PLUGIN_MODULE_EXIST(pluginInfo) \
+        if (pluginInfo.pluginModule == NULL) { \
+            LOG_ERROR("Error :%s, :%d, %sn, not unload plugin \"%s\"\n", __FUNCTION__, __LINE__, dlerror(), pluginInfo.id); \
+            break;\
+        }
+#endif
 
 #define CHECK_PLUGIN_INSTANCE_EXIST(pluginInfo) \
         if (pluginInfo.instance == NULL) { \
@@ -540,17 +642,24 @@ typedef unsigned int uint32;
 
 #ifdef _WIN32
 #define CALL_MEM_FUNC_FROM_POINTER(pointer, func) pointer->##func()
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM(pointer, func, param) pointer->##func(param)
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM2(pointer, func, param1, param2) pointer->##func(param1, param2)
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM3(pointer, func, param1, param2, param3) pointer->##func(param1, param2, param3)
+
+
 #define CALL_MEM_FUNC(cls, func) cls.##func()
 #define CALL_MEM_FUNC_WITH_PARAM(cls, func, param) cls.##func(param)
-
 #define CALL_MEM_FUNC_WITH_PARAM2(cls, func, param1, param2) cls.##func(param1, param2)
 #define CALL_MEM_FUNC_WITH_PARAM3(cls, func, param1, param2, param3) cls.##func(param1, param2, param3)
 #define CALL_MEM_FUNC_WITH_PARAM7(cls, func, param1, param2, param3, param4, param5, param6, param7) cls.##func(param1, param2, param3, param4, param5, param6, param7)
 #else
 #define CALL_MEM_FUNC_FROM_POINTER(pointer, func) pointer->func()
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM(pointer, func, param) pointer->func(param)
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM2(pointer, func, param1, param2) pointer->func(param1, param2)
+#define CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM3(pointer, func, param1, param2, param3) pointer->func(param1, param2, param3)
+
 #define CALL_MEM_FUNC(cls, func) cls.func()
 #define CALL_MEM_FUNC_WITH_PARAM(cls, func, param) cls.func(param)
-
 #define CALL_MEM_FUNC_WITH_PARAM2(cls, func, param1, param2) cls.func(param1, param2)
 #define CALL_MEM_FUNC_WITH_PARAM3(cls, func, param1, param2, param3) cls.func(param1, param2, param3)
 #define CALL_MEM_FUNC_WITH_PARAM7(cls, func, param1, param2, param3, param4, param5, param6, param7) cls.func(param1, param2, param3, param4, param5, param6, param7)
@@ -679,5 +788,86 @@ typedef unsigned int uint32;
 }
 
 
+#define NAPI_API_CHANNEL_DEFINE_WRAPPER(method) \
+    NAPI_API_DEFINE(NodeRtcChannel, method) \
+    {\
+        LOG_ENTER;\
+        int result = -1;\
+        do {\
+            NodeRtcChannel *pChannel = nullptr;\
+            napi_get_native_channel(args, pChannel);\
+            CHECK_NATIVE_CHANNEL(pChannel);\
+            result = CALL_MEM_FUNC_FROM_POINTER(pChannel->m_channel, method);\
+        } while (false);\
+        napi_set_int_result(args, result);\
+        LOG_LEAVE;\
+    }
+        
+#define NAPI_API_CHANNEL_DEFINE_WRAPPER_1(method, type) \
+    NAPI_API_DEFINE(NodeRtcChannel, method) \
+    {\
+        LOG_ENTER;\
+        int result = -1;\
+        do {\
+            NodeRtcChannel *pChannel = nullptr;\
+            napi_get_native_channel(args, pChannel);\
+            CHECK_NATIVE_CHANNEL(pChannel);\
+            napi_status status = napi_ok;\
+            type param;\
+            napi_get_param_1(args, type, param);\
+            CHECK_NAPI_STATUS(pChannel, status);\
+            result = CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM(pChannel->m_channel, method, param);\
+        } while (false);\
+        napi_set_int_result(args, result); \
+        LOG_LEAVE;\
+    }
+
+#define NAPI_API_CHANNEL_DEFINE_WRAPPER_2(method, type, type2) \
+    NAPI_API_DEFINE(NodeRtcChannel, method) \
+    {\
+        LOG_ENTER;\
+        int result = -1;\
+        do {\
+            NodeRtcChannel *pChannel = nullptr;\
+            napi_get_native_channel(args, pChannel);\
+            CHECK_NATIVE_CHANNEL(pChannel);\
+            napi_status status = napi_ok;\
+            type param;\
+            type2 param2;\
+            napi_get_param_2(args, type, param, type2, param2);\
+            CHECK_NAPI_STATUS(pChannel, status);\
+            result = CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM2(pChannel->m_channel, method, param, param2);\
+        } while (false);\
+        napi_set_int_result(args, result); \
+        LOG_LEAVE;\
+    }
+
+#define NAPI_API_CHANNEL_DEFINE_WRAPPER_3(method, type, type2, type3) \
+    NAPI_API_DEFINE(NodeRtcChannel, method) \
+    {\
+        LOG_ENTER;\
+        int result = -1;\
+        do {\
+            NodeRtcChannel *pChannel = nullptr;\
+            napi_get_native_channel(args, pChannel);\
+            CHECK_NATIVE_CHANNEL(pChannel);\
+            napi_status status = napi_ok;\
+            type param;\
+            type2 param2;\
+            type3 param3;\
+            napi_get_param_3(args, type, param, type2, param2, type3, param3);\
+            CHECK_NAPI_STATUS(pChannel, status);\
+            result = CALL_MEM_FUNC_FROM_POINTER_WITH_PARAM3(pChannel->m_channel, method, param, param2, param3);\
+        } while (false);\
+        napi_set_int_result(args, result); \
+        LOG_LEAVE;\
+    }
+
+#if defined(_WIN32)
+size_t                   /* O - Length of string */
+strlcpy(char *dst,       /* O - Destination string */
+        const char *src, /* I - Source string */
+        size_t size);     /* I - Size of destination string buffer */
+#endif
 
 #endif

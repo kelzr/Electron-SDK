@@ -8,7 +8,8 @@
         ],
         'include_dirs': [
         './common',
-        './common/libyuv/include'
+        './common/libyuv/include',
+        "<!(node -e \"require('nan')\")"
         ],
         'sources': [
         './common/ipc_shm.h',
@@ -126,7 +127,7 @@
                     'libraries': [
                     'libresolv.9.dylib',
                     'Accelerate.framework',
-                    'AgoraRtcEngineKit.framework',
+                    'AgoraRtcKit.framework',
                     'CoreWLAN.framework',
                     'Cocoa.framework',
                     'VideoToolbox.framework',
@@ -144,7 +145,7 @@
                     ]
                 },
                 'include_dirs': [
-                './sdk/lib/mac/AgoraRtcEngineKit.framework/Headers'
+                './sdk/lib/mac/AgoraRtcKit.framework/Headers'
                 ],
                 'sources': [
                     './common/node_process_unix.cpp',
@@ -172,7 +173,8 @@
         'target_name': 'agora_node_ext',
         'include_dirs': [
         './common',
-        './common/libyuv/include'
+        './common/libyuv/include',
+        "<!(node -e \"require('nan')\")"
         ],
         'sources': [
         './common/ipc_shm.h',
@@ -194,6 +196,8 @@
         './agora_node_ext/node_async_queue.h',
         './agora_node_ext/node_event_handler.cpp',
         './agora_node_ext/node_event_handler.h',
+        './agora_node_ext/node_channel_event_handler.cpp',
+        './agora_node_ext/node_channel_event_handler.h',
         './agora_node_ext/node_napi_api.cpp',
         './agora_node_ext/node_napi_api.h',
         './agora_node_ext/node_uid.h',
@@ -302,7 +306,7 @@
                     'libraries': [
                     'libresolv.9.dylib',
                     'Accelerate.framework',
-                    'AgoraRtcEngineKit.framework',
+                    'AgoraRtcKit.framework',
                     'CoreWLAN.framework',
                     'Cocoa.framework',
                     'VideoToolbox.framework',
@@ -329,7 +333,7 @@
                     './agora_node_ext/node_screen_window_info.h'
                 ],
                 'include_dirs': [
-                './sdk/lib/mac/AgoraRtcEngineKit.framework/Headers'
+                './sdk/lib/mac/AgoraRtcKit.framework/Headers'
                 ],
                 'defines!': [
                     '_NOEXCEPT',

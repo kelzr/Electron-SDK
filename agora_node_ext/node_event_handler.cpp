@@ -37,8 +37,9 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 0, nullptr);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 0, nullptr);\
         }
 
 #define MAKE_JS_CALL_1(ev, type, param) \
@@ -46,10 +47,11 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             Local<Value> argv[1]{ napi_create_##type##_(isolate, param)\
                                 };\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 1, argv);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 1, argv);\
         }
 
 #define MAKE_JS_CALL_2(ev, type1, param1, type2, param2) \
@@ -57,11 +59,12 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             Local<Value> argv[2]{ napi_create_##type1##_(isolate, param1),\
                                   napi_create_##type2##_(isolate, param2)\
                                 };\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 2, argv);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 2, argv);\
         }
 
 #define MAKE_JS_CALL_3(ev, type1, param1, type2, param2, type3, param3) \
@@ -69,12 +72,13 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             Local<Value> argv[3]{ napi_create_##type1##_(isolate, param1),\
                                   napi_create_##type2##_(isolate, param2),\
                                   napi_create_##type3##_(isolate, param3) \
                                 };\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 3, argv);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 3, argv);\
         }
 
 #define MAKE_JS_CALL_4(ev, type1, param1, type2, param2, type3, param3, type4, param4) \
@@ -82,13 +86,14 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             Local<Value> argv[4]{ napi_create_##type1##_(isolate, param1),\
                                   napi_create_##type2##_(isolate, param2),\
                                   napi_create_##type3##_(isolate, param3), \
                                   napi_create_##type4##_(isolate, param4), \
                                 };\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 4, argv);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 4, argv);\
         }
 
 #define MAKE_JS_CALL_5(ev, type1, param1, type2, param2, type3, param3, type4, param4, type5, param5) \
@@ -96,6 +101,7 @@ namespace agora {
         if (it != m_callbacks.end()) {\
             Isolate *isolate = Isolate::GetCurrent();\
             HandleScope scope(isolate);\
+            Local<Context> context = isolate->GetCurrentContext();\
             Local<Value> argv[5]{ napi_create_##type1##_(isolate, param1),\
                                   napi_create_##type2##_(isolate, param2),\
                                   napi_create_##type3##_(isolate, param3), \
@@ -103,7 +109,7 @@ namespace agora {
                                   napi_create_##type5##_(isolate, param5), \
                                 };\
             NodeEventCallback& cb = *it->second;\
-            cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 5, argv);\
+            cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 5, argv);\
         }
 
 #define CHECK_NAPI_OBJ(obj) \
@@ -249,12 +255,13 @@ namespace agora {
             if (it != m_callbacks.end()) {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<v8::Array> arrSpeakers = v8::Array::New(isolate, speakerNumber);
                 for(int i = 0; i < speakerNumber; i++) {
                     Local<Object> obj = Object::New(isolate);
-                    obj->Set(napi_create_string_(isolate, "uid"), napi_create_uid_(isolate, speakers[i].uid));
-                    obj->Set(napi_create_string_(isolate, "volume"), napi_create_uint32_(isolate, speakers[i].volume));
-                    arrSpeakers->Set(i, obj);
+                    obj->Set(context, napi_create_string_(isolate, "uid"), napi_create_uid_(isolate, speakers[i].uid));
+                    obj->Set(context, napi_create_string_(isolate, "volume"), napi_create_uint32_(isolate, speakers[i].volume));
+                    arrSpeakers->Set(context, i, obj);
                 }
 
                 Local<Value> argv[3]{ arrSpeakers,
@@ -262,7 +269,7 @@ namespace agora {
                                     napi_create_uint32_(isolate, totalVolume)
                                     };
                 NodeEventCallback& cb = *it->second;
-                cb.callback.Get(isolate)->Call(cb.js_this.Get(isolate), 3, argv);
+                cb.callback.Get(isolate)->Call(context, cb.js_this.Get(isolate), 3, argv);
             }
             // MAKE_JS_CALL_4(RTC_EVENT_AUDIO_VOLUME_INDICATION, uid, speaker.uid, uint32, speaker.volume, uint32, speakerNumber, int32, totalVolume);
         }
@@ -307,6 +314,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
                 NODE_SET_OBJ_PROP_UINT32(obj, "duration", stats.duration);
@@ -332,7 +340,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_RTC_STATS);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -519,14 +527,6 @@ namespace agora {
             MAKE_JS_CALL_4(RTC_EVENT_FIRST_REMOTE_VIDEO_FRAME, uid, uid, int32, width, int32, height, int32, elapsed);
         }
 
-        void NodeEventHandler::onFirstRemoteVideoFrame(uid_t uid, int width, int height, int elapsed)
-        {
-            FUNC_TRACE;
-            node_async_call::async_call([this, uid, width, height, elapsed] {
-                this->onFirstRemoteVideoFrame_node(uid, width, height, elapsed);
-            });
-        }
-
         void NodeEventHandler::onUserJoined_node(uid_t uid, int elapsed)
         {
             FUNC_TRACE;
@@ -632,6 +632,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
 
@@ -651,7 +652,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_LOCAL_VIDEO_STATS);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -670,6 +671,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
                 NODE_SET_OBJ_PROP_UINT32(obj, "uid", stats.uid);
@@ -686,7 +688,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_REMOTE_VIDEO_STATS);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -904,14 +906,6 @@ namespace agora {
             MAKE_JS_CALL_2(RTC_EVENT_FIRST_REMOTE_AUDIO_FRAME, uid, uid, int32, elapsed);
         }
 
-        void NodeEventHandler::onFirstRemoteAudioFrame(uid_t uid, int elapsed)
-        {
-            FUNC_TRACE;
-            node_async_call::async_call([this, uid, elapsed] {
-                this->onFirstRemoteAudioFrame_node(uid, elapsed);
-            });
-        }
-
         void NodeEventHandler::onFirstRemoteAudioDecoded_node(uid_t uid, int elapsed)
         {
             FUNC_TRACE;
@@ -932,28 +926,10 @@ namespace agora {
             MAKE_JS_CALL_2(RTC_EVENT_STREAM_PUBLISHED, string, url, int32, error);
         }
 
-        void NodeEventHandler::onStreamPublished(const char *url, int error)
-        {
-            FUNC_TRACE;
-            std::string mUrl = std::string(url);
-            node_async_call::async_call([this, mUrl, error] {
-                this->onStreamPublished_node(mUrl.c_str(), error);
-            });
-        }
-
         void NodeEventHandler::onStreamUnpublished_node(const char *url)
         {
             FUNC_TRACE;
             MAKE_JS_CALL_1(RTC_EVENT_STREAM_UNPUBLISHED, string, url);
-        }
-
-        void NodeEventHandler::onStreamUnpublished(const char *url)
-        {
-            FUNC_TRACE;
-            std::string mUrl = std::string(url);
-            node_async_call::async_call([this, mUrl] {
-                this->onStreamUnpublished_node(mUrl.c_str());
-            });
         }
 
         void NodeEventHandler::onTranscodingUpdated_node()
@@ -1058,13 +1034,13 @@ namespace agora {
 
         void NodeEventHandler::onRemoteAudioTransportStats_node(agora::rtc::uid_t uid, unsigned short delay, unsigned short lost, unsigned short rxKBitRate)
         {
-			FUNC_TRACE;
+            FUNC_TRACE;
             MAKE_JS_CALL_4(RTC_EVENT_REMOTE_AUDIO_TRANSPORT_STATS, uid, uid, uint16, delay, uint16, lost, uint16, rxKBitRate);
         }
 
         void NodeEventHandler::onRemoteVideoTransportStats_node(agora::rtc::uid_t uid, unsigned short delay, unsigned short lost, unsigned short rxKBitRate)
         {
-			FUNC_TRACE;
+            FUNC_TRACE;
             MAKE_JS_CALL_4(RTC_EVENT_REMOTE_VIDEO_TRANSPORT_STATS, uid, uid, uint16, delay, uint16, lost, uint16, rxKBitRate);
         }
 
@@ -1074,6 +1050,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
                 NODE_SET_OBJ_PROP_UID(obj, "uid", stats.uid);
@@ -1089,7 +1066,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_REMOTE_AUDIO_STATS);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -1203,8 +1180,8 @@ namespace agora {
         {
             FUNC_TRACE;
             NodeEventCallback *cb = new NodeEventCallback();;
-            cb->js_this.Reset(Isolate::GetCurrent(), obj);
-            cb->callback.Reset(Isolate::GetCurrent(), callback);
+            cb->js_this.Reset(obj);
+            cb->callback.Reset(callback);
             m_callbacks.emplace(eventName, cb);
         }
 
@@ -1242,6 +1219,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
                 NODE_SET_OBJ_PROP_UINT32(obj, "state", result.state);
@@ -1265,7 +1243,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_LASTMILE_PROBE_RESULT);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -1300,6 +1278,7 @@ namespace agora {
             do{
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
                 
@@ -1312,7 +1291,7 @@ namespace agora {
                 };
                 auto it = m_callbacks.find(RTC_EVENT_USER_INFO_UPDATED);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 2, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 2, arg); \
                 }
             }while(false);
         }
@@ -1337,6 +1316,7 @@ namespace agora {
             do {
                 Isolate *isolate = Isolate::GetCurrent();
                 HandleScope scope(isolate);
+                Local<Context> context = isolate->GetCurrentContext();
                 Local<Object> obj = Object::New(isolate);
                 CHECK_NAPI_OBJ(obj);
 
@@ -1347,7 +1327,7 @@ namespace agora {
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_LOCAL_AUDIO_STATS);
                 if (it != m_callbacks.end()) {
-                    it->second->callback.Get(isolate)->Call(it->second->js_this.Get(isolate), 1, arg); \
+                    it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
                 }
             } while (false);
         }
@@ -1414,6 +1394,15 @@ namespace agora {
         {
             FUNC_TRACE;
             MAKE_JS_CALL_2(RTC_EVENT_CHANNEL_MEDIA_RELAY_STATE, int32, state, int32, code);
+        }
+
+        void NodeEventHandler::onRtmpStreamingStateChanged(const char *url, agora::rtc::RTMP_STREAM_PUBLISH_STATE state, agora::rtc::RTMP_STREAM_PUBLISH_ERROR errCode)
+        {
+            FUNC_TRACE;
+            std::string sUrl(url);
+            node_async_call::async_call([this, sUrl, state, errCode] {
+                MAKE_JS_CALL_3(RTC_EVENT_RTMP_STREAMING_STATE_CHANGED, string, sUrl.c_str(), int32, state, int32, errCode)
+            });
         }
     }
 }

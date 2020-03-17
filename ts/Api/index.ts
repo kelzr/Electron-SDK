@@ -6,6 +6,7 @@
 } from '../Renderer';
 import {
   NodeRtcEngine,
+  NodeRtcChannel,
   RtcStats,
   LocalVideoStats,
   LocalAudioStats,
@@ -41,6 +42,7 @@ import {
 } from './native_type';
 import { EventEmitter } from 'events';
 import { deprecate } from '../Utils';
+import { ChannelMediaOptions } from './native_type';
 import {
   ChannelMediaRelayEvent,
   ChannelMediaRelayState,
@@ -59,7 +61,7 @@ const agora = require('../../build/Release/agora_node_ext');
  */
 class AgoraRtcEngine extends EventEmitter {
   rtcEngine: NodeRtcEngine;
-  streams: Map<string, IRenderer>;
+  streams: Map<string, Map<string, IRenderer>>;
   renderMode: 1 | 2 | 3;
   customRenderer: any;
   constructor() {
@@ -424,7 +426,7 @@ class AgoraRtcEngine extends EventEmitter {
         console.log('Warning!!!!!!, streams is undefined.');
         return;
       }
-      self.destroyRender(uid);
+      self.destroyRender(uid, "");
       self.rtcEngine.unsubscribe(uid);
       fire('removestream', uid, reason);
       fire('removeStream', uid, reason);
@@ -715,6 +717,10 @@ class AgoraRtcEngine extends EventEmitter {
       fire('channelMediaRelayEvent', event);
     });
 
+    this.rtcEngine.onEvent('rtmpStreamingStateChanged', function(url:string, state: number, errCode: number) {
+      fire('rtmpStreamingStateChanged', url, state, errCode);
+    })
+
     this.rtcEngine.registerDeliverFrame(function(infos: any) {
       self.onRegisterDeliverFrame(infos);
     });
@@ -729,23 +735,36 @@ class AgoraRtcEngine extends EventEmitter {
    * @param {number} type 0-local 1-remote 2-device_test 3-video_source
    * @param {number} uid uid get from native engine, differ from electron engine's uid
    */
-  _getRenderer(type: number, uid: number): IRenderer | undefined {
+  _getRenderer(type: number, uid: number, channelId: string | undefined): IRenderer | undefined {
+    let channelStreams = this._getChannelRenderers(channelId || "")
     if (type < 2) {
       if (uid === 0) {
-        return this.streams.get('local');
+        return channelStreams.get('local');
       } else {
-        return this.streams.get(String(uid));
+        return channelStreams.get(String(uid));
       }
     } else if (type === 2) {
       // return this.streams.devtest;
       console.warn('Type 2 not support in production mode.');
       return;
     } else if (type === 3) {
-      return this.streams.get('videosource');
+      return channelStreams.get('videosource');
     } else {
       console.warn('Invalid type for getRenderer, only accept 0~3.');
       return;
     }
+  }
+
+
+  _getChannelRenderers(channelId: string): Map<string, IRenderer> {
+    let channel: Map<string, IRenderer>;
+    if(!this.streams.has(channelId)) {
+      channel = new Map()
+      this.streams.set(channelId, channel)
+    } else {
+      channel = this.streams.get(channelId) as Map<string, IRenderer>
+    }
+    return channel
   }
 
   /** @zh-cn
@@ -809,7 +828,7 @@ class AgoraRtcEngine extends EventEmitter {
     const len = infos.length;
     for (let i = 0; i < len; i++) {
       const info = infos[i];
-      const { type, uid, header, ydata, udata, vdata } = info;
+      const { type, uid, channelId, header, ydata, udata, vdata } = info;
       if (!header || !ydata || !udata || !vdata) {
         console.log(
           'Invalid data param ： ' +
@@ -823,9 +842,9 @@ class AgoraRtcEngine extends EventEmitter {
         );
         continue;
       }
-      const renderer = this._getRenderer(type, uid);
+      const renderer = this._getRenderer(type, uid, channelId);
       if (!renderer) {
-        console.warn("Can't find renderer for uid : " + uid);
+        console.warn(`Can't find renderer for uid : ${uid} ${channelId}`);
         continue;
       }
 
@@ -857,9 +876,10 @@ class AgoraRtcEngine extends EventEmitter {
    * @param key Key for the map that store the renderers, 
    * e.g, `uid` or `videosource` or `local`.
    */
-  resizeRender(key: 'local' | 'videosource' | number) {
-    if (this.streams.has(String(key))) {
-      const renderer = this.streams.get(String(key));
+  resizeRender(key: 'local' | 'videosource' | number, channelId:string | undefined) {
+    let channelStreams = this._getChannelRenderers(channelId || "")
+    if (channelStreams.has(String(key))) {
+      const renderer = channelStreams.get(String(key));
       if (renderer) {
         renderer.refreshCanvas();
       }
@@ -878,9 +898,10 @@ class AgoraRtcEngine extends EventEmitter {
    * e.g, uid or `videosource` or `local`.
    * @param view The Dom elements to render the video.
    */
-  initRender(key: 'local' | 'videosource' | number, view: Element) {
-    if (this.streams.has(String(key))) {
-      this.destroyRender(key);
+  initRender(key: 'local' | 'videosource' | number, view: Element, channelId: string | undefined) {
+    let channelStreams = this._getChannelRenderers(channelId || "")
+    if (channelStreams.has(String(key))) {
+      this.destroyRender(key, channelId || "");
     }
     let renderer: IRenderer;
     if (this.renderMode === 1) {
@@ -894,7 +915,7 @@ class AgoraRtcEngine extends EventEmitter {
       renderer = new GlRenderer();
     }
     renderer.bind(view);
-    this.streams.set(String(key), renderer);
+    channelStreams.set(String(key), renderer);
   }
 
   /** @zh-cn
@@ -910,16 +931,20 @@ class AgoraRtcEngine extends EventEmitter {
    * method.
    */
   destroyRender(
-    key: 'local' | 'videosource' | number,
+    key: 'local' | 'videosource' | number, channelId: string | undefined,
     onFailure?: (err: Error) => void
   ) {
-    if (!this.streams.has(String(key))) {
+    let channelStreams = this._getChannelRenderers(channelId || "")
+    if (!channelStreams.has(String(key))) {
       return;
     }
-    const renderer = this.streams.get(String(key));
+    const renderer = channelStreams.get(String(key));
     try {
       (renderer as IRenderer).unbind();
-      this.streams.delete(String(key));
+      channelStreams.delete(String(key));
+      if(channelStreams.keys.length === 0) {
+        this.streams.delete(channelId || "")
+      }
     } catch (err) {
       onFailure && onFailure(err);
     }
@@ -951,6 +976,18 @@ class AgoraRtcEngine extends EventEmitter {
    * 获取当前 SDK 的版本和 Build 信息。
    * @returns {string} 当前 SDK 的版本
    */
+  /**
+   * Create a channel object, use this only if you want to join multiple channel at one time
+   * @param channelName name of the channel to create
+   */
+  createChannel(channelName: string): (AgoraRtcChannel | null) {
+    let rtcChannel = this.rtcEngine.createChannel(channelName)
+    if(!rtcChannel) {
+      return null
+    }
+    return new AgoraRtcChannel(rtcChannel)
+  }
+
   /**
    * Returns the version and the build information of the current SDK.
    * @return The version of the current SDK.
@@ -1218,8 +1255,20 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0: Failure.
    */
   subscribe(uid: number, view: Element): number {
-    this.initRender(uid, view);
+    this.initRender(uid, view, "");
     return this.rtcEngine.subscribe(uid);
+  }
+
+  setupRemoteVideo(uid: number, view?: Element, channel?: string): number {
+    if(view) {
+      //bind
+      this.initRender(uid, view, channel);
+      return this.rtcEngine.subscribe(uid, channel);
+    } else {
+      //unbind
+      this.destroyRender(uid, channel);
+      return this.rtcEngine.unsubscribe(uid, channel);
+    }
   }
 
   /** @zh-cn
@@ -1239,7 +1288,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0: Failure.
    */
   setupLocalVideo(view: Element): number {
-    this.initRender('local', view);
+    this.initRender('local', view, "");
     return this.rtcEngine.setupLocalVideo();
   }
 
@@ -1386,10 +1435,12 @@ class AgoraRtcEngine extends EventEmitter {
    */
   setupViewContentMode(
     uid: number | 'local' | 'videosource',
-    mode: 0 | 1
+    mode: 0 | 1,
+    channelId: string | undefined
   ): number {
-    if (this.streams.has(String(uid))) {
-      const renderer = this.streams.get(String(uid));
+    let channelStreams = this._getChannelRenderers(channelId || "")
+    if (channelStreams.has(String(uid))) {
+      const renderer = channelStreams.get(String(uid));
       (renderer as IRenderer).setContentMode(mode);
       return 0;
     } else {
@@ -2823,12 +2874,22 @@ class AgoraRtcEngine extends EventEmitter {
    * audio volume indicator. The value ranges between 0 and 10.
    * The greater the value, the more sensitive the indicator. The recommended 
    * value is 3.
+   * @param {boolean} report_vad 
+   * true: Enable the voice activity detection of the local user. Once it is 
+   * enabled, the vad parameter of the onAudioVolumeIndication callback reports 
+   * the voice activity status of the local user.
+   * false: (Default) Disable the voice activity detection of the local user. 
+   * Once it is enabled, the vad parameter of the onAudioVolumeIndication 
+   * callback does not report the voice activity status of the local 
+   * user, except for scenarios where the engine automatically detects 
+   * the voice activity of the local user.
+   * value is 3.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  enableAudioVolumeIndication(interval: number, smooth: number): number {
-    return this.rtcEngine.enableAudioVolumeIndication(interval, smooth);
+  enableAudioVolumeIndication(interval: number, smooth: number, report_vad: boolean): number {
+    return this.rtcEngine.enableAudioVolumeIndication(interval, smooth, report_vad);
   }
 
   /** @zh-cn
@@ -4255,6 +4316,15 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.enableLoopbackRecording(enable, deviceName);
   }
 
+
+  startAudioRecording(filePath: string, quality: number):number {
+    return this.rtcEngine.startAudioRecording(filePath, quality)
+  }
+
+  stopAudioRecording():number {
+    return this.rtcEngine.stopAudioRecording()
+  }
+
   /** @zh-cn
    * 开始音频录制设备测试。
    *
@@ -4415,7 +4485,7 @@ class AgoraRtcEngine extends EventEmitter {
    * displayed.
    */
   setupLocalVideoSource(view: Element): void {
-    this.initRender('videosource', view);
+    this.initRender('videosource', view, "");
   }
 
   /** @zh-cn
@@ -4730,6 +4800,22 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceStartPreview();
   }
 
+  startScreenCaptureByWindow(windowSymbol: number, rect: CaptureRect, param: CaptureParam): number {
+    return this.rtcEngine.startScreenCaptureByWindow(windowSymbol, rect, param)
+  }
+
+  startScreenCaptureByScreen(screenSymbol: ScreenSymbol, rect: CaptureRect, param: CaptureParam): number {
+    return this.rtcEngine.startScreenCaptureByScreen(screenSymbol, rect, param)
+  }
+
+  updateScreenCaptureParameters(param: CaptureParam): number {
+    return this.rtcEngine.updateScreenCaptureParameters(param)
+  }
+
+  setScreenCaptureContentHint(hint: VideoContentHint): number {
+    return this.rtcEngine.setScreenCaptureContentHint(hint)
+  }
+
   /** @zh-cn
    * 双实例方法：停止预览共享屏幕。
    * @returns {number}
@@ -4819,6 +4905,14 @@ class AgoraRtcEngine extends EventEmitter {
     bottom: number;
   }) {
     return this.rtcEngine.videoSourceUpdateScreenCaptureRegion(rect);
+  }
+
+  videoSourceEnableLoopbackRecording(enabled: boolean) : number {
+    return this.rtcEngine.videoSourceEnableLoopbackRecording(enabled)
+  }
+
+  videoSourceEnableAudio() : number {
+    return this.rtcEngine.videoSourceEnableAudio()
   }
 
   /** @zh-cn
@@ -6766,6 +6860,9 @@ class AgoraRtcEngine extends EventEmitter {
       },
       setParameter: (param: string) => {
         return this.setPluginParameter(pluginId, param)
+      },
+      getParameter: (paramKey: string) => {
+        return this.getPluginParameter(pluginId, paramKey)
       }
     }
   }
@@ -6793,6 +6890,15 @@ class AgoraRtcEngine extends EventEmitter {
    */
   setPluginParameter(pluginId: string, param: string): number {
     return this.rtcEngine.setPluginParameter(pluginId, param);
+  }
+
+  /**
+   * @ignore
+   * @param pluginId 
+   * @param paramKey
+   */
+  getPluginParameter(pluginId: string, paramKey: string): string {
+    return this.rtcEngine.getPluginParameter(pluginId, paramKey);
   }
 }
 /** @zh-cn
@@ -8053,7 +8159,8 @@ declare interface AgoraRtcEngine {
    * - url: The RTMP URL address.
    */
   on(evt: 'streamUnpublished', cb: (url: string) => void): this;
-
+  //TODO:
+  on(evt: 'rtmpStreamingStateChanged', cb: (url: string, state: number, code: number) => void): this;
   /** @zh-cn
    * 旁路推流设置被更新回调。该
    * 
@@ -8072,8 +8179,7 @@ declare interface AgoraRtcEngine {
    * **Note**: If you call the {@link setLiveTranscoding} method to set the 
    * LiveTranscoding class for the first time, the SDK does not trigger the 
    * transcodingUpdated callback.
-   */
-
+   */ 
   on(evt: 'transcodingUpdated', cb: () => void): this;
   /** @zh-cn
    * 导入在线媒体流状态回调。
@@ -8439,112 +8545,776 @@ declare interface AgoraRtcEngine {
    * @param listener 
    */
   on(evt: string, listener: Function): this;
+}
 
-  // on(evt: 'apicallexecuted', cb: (api: string, err: number) => void): this;
-  // on(evt: 'warning', cb: (warn: number, msg: string) => void): this;
-  // on(evt: 'error', cb: (err: number, msg: string) => void): this;
-  // on(evt: 'joinedchannel', cb: (
-  //   channel: string, uid: number, elapsed: number
-  // ) => void): this;
-  // on(evt: 'rejoinedchannel', cb: (
-  //   channel: string, uid: number, elapsed: number
-  // ) => void): this;
-  // on(evt: 'audioquality', cb: (
-  //   uid: number, quality: AgoraNetworkQuality, delay: number, lost: number
-  // ) => void): this;
-  // on(evt: 'audiovolumeindication', cb: (
-  //   uid: number,
-  //   volume: number,
-  //   speakerNumber: number,
-  //   totalVolume: number
-  // ) => void): this;
-  // on(evt: 'leavechannel', cb: () => void): this;
-  // on(evt: 'rtcstats', cb: (stats: RtcStats) => void): this;
-  // on(evt: 'localvideostats', cb: (stats: LocalVideoStats) => void): this;
-  // on(evt: 'remotevideostats', cb: (stats: RemoteVideoStats) => void): this;
-  // on(evt: 'audiodevicestatechanged', cb: (
-  //   deviceId: string,
-  //   deviceType: number,
-  //   deviceState: number,
-  // ) => void): this;
-  // on(evt: 'audiomixingfinished', cb: () => void): this;
-  // on(evt: 'remoteaudiomixingbegin', cb: () => void): this;
-  // on(evt: 'remoteaudiomixingend', cb: () => void): this;
-  // on(evt: 'audioeffectfinished', cb: (soundId: number) => void): this;
-  // on(evt: 'videodevicestatechanged', cb: (
-  //   deviceId: string,
-  //   deviceType: number,
-  //   deviceState: number,
-  // ) => void): this;
-  // on(evt: 'networkquality', cb: (
-  //   uid: number,
-  //   txquality: AgoraNetworkQuality,
-  //   rxquality: AgoraNetworkQuality
-  // ) => void): this;
-  // on(evt: 'lastmilequality', cb: (quality: AgoraNetworkQuality) => void): this;
-  // on(evt: 'firstlocalvideoframe', cb: (
-  //   width: number,
-  //   height: number,
-  //   elapsed: number
-  // ) => void): this;
-  // on(evt: 'addstream', cb: (
-  //   uid: number,
-  //   elapsed: number,
-  // ) => void): this;
-  // on(evt: 'videosizechanged', cb: (
-  //   uid: number,
-  //   width: number,
-  //   height: number,
-  //   rotation: number
-  // ) => void): this;
-  // on(evt: 'firstremotevideoframe', cb: (
-  //   uid: number,
-  //   width: number,
-  //   height: number,
-  //   elapsed: number
-  // ) => void): this;
-  // on(evt: 'userjoined', cb: (uid: number, elapsed: number) => void): this;
-  // on(evt: 'removestream', cb: (uid: number, reason: number) => void): this;
-  // on(evt: 'usermuteaudio', cb: (uid: number, muted: boolean) => void): this;
-  // on(evt: 'usermutevideo', cb: (uid: number, muted: boolean) => void): this;
-  // on(evt: 'userenablevideo', cb: (uid: number, enabled: boolean) => void): this;
-  // on(evt: 'userenablelocalvideo', cb: (uid: number, enabled: boolean) => void): this;
-  // on(evt: 'cameraready', cb: () => void): this;
-  // on(evt: 'videostopped', cb: () => void): this;
-  // on(evt: 'connectionlost', cb: () => void): this;
-  // on(evt: 'connectioninterrupted', cb: () => void): this;
-  // on(evt: 'connectionbanned', cb: () => void): this;
-  // on(evt: 'refreshrecordingservicestatus', cb: () => void): this;
-  // on(evt: 'streammessage', cb: (
-  //   uid: number,
-  //   streamId: number,
-  //   msg: string,
-  //   len: number
-  // ) => void): this;
-  // on(evt: 'streammessageerror', cb: (
-  //   uid: number,
-  //   streamId: number,
-  //   code: number,
-  //   missed: number,
-  //   cached: number
-  // ) => void): this;
-  // on(evt: 'mediaenginestartcallsuccess', cb: () => void): this;
-  // on(evt: 'requestchannelkey', cb: () => void): this;
-  // on(evt: 'fristlocalaudioframe', cb: (elapsed: number) => void): this;
-  // on(evt: 'firstremoteaudioframe', cb: (uid: number, elapsed: number) => void): this;
-  // on(evt: 'activespeaker', cb: (uid: number) => void): this;
-  // on(evt: 'clientrolechanged', cb: (
-  //   oldRole: ClientRoleType,
-  //   newRole: ClientRoleType
-  // ) => void): this;
-  // on(evt: 'audiodevicevolumechanged', cb: (
-  //   deviceType: MediaDeviceType,
-  //   volume: number,
-  //   muted: boolean
-  // ) => void): this;
-  // on(evt: 'videosourcejoinedsuccess', cb: (uid: number) => void): this;
-  // on(evt: 'videosourcerequestnewtoken', cb: () => void): this;
-  // on(evt: 'videosourceleavechannel', cb: () => void): this;
+
+class AgoraRtcChannel extends EventEmitter
+{
+  rtcChannel: NodeRtcChannel;
+  constructor(rtcChannel:NodeRtcChannel) {
+    super();
+    this.rtcChannel = rtcChannel;
+    this.initEventHandler();
+  }
+
+  /**
+   * init event handler
+   * @private
+   * @ignore
+   */
+  initEventHandler(): void {
+    const fire = (event: string, ...args: Array<any>) => {
+      setImmediate(() => {
+        this.emit(event, ...args);
+      });
+    };
+
+    this.rtcChannel.onEvent('apierror', (funcName: string) => {
+      console.error(`api ${funcName} failed. this is an error
+              thrown by c++ addon layer. it often means sth is
+              going wrong with this function call and it refused
+              to do what is asked. kindly check your parameter types
+              to see if it matches properly.`);
+    });
+
+    this.rtcChannel.onEvent('joinChannelSuccess', (
+      uid: number,
+      elapsed: number
+    ) => {
+      fire('joinChannelSuccess', uid, elapsed);
+    });
+
+    this.rtcChannel.onEvent('channelWarning', (
+      warn: number,
+      message: string
+    ) => {
+      fire('channelWarning', warn, message);
+    });
+
+    this.rtcChannel.onEvent('channelError', (
+      error: number,
+      message: string
+    ) => {
+      fire('channelError', error, message);
+    });
+
+
+    this.rtcChannel.onEvent('rejoinChannelSuccess', (
+      uid: number,
+      elapsed: number
+    ) => {
+      fire('rejoinChannelSuccess', uid, elapsed);
+    });
+
+
+    this.rtcChannel.onEvent('leaveChannel', (
+      stats: RtcStats
+    ) => {
+      fire('leaveChannel', stats);
+    });
+
+    this.rtcChannel.onEvent('clientRoleChanged', (
+      oldRole: number,
+      newRole: number
+    ) => {
+      fire('clientRoleChanged', oldRole, newRole);
+    });
+
+    this.rtcChannel.onEvent('userJoined', (
+      uid: number,
+      elapsed: number
+    ) => {
+      fire('userJoined', uid, elapsed);
+    });
+
+    this.rtcChannel.onEvent('userOffline', (
+      uid: number,
+      reason: number
+    ) => {
+      fire('userOffline', uid, reason);
+    });
+
+    this.rtcChannel.onEvent('connectionLost', (
+    ) => {
+      fire('connectionLost');
+    });
+
+    this.rtcChannel.onEvent('requestToken', (
+    ) => {
+      fire('requestToken');
+    });
+
+    this.rtcChannel.onEvent('tokenPrivilegeWillExpire', (
+      token: string
+    ) => {
+      fire('tokenPrivilegeWillExpire', token);
+    });
+
+    this.rtcChannel.onEvent('rtcStats', (
+      stats: RtcStats
+    ) => {
+      fire('rtcStats', stats);
+    });
+
+    this.rtcChannel.onEvent('networkQuality', (
+      uid: number,
+      txQuality: number,
+      rxQuality: number
+    ) => {
+      fire('networkQuality', uid, txQuality, rxQuality);
+    });
+
+    this.rtcChannel.onEvent('remoteVideoStats', (
+      stats: RemoteVideoStats
+    ) => {
+      fire('remoteVideoStats', stats);
+    });
+
+    this.rtcChannel.onEvent('remoteAudioStats', (
+      stats: RemoteAudioStats
+    ) => {
+      fire('remoteAudioStats', stats);
+    });
+
+    this.rtcChannel.onEvent('remoteAudioStateChanged', (
+      uid: number,
+      state: RemoteAudioState,
+      reason: RemoteAudioStateReason,
+      elapsed: number
+    ) => {
+      fire('remoteAudioStateChanged', uid, state, reason, elapsed);
+    });
+
+    this.rtcChannel.onEvent('activeSpeaker', (
+      uid: number
+    ) => {
+      fire('activeSpeaker', uid);
+    });
+
+    this.rtcChannel.onEvent('firstRemoteVideoFrame', (
+      uid: number,
+      width: number,
+      height: number,
+      elapsed: number
+    ) => {
+      fire('firstRemoteVideoFrame', uid, width, height, elapsed);
+    });
+
+    this.rtcChannel.onEvent('firstRemoteAudioDecoded', (
+      uid: number,
+      elapsed: number
+    ) => {
+      fire('firstRemoteAudioDecoded', uid, elapsed);
+    });
+
+    this.rtcChannel.onEvent('videoSizeChanged', (
+      uid: number,
+      width: number,
+      height: number,
+      rotation: number
+    ) => {
+      fire('videoSizeChanged', uid, width, height, rotation);
+    });
+
+    this.rtcChannel.onEvent('remoteVideoStateChanged', (
+      uid: number,
+      state: number,
+      reason: number,
+      elapsed: number
+    ) => {
+      fire('remoteVideoStateChanged', uid, state, reason, elapsed);
+    });
+
+    this.rtcChannel.onEvent('streamMessage', (
+      uid: number,
+      streamId: number,
+      data: string
+    ) => {
+      fire('streamMessage', uid, streamId, data);
+    });
+
+    this.rtcChannel.onEvent('streamMessageError', (
+      uid: number,
+      streamId: number,
+      code: number,
+      missed: number,
+      cached: number
+    ) => {
+      fire('streamMessage', uid, streamId, code, missed, cached);
+    });
+
+    this.rtcChannel.onEvent('channelMediaRelayStateChanged', (
+      state: number,
+      code: number
+    ) => {
+      fire('channelMediaRelayStateChanged', state, code);
+    });
+
+    this.rtcChannel.onEvent('channelMediaRelayEvent', (
+      code: number
+    ) => {
+      fire('channelMediaRelayEvent', code);
+    });
+
+    this.rtcChannel.onEvent('firstRemoteAudioFrame', (
+      uid: number,
+      elapsed: number
+    ) => {
+      fire('firstRemoteAudioFrame', uid, elapsed);
+    });
+
+    this.rtcChannel.onEvent('rtmpStreamingStateChanged', (
+      url: string,
+      state: number,
+      errCode: number
+    ) => {
+      fire('rtmpStreamingStateChanged', url, state, errCode);
+    });
+
+    this.rtcChannel.onEvent('transcodingUpdated', (
+    ) => {
+      fire('transcodingUpdated');
+    });
+
+    this.rtcChannel.onEvent('streamInjectedStatus', (
+      url: string,
+      uid: number,
+      status: number
+    ) => {
+        fire('streamInjectedStatus', url, uid, status);
+    });
+
+    this.rtcChannel.onEvent('remoteSubscribeFallbackToAudioOnly', (
+      uid: number,
+      isFallbackOrRecover: boolean
+    ) => {
+        fire('remoteSubscribeFallbackToAudioOnly', uid, isFallbackOrRecover);
+    });
+
+    this.rtcChannel.onEvent('connectionStateChanged', (
+      state: number,
+      reason: number
+    ) => {
+        fire('connectionStateChanged', state, reason);
+    });
+    
+  }
+
+  joinChannel(
+    token: string,
+    info: string,
+    uid: number,
+    options: ChannelMediaOptions
+  ): number {
+    return this.rtcChannel.joinChannel(token, info, uid, options || {
+      autoSubscribeAudio: true,
+      autoSubscribeVideo: true
+    });
+  }
+
+  joinChannelWithUserAccount(
+    token: string,
+    userAccount: string,
+    options: ChannelMediaOptions
+  ): number {
+    return this.rtcChannel.joinChannelWithUserAccount(token, userAccount, options || {
+      autoSubscribeAudio: true,
+      autoSubscribeVideo: true
+    }); 
+  }
+
+  channelId(): string {
+    return this.rtcChannel.channelId()
+  }
+
+  getCallId(): string {
+    return this.rtcChannel.getCallId()
+  }
+
+  setClientRole(role: ClientRoleType): number {
+    return this.rtcChannel.setClientRole(role);
+  }
+
+  setRemoteUserPriority(uid: number, priority: Priority) {
+    return this.rtcChannel.setRemoteUserPriority(uid, priority);
+  }
+
+  renewToken(newtoken: string): number {
+    return this.rtcChannel.renewToken(newtoken);
+  }
+
+  setEncryptionSecret(secret: string): number {
+    return this.rtcChannel.setEncryptionSecret(secret);
+  }
+
+  setEncryptionMode(mode: string): number {
+    return this.rtcChannel.setEncryptionMode(mode);
+  }
+
+  setRemoteVoicePosition(uid: number, pan: number, gain: number): number {
+    return this.rtcChannel.setRemoteVoicePosition(uid, pan, gain);
+  }
+
+  setDefaultMuteAllRemoteAudioStreams(mute: boolean): number {
+    return this.rtcChannel.setDefaultMuteAllRemoteAudioStreams(mute);
+  }
+
+  setDefaultMuteAllRemoteVideoStreams(mute: boolean): number {
+    return this.rtcChannel.setDefaultMuteAllRemoteVideoStreams(mute);
+  }
+
+  muteAllRemoteAudioStreams(mute: boolean): number {
+    return this.rtcChannel.muteAllRemoteAudioStreams(mute);
+  }
+
+  muteRemoteAudioStream(uid: number, mute: boolean): number {
+    return this.rtcChannel.muteRemoteAudioStream(uid, mute);
+  }
+
+  muteAllRemoteVideoStreams(mute: boolean): number {
+    return this.rtcChannel.muteAllRemoteVideoStreams(mute);
+  }
+
+  muteRemoteVideoStream(uid: number, mute: boolean): number {
+    return this.rtcChannel.muteRemoteVideoStream(uid, mute);
+  }
+
+  setRemoteVideoStreamType(uid: number, streamType: StreamType): number {
+    return this.rtcChannel.setRemoteVideoStreamType(uid, streamType);
+  }
+
+  setRemoteDefaultVideoStreamType(streamType: StreamType): number {
+    return this.rtcChannel.setRemoteDefaultVideoStreamType(streamType);
+  }
+
+  createDataStream(reliable: boolean, ordered: boolean): number {
+    return this.rtcChannel.createDataStream(reliable, ordered);
+  }
+
+  sendStreamMessage(streamId: number, msg: string): number {
+    return this.rtcChannel.sendStreamMessage(streamId, msg);
+  }
+
+  addPublishStreamUrl(url: string, transcodingEnabled: boolean): number {
+    return this.rtcChannel.addPublishStreamUrl(url, transcodingEnabled);
+  }
+
+  removePublishStreamUrl(url: string): number {
+    return this.rtcChannel.removePublishStreamUrl(url);
+  }
+
+  setLiveTranscoding(transcoding: TranscodingConfig): number {
+    return this.rtcChannel.setLiveTranscoding(transcoding);
+  }
+
+  addInjectStreamUrl(url: string, config: InjectStreamConfig): number {
+    return this.rtcChannel.addInjectStreamUrl(url, config);
+  }
+
+  removeInjectStreamUrl(url: string): number {
+    return this.rtcChannel.removeInjectStreamUrl(url);
+  }
+
+  startChannelMediaRelay(config: ChannelMediaRelayConfiguration): number {
+    return this.rtcChannel.startChannelMediaRelay(config);
+  }
+
+  updateChannelMediaRelay(config: ChannelMediaRelayConfiguration): number {
+    return this.rtcChannel.updateChannelMediaRelay(config);
+  }
+
+  stopChannelMediaRelay(): number {
+    return this.rtcChannel.stopChannelMediaRelay();
+  }
+
+  getConnectionState(): ConnectionState {
+    return this.rtcChannel.getConnectionState();
+  }
+
+  publish(): number {
+    return this.rtcChannel.publish()
+  }
+
+  unpublish(): number {
+    return this.rtcChannel.unpublish()
+  }
+
+  leaveChannel(): number {
+    return this.rtcChannel.leaveChannel()
+  }
+
+  release(): number {
+    return this.rtcChannel.release()
+  }
+}
+
+
+/** The AgoraRtcChannel interface. */
+declare interface AgoraRtcChannel {
+  on(evt: 'joinChannelSuccess', cb: (uid: number, elapsed: number) => void): this;
+  on(evt: 'channelWarning', cb: (warn: number, msg: string) => void): this;
+  on(evt: 'channelError', cb: (err: number, msg: string) => void): this;
+  on(
+    evt: 'rejoinChannelSuccess',
+    cb: (uid: number, elapsed: number) => void
+  ): this;
+  /** Occurs when the user leaves the channel. When the app calls the 
+   * {@link leaveChannel} method, the SDK uses
+   * this callback to notify the app when the user leaves the channel.
+   */
+  on(evt: 'leaveChannel', cb: (stats:RtcStats) => void): this;
+  /** Occurs when the user role switches in a live broadcast. For example, 
+   * from a host to an audience or vice versa.
+   *
+   * This callback notifies the application of a user role switch when the 
+   * application calls the {@link setClientRole} method.
+   *
+   * - oldRole: Role that the user switches from ClientRoleType.
+   * - newRole: Role that the user switches to ClientRoleType.
+   */
+   on(
+    evt: 'clientRoleChanged',
+    cb: (oldRole: ClientRoleType, newRole: ClientRoleType) => void
+  ): this;
+  /** Occurs when a user or host joins the channel.
+   * - uid: User ID of the user or host joining the channel.
+   * - elapsed: Time delay (ms) from the local user calling the 
+   * {@link joinChannel} method until the SDK triggers this callback.
+   *
+   * The SDK triggers this callback under one of the following circumstances:
+   * - A remote user/host joins the channel by calling the {@link joinChannel} 
+   * method.
+   * - A remote user switches the user role to the host by calling the 
+   * {@link setClientRole} method after joining the channel.
+   * - A remote user/host rejoins the channel after a network interruption.
+   * - The host injects an online media stream into the channel by calling 
+   * the {@link addInjectStreamUrl} method.
+   *
+   * **Note**: In the Live-broadcast profile:
+   * - The host receives this callback when another host joins the channel.
+   * - The audience in the channel receives this callback when a new host 
+   * joins the channel.
+   * - When a web application joins the channel, the SDK triggers this 
+   * callback as long as the web application publishes streams.
+   */
+   on(evt: 'userJoined', cb: (uid: number, elapsed: number) => void): this;
+   /** Occurs when a remote user (Communication)/host (Live Broadcast) leaves 
+    * the channel.
+    * 
+    * There are two reasons for users to become offline:
+    * - Leave the channel: When the user/host leaves the channel, the user/host 
+    * sends a goodbye message. When this message is received, the SDK determines 
+    * that the user/host leaves the channel.
+    * - Drop offline: When no data packet of the user or host is received for a 
+    * certain period of time (20 seconds for the communication profile, and more 
+    * for the live broadcast profile), the SDK assumes that the user/host drops 
+    * offline. A poor network connection may lead to false detections, so we 
+    * recommend using the signaling system for reliable offline detection.
+    * 
+    * - uid: ID of the user or host who leaves the channel or goes offline.
+    * - reason: Reason why the user goes offline:
+    *  - The user left the current channel.
+    *  - The SDK timed out and the user dropped offline because no data packet 
+    * was received within a certain period of time. If a user quits the call 
+    * and the message is not passed to the SDK (due to an unreliable channel), 
+    * the SDK assumes the user dropped offline.
+    *  - (Live broadcast only.) The client role switched from the host to the 
+    * audience.
+    */
+   on(evt: 'userOffline', cb: (uid: number, reason: number) => void): this;
+  /** Occurs when the SDK cannot reconnect to Agora's edge server 10 seconds 
+   * after its connection to the server is interrupted.
+   * The SDK triggers this callback when it cannot connect to the server 10 
+   * seconds after calling the {@link joinChannel} method, whether or not it 
+   * is in the channel.
+   */
+   on(evt: 'connectionLost', cb: () => void): this;
+   /** Occurs when a remote user's audio stream is muted/unmuted.
+    *
+    * The SDK triggers this callback when the remote user stops or resumes 
+    * sending the audio stream by calling the {@link muteLocalAudioStream} 
+    * method.
+    * - uid: User ID of the remote user.
+    * - muted: Whether the remote user's audio stream is muted/unmuted:
+    *  - true: Muted.
+    *  - false: Unmuted.
+    */
+  /** Reports the statistics of the AgoraRtcEngine once every two seconds.
+   * 
+   * - stats: Agora RTC engine statistics, see {@link RtcStats}.
+   */
+
+  /** Occurs when the token expires.
+   * After a token is specified by calling the {@link joinChannel} method, 
+   * if the SDK losses connection with the Agora server due to network issues, 
+   * the token may expire after a certain period
+   * of time and a new token may be required to reconnect to the server.
+   *
+   * This callback notifies the application to generate a new token. Call 
+   * the {@link renewToken} method to renew the token
+   */
+   on(evt: 'requestToken', cb: () => void): this;
+  /** Occurs when the token expires in 30 seconds.
+   *
+   * The user becomes offline if the token used in the {@link joinChannel} 
+   * method expires. The SDK triggers this callback 30 seconds
+   * before the token expires to remind the application to get a new token. 
+   * Upon receiving this callback, generate a new token
+   * on the server and call the {@link renewToken} method to pass the new 
+   * token to the SDK.
+   *
+   * - token: Pointer to the token that expires in 30 seconds.
+   */
+   on(evt: 'tokenPrivilegeWillExpire', cb: (token: string) => void): this;
+   on(evt: 'rtcStats', cb: (stats: RtcStats) => void): this;
+  /**
+   * Reports the last mile network quality of each user in the channel 
+   * once every two seconds.
+   * 
+   * Last mile refers to the connection between the local device and Agora's 
+   * edge server.
+   *
+   * - uid: User ID. The network quality of the user with this uid is reported. 
+   * If uid is 0, the local network quality is reported.
+   * - txquality: Uplink transmission quality rating of the user in terms of 
+   * the transmission bitrate, packet loss rate, average RTT (Round-Trip Time), 
+   * and jitter of the uplink network. See {@link AgoraNetworkQuality}.
+   * - rxquality: Downlink network quality rating of the user in terms of the 
+   * packet loss rate, average RTT, and jitter of the downlink network. 
+   * See {@link AgoraNetworkQuality}.
+   */
+   on(
+    evt: 'networkQuality',
+    cb: (
+      uid: number,
+      txquality: AgoraNetworkQuality,
+      rxquality: AgoraNetworkQuality
+    ) => void
+  ): this;
+  /** Reports the statistics of the video stream from each remote user/host.
+   * - stats: Statistics of the received remote video streams. See 
+   * {@link RemoteVideoState}.
+   */
+  on(evt: 'remoteVideoStats', cb: (stats: RemoteVideoStats) => void): this;
+  /** Reports the statistics of the audio stream from each remote user/host.
+   * - stats: Statistics of the received remote audio streams. See 
+   * {@link RemoteAudioStats}.
+   */
+  on(evt: 'remoteAudioStats', cb: (stats: RemoteAudioStats) => void): this;
+  /**
+   * Occurs when the remote audio state changes.
+   * 
+   * This callback indicates the state change of the remote audio stream.
+   * 
+   * - uid ID of the remote user whose audio state changes.
+   * 
+   * - state State of the remote audio: 
+   * {@link RemoteAudioState}.
+   * 
+   * - reason The reason of the remote audio state change: 
+   * {@link RemoteAudioStateReason}.
+   * 
+   * - elapsed Time elapsed (ms) from the local user calling the 
+   * {@link joinChannel} method until the SDK triggers this callback.
+   */
+   on(evt: 'remoteAudioStateChanged', cb: (
+    uid: number,
+    state: RemoteAudioState,
+    reason: RemoteAudioStateReason,
+    elapsed: number
+  ) => void): this;
+  /**
+   * Reports which user is the loudest speaker.
+   * - uid: User ID of the active speaker. A uid of 0 represents the local user.
+   * If the user enables the audio volume indication by calling the 
+   * {@link enableAudioVolumeIndication} method, this callback returns the uid 
+   * of the
+   * active speaker detected by the audio volume detection module of the SDK.
+   *
+   * **Note**:
+   * - To receive this callback, you need to call the 
+   * {@link enableAudioVolumeIndication} method.
+   * - This callback returns the user ID of the user with the highest voice 
+   * volume during a period of time, instead of at the moment.
+   */
+   on(evt: 'activeSpeaker', cb: (uid: number) => void): this;
+  /** Occurs when the first remote video frame is rendered.
+   * The SDK triggers this callback when the first frame of the remote video 
+   * is displayed in the user's video window.
+   * - uid: User ID of the remote user sending the video stream.
+   * - width: Width (pixels) of the video frame.
+   * - height: Height (pixels) of the video stream.
+   * - elapsed: Time elapsed (ms) from the local user calling the 
+   * {@link joinChannel} method until the SDK triggers this callback.
+   */
+   on(
+    evt: 'firstRemoteVideoFrame',
+    cb: (uid: number, width: number, height: number, elapsed: number) => void
+  ): this;
+  /**
+   * Occurs when the engine receives the first audio frame from a specified 
+   * remote user.
+   * - uid: User ID of the remote user sending the audio stream.
+   * - elapsed: The time elapsed (ms) from the local user calling the 
+   * {@link joinChannel} method until the SDK triggers this callback.
+   */
+   on(
+    evt: 'firstRemoteAudioDecoded',
+    cb: (uid: number, elapsed: number) => void
+  ): this;
+  /** Occurs when the video size or rotation of a specified user changes.
+   * - uid: User ID of the remote user or local user (0) whose video size or 
+   * rotation changes.
+   * - width: New width (pixels) of the video.
+   * - height: New height (pixels) of the video.
+   * - roation: New height (pixels) of the video.
+   */
+  on(
+    evt: 'videoSizeChanged',
+    cb: (uid: number, width: number, height: number, rotation: number) => void
+  ): this;
+  /** Occurs when the remote video state changes.
+   *  - uid: ID of the user whose video state changes.
+   *  - state: State of the remote video. 
+   * See {@link RemoteVideoState}.
+   *  - reason: The reason of the remote video state change. 
+   * See {@link RemoteVideoStateReason}
+   *  - elapsed: Time elapsed (ms) from the local user calling the 
+   * {@link joinChannel} method until the SDK triggers this callback.
+   */
+   on(
+    evt: 'remoteVideoStateChanged',
+    cb: (
+      uid: number,
+      state: RemoteVideoState,
+      reason: RemoteVideoStateReason,
+      elapsed: number
+    ) => void
+  ): this;
+  /** Occurs when the local user receives the data stream from the remote 
+   * user within five seconds.
+   *
+   * The SDK triggers this callback when the local user receives the stream 
+   * message that the remote user sends by calling the 
+   * {@link sendStreamMessage} method.
+   * - uid: User ID of the remote user sending the message.
+   * - streamId: Stream ID.
+   * - msg: Pointer to the data received bt the local user.
+   */
+   on(
+    evt: 'streamMessage',
+    cb: (uid: number, streamId: number, data: string) => void
+  ): this;
+  /** Occurs when the local user does not receive the data stream from the 
+   * remote user within five seconds.
+   * The SDK triggers this callback when the local user fails to receive the 
+   * stream message that the remote user sends by calling the 
+   * {@link sendStreamMessage} method.
+   * - uid: User ID of the remote user sending the message.
+   * - streamId: Stream ID.
+   * - err: Error code.
+   * - missed: Number of the lost messages.
+   * - cached: Number of incoming cached messages when the data stream is 
+   * interrupted.
+   */
+  on(
+    evt: 'streamMessageError',
+    cb: (
+      uid: number,
+      streamId: number,
+      code: number,
+      missed: number,
+      cached: number
+    ) => void
+  ): this;
+  /**
+   * Occurs when the state of the media stream relay changes.
+   * 
+   * The SDK reports the state of the current media relay and possible error 
+   * messages in this callback.
+   * - state: The state code. See {@link ChannelMediaRelayState}.
+   * - code: The error code. See {@link ChannelMediaRelayError}.
+   */
+   on(evt: 'channelMediaRelayState', cb: (
+    state: ChannelMediaRelayState,
+    code: ChannelMediaRelayError
+  ) => void): this;
+  /**
+   * Reports events during the media stream relay.
+   * 
+   * - event: The event code. See {@link ChannelMediaRelayEvent}.
+   */
+  on(evt: 'channelMediaRelayEvent', cb: (
+    event: ChannelMediaRelayEvent
+  ) => void): this;
+  /** Occurs when the engine receives the first audio frame from a specific 
+   * remote user.
+   * - uid: User ID of the remote user.
+   * - elapsed: Time elapsed (ms) from the local user calling 
+   * {@link joinChannel} until the
+   * SDK triggers this callback.
+   */
+   on(
+    evt: 'firstRemoteAudioFrame',
+    cb: (uid: number, elapsed: number) => void
+  ): this;
+  on(evt: string, listener: Function): this;
+  on(evt: 'rtmpStreamingStateChanged', cb: (url: string, state: number, code: number) => void): this;
+  /** Occurs when the publisher's transcoding is updated. */
+  on(evt: 'transcodingUpdated', cb: () => void): this;
+  /** Occurs when a voice or video stream URL address is added to a live 
+   * broadcast.
+   * - url: Pointer to the URL address of the externally injected stream.
+   * - uid: User ID.
+   * - status: State of the externally injected stream:
+   *  - 0: The external video stream imported successfully.
+   *  - 1: The external video stream already exists.
+   *  - 2: The external video stream to be imported is unauthorized.
+   *  - 3: Import external video stream timeout.
+   *  - 4: Import external video stream failed.
+   *  - 5: The external video stream stopped importing successfully.
+   *  - 6: No external video stream is found.
+   *  - 7: No external video stream is found.
+   *  - 8: Stop importing external video stream timeout.
+   *  - 9: Stop importing external video stream failed.
+   *  - 10: The external video stream is corrupted.
+   *
+   */
+   on(
+    evt: 'streamInjectedStatus',
+    cb: (url: string, uid: number, status: number) => void
+  ): this;
+  /** Occurs when the remote media stream falls back to audio-only stream due 
+   * to poor network conditions or switches back to the video stream after the 
+   * network conditions improve.
+   *
+   * If you call {@link setRemoteSubscribeFallbackOption} and set option as 
+   * AUDIO_ONLY(2), the SDK triggers this callback when
+   * the remotely subscribed media stream falls back to audio-only mode due to 
+   * poor uplink conditions, or when the remotely subscribed media stream 
+   * switches back to the video
+   *  after the uplink network condition improves.
+   * - uid: ID of the remote user sending the stream.
+   * - isFallbackOrRecover: Whether the remote media stream falls back to 
+   * audio-only or switches back to the video:
+   *  - true: The remote media stream falls back to audio-only due to poor 
+   * network conditions.
+   *  - false: The remote media stream switches back to the video stream after 
+   * the network conditions improved.
+   */
+  on(evt: 'remoteSubscribeFallbackToAudioOnly', cb: (
+    uid: number,
+    isFallbackOrRecover: boolean
+  ) => void): this;
+  // on(evt: 'refreshRecordingServiceStatus', cb: () => void): this;
+  /** Occurs when the connection state between the SDK and the server changes.
+   * - state: See {@link ConnectionState}.
+   * - reason: See {@link ConnectionState}.
+   */
+  on(evt: 'connectionStateChanged', cb: (
+    state: ConnectionState,
+    reason: ConnectionChangeReason
+  ) => void): this;
 }
 
 export default AgoraRtcEngine;

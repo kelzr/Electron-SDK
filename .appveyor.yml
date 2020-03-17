@@ -1,10 +1,14 @@
+environment:
+  matrix:
+    - ARCH: ia32
+    - ARCH: x64
+
 os: Visual Studio 2015
 
 platform:
   - x64
 
 cache:
-  - node_modules
   - '%APPDATA%\npm-cache'
 
 install:
@@ -18,5 +22,7 @@ install:
   - npm install
 
 build_script:
-  - npm run build:electron
+  - npm run switch:arch -- --arch=%ARCH%
+  - npm run sync:lib -- --arch=%ARCH%
+  - npm run build:electron -- --arch=%ARCH%
   - npm run build:ts

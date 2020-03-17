@@ -1,3 +1,31 @@
+## 2.9.0-rc.102-build.0314
+* Support Win64
+
+## 2.9.0-rc.102 (Mar 2nd, 2020)
+* Win SDK upgrade to 2.9.0.102 build 3151
+* Mac SDK upgrade to 2.9.0.102 build 1279
+* Add new APIs:
+  - getEffectCurrentPosition
+  - setEffectPosition
+  - getEffectDuration
+  - adjustEffectPlayoutVolume
+  - adjustEffectPublishVolume
+  - getEffectPlayoutVolume
+  - getEffectPublishVolume
+* Support new Plugin APIs:
+  - getParameter
+* Plugin now supports int return value for potential error handling
+
+## 2.9.0-rc.101 (Feb 14th, 2020)
+* Added videoSourceEnableAudio & videoSourceEnableLoopbackRecording
+* Release
+
+## 2.9.0-rc.101-beta.1 (Jan 18th, 2020)
+* Update Windows SDK to v2.9.0.101 build 86
+* Update Mac SDK to v2.9.0.101 build 1001
+* Fixed videosource token issue
+* Support 6.1.7 & 7.1.2
+
 ## 2.9.0-hotfix.2 (Sep 17th, 2019)
 #### :bug: Bug Fix
 * Fixed the issue that plugin won't load when there's chinese character in the plugin path

@@ -10,6 +10,8 @@ import WindowPicker from './components/WindowPicker/index.js'
 import DisplayPicker from './components/DisplayPicker/index.js'
 import { VoiceChangerPreset } from '../../../JS/Api/native_type';
 
+const isMac = process.platform === 'darwin'
+
 export default class App extends Component {
   constructor(props) {
     super(props)
@@ -55,9 +57,11 @@ export default class App extends Component {
       this.rtcEngine = new AgoraRtcEngine()
       this.rtcEngine.initialize(APP_ID)
       this.rtcEngine.initializePluginManager();
-      const libPath = path.resolve(__static, 'fu-mac/libFaceUnityPlugin.dylib')
+      const libPath = isMac ? 
+            path.resolve(__static, 'bytedance/libByteDancePlugin.dylib')
+          : path.resolve(__static, 'bytedance/ByteDancePlugin.dll')
       if(this.rtcEngine.registerPlugin({
-        id: 'fu-mac',
+        id: 'bytedance',
         path: libPath
       }) < 0){
         console.error(`load plugin failed`)
@@ -138,6 +142,33 @@ export default class App extends Component {
     })
   }
 
+  subscribeChannelEvents = (rtcChannel, publish) => {
+    let channelId = rtcChannel.channelId()
+    rtcChannel.on('joinChannelSuccess', (uid, elapsed) => {
+      console.log(`join channel success: ${uid} ${elapsed}`)
+      if(publish) {
+        this.setState({
+          local: uid
+        });
+      }
+    })
+
+    rtcChannel.on('userJoined', (uid, elapsed) => {
+      if (uid === SHARE_ID && this.state.localSharing) {
+        return
+      }
+      this.setState({
+        users: this.state.users.push({channelId, uid})
+      })
+    })
+
+    rtcChannel.on('userOffline', (uid, reason) => {
+      this.setState({
+        users: this.state.users.delete(this.state.users.indexOf({channelId, uid}))
+      })
+    })
+  }
+
   handleJoin = () => {
     let encoderWidth = parseInt(this.state.encoderWidth)
     let encoderHeight = parseInt(this.state.encoderHeight)
@@ -172,7 +203,16 @@ export default class App extends Component {
       rednessLevel: 0
     })
 
-    rtcEngine.joinChannel(null, this.state.channel, '',  Number(`${new Date().getTime()}`.slice(7)))
+    // joinning two channels together
+    let channel = rtcEngine.createChannel(this.state.channel)
+    this.subscribeChannelEvents(channel, true)
+    channel.joinChannel(null, '', Number(`${new Date().getTime()}`.slice(7)));
+    channel.publish();
+
+    let channel2 = rtcEngine.createChannel(`${this.state.channel}-2`)
+    this.subscribeChannelEvents(channel2, false)
+    channel2.joinChannel(null, '', Number(`${new Date().getTime()}`.slice(7)));
+
   }
 
   handleCameraChange = e => {
@@ -264,7 +304,7 @@ export default class App extends Component {
       // there's a known limitation that, videosourcesetvideoprofile has to be called at least once
       // note although it's called, it's not taking any effect, to control the screenshare dimension, use captureParam instead
       rtcEngine.videoSourceSetVideoProfile(43, false);
-      rtcEngine.videosourceStartScreenCaptureByWindow(windowId, {x: 0, y: 0, width: 0, height: 0}, {width: 0, height: 0, bitrate: 500, frameRate: 15})
+      rtcEngine.videoSourceStartScreenCaptureByWindow(windowId, {x: 0, y: 0, width: 0, height: 0}, {width: 0, height: 0, bitrate: 500, frameRate: 15})
       rtcEngine.startScreenCapturePreview();
     });
   }
@@ -283,7 +323,7 @@ export default class App extends Component {
       console.log(`start sharing display ${displayId}`)
       rtcEngine.videoSourceSetVideoProfile(43, false);
       // rtcEngine.videosourceStartScreenCaptureByWindow(windowId, {x: 0, y: 0, width: 0, height: 0}, {width: 0, height: 0, bitrate: 500, frameRate: 15})
-      rtcEngine.videosourceStartScreenCaptureByScreen(displayId, {x: 0, y: 0, width: 0, height: 0}, {width: 0, height: 0, bitrate: 500, frameRate: 5})
+      rtcEngine.videoSourceStartScreenCaptureByScreen(displayId, {x: 0, y: 0, width: 0, height: 0}, {width: 0, height: 0, bitrate: 500, frameRate: 5})
       rtcEngine.startScreenCapturePreview();
     });
   }
@@ -330,7 +370,7 @@ export default class App extends Component {
   }
 
   toggleFuPlugin = () => {
-    const plugin = this.rtcEngine.getPlugins().find(plugin => plugin.id === 'fu-mac' )
+    const plugin = this.rtcEngine.getPlugins().find(plugin => plugin.id === 'bytedance' )
     if (plugin) {
       if(this.state.fuEnabled) {
         plugin.disable();
@@ -376,6 +416,85 @@ export default class App extends Component {
     }
   }
 
+  toggleByteDancePlugin = () => {
+    const plugin = this.rtcEngine.getPlugins().find(plugin => plugin.id === 'bytedance' )
+    if (plugin) {
+      if(this.state.bdEnabled) {
+        plugin.disable();
+        clearInterval(this.byteTimer)
+        this.byteTimer = null
+        this.setState({
+          bdEnabled: false
+        })
+      } else {
+        if(isMac) {
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.licensePath": path.join(__static, "bytedance/resource/license.licbag")
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.stickerPath": path.join(__static, "bytedance/resource/StickerResource.bundle")
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.beauty.resourcepath": path.join(__static, "bytedance/resource/BeautyResource.bundle/IESBeauty")
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.beauty.intensity": {
+              1: 1.0,
+              2: 1.0,
+              9: 1.0
+            }
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.faceDetectModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/ttfacemodel/tt_face_v6.0.model"),
+            "plugin.bytedance.faceDetectExtraModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/ttfacemodel/tt_face_extra_v9.0.model"),
+            "plugin.bytedance.faceAttributeModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/ttfaceattri/tt_face_attribute_v4.1.model"),
+            "plugin.bytedance.faceAttributeEnabled": true
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.handDetectEnabled": true,
+            "plugin.bytedance.handDetectModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/handmodel/tt_hand_det_v9.0.model"),
+            "plugin.bytedance.handBoxModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/handmodel/tt_hand_box_reg_v10.0.model"),
+            "plugin.bytedance.handGestureModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/handmodel/tt_hand_gesture_v8.1.model"),
+            "plugin.bytedance.handKPModelPath": path.join(__static, "bytedance/resource/StickerResource.bundle/handmodel/tt_hand_kp_v5.0.model"),
+          }))
+
+          this.byteTimer = setInterval(() => {
+            console.log(plugin.getParameter("plugin.bytedance.face.attribute"))
+            console.log(plugin.getParameter("plugin.bytedance.hand.info"))
+          }, 1000)
+        } else {
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.licensePath": path.join(__static, "bytedance/resource/license.bag")
+          }))
+          // plugin.setParameter(JSON.stringify({
+          //   "plugin.bytedance.stickerPath": path.join(__static, "bytedance/resource/StickerResource.bundle")
+          // }))
+          // plugin.setParameter(JSON.stringify({
+          //   "plugin.bytedance.beauty.resourcepath": path.join(__static, "bytedance/resource/BeautyResource.bundle/IESBeauty")
+          // }))
+          // plugin.setParameter(JSON.stringify({
+          //   "plugin.bytedance.beauty.intensity": {
+          //     1: 1.0,
+          //     2: 1.0,
+          //     9: 1.0
+          //   }
+          // }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.faceDetectModelPath": path.join(__static, "bytedance/resource/model/ttfacemodel/tt_face_v6.0.model")
+          }))
+          plugin.setParameter(JSON.stringify({
+            "plugin.bytedance.faceAttributeModelPath": path.join(__static, "bytedance/resource/model/ttfaceattrmodel/tt_face_attribute_v4.1.model")
+          }))
+        }
+        
+        plugin.enable();
+        this.setState({
+          bdEnabled: true
+        })
+      }
+    }
+  }
+
   handleRelease = () => {
     this.setState({
       localVideoSource: "",
@@ -416,8 +535,9 @@ export default class App extends Component {
         backgroundColor: 0xc0c0c0,
         /** The number of users in the live broadcast */
         userCount: 1,
-        audioSampleRate: 48000,
+        audioSampleRate: 44800,
         audioChannels: 1,
+        audioBitrate: 48,
         /** transcodingusers array */
         transcodingUsers: [
           {
@@ -754,10 +874,16 @@ export default class App extends Component {
               <button onClick={this.toggleFuPlugin} className="button is-link">{this.state.fuEnabled ? 'disable' : 'enable'}</button>
             </div>
           </div>
+          <div className="field">
+            <label className="label">Toggle ByteDance Plugin</label>
+            <div className="control">
+              <button onClick={this.toggleByteDancePlugin} className="button is-link">{this.state.bdEnabled ? 'disable' : 'enable'}</button>
+            </div>
+          </div>
         </div>
         <div className="column is-three-quarters window-container">
           {this.state.users.map((item, key) => (
-            <Window key={key} uid={item} rtcEngine={this.rtcEngine} role={item===SHARE_ID?'remoteVideoSource':'remote'}></Window>
+            <Window key={key} uid={item.uid} channel={item.channelId} rtcEngine={this.rtcEngine} role={item===SHARE_ID?'remoteVideoSource':'remote'}></Window>
           ))}
           {this.state.local ? (<Window uid={this.state.local} rtcEngine={this.rtcEngine} role="local">
 
@@ -781,7 +907,7 @@ class Window extends Component {
   }
 
   componentDidMount() {
-    let dom = document.querySelector(`#video-${this.props.uid}`)
+    let dom = document.querySelector(`#video-${this.props.channel || ""}-${this.props.uid}`)
     if (this.props.role === 'local') {
       dom && this.props.rtcEngine.setupLocalVideo(dom)
     } else if (this.props.role === 'localVideoSource') {
@@ -789,10 +915,10 @@ class Window extends Component {
       this.props.rtcEngine.setupViewContentMode('videosource', 1);
       this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
     } else if (this.props.role === 'remote') {
-      dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
+      dom && this.props.rtcEngine.setupRemoteVideo(this.props.uid, dom, this.props.channel)
       this.props.rtcEngine.setupViewContentMode(this.props.uid, 1);
     } else if (this.props.role === 'remoteVideoSource') {
-      dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
+      dom && this.props.rtcEngine.subscribe(this.props.uid, dom, this.props.channel)
       this.props.rtcEngine.setupViewContentMode('videosource', 1);
       this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
     }
@@ -801,7 +927,7 @@ class Window extends Component {
   render() {
     return (
       <div className="window-item">
-        <div className="video-item" id={'video-' + this.props.uid}></div>
+        <div className="video-item" id={`video-${this.props.channel || ""}-${this.props.uid}`}></div>
 
       </div>
     )

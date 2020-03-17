@@ -20,4 +20,5 @@ export interface Plugin {
   enable: () => number;
   disable: () => number;
   setParameter: (param: string) => number;
+  getParameter: (paramKey: string) => string;
 }

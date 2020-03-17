@@ -1,3 +1,7 @@
+coverage
+*.log
+sdk
+tmp
 build/
 dist/
 node_modules/

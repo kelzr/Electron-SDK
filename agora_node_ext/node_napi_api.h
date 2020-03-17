@@ -24,7 +24,8 @@
 #include <IAgoraRtcEngine.h>
 #include <IAgoraMediaEngine.h>
 #include <memory>
-using v8::Persistent;
+#include <nan.h>
+using Nan::Persistent;
 using v8::Function;
 using v8::Local;
 using v8::FunctionTemplate;
@@ -92,6 +93,7 @@ public:
     uint32_t m_destHeight;
     bool m_needUpdate;
     uint32_t m_count;
+    std::string m_channelId;
     VideoFrameInfo()
         : m_renderType(NODE_RENDER_TYPE_REMOTE)
         , m_uid(0)
@@ -99,6 +101,7 @@ public:
         , m_destHeight(0)
         , m_needUpdate(false)
         , m_count(0)
+        , m_channelId("")
     {}
     VideoFrameInfo(NodeRenderType type)
         : m_renderType(type)
@@ -107,15 +110,17 @@ public:
         , m_destHeight(0)
         , m_needUpdate(false)
         , m_count(0)
+        , m_channelId("")
     {
     }
-    VideoFrameInfo(NodeRenderType type, agora::rtc::uid_t uid)
+    VideoFrameInfo(NodeRenderType type, agora::rtc::uid_t uid, std::string channelId)
         : m_renderType(type)
         , m_uid(uid)
         , m_destWidth(0)
         , m_destHeight(0)
         , m_needUpdate(false)
         , m_count(0)
+        , m_channelId(channelId)
     {}
 };
 
@@ -124,12 +129,12 @@ class NodeVideoFrameTransporter {
     NodeVideoFrameTransporter();
     ~NodeVideoFrameTransporter();
     
-    bool initialize(Isolate *isolate, const FunctionCallbackInfo<Value>& callbackinfo);
-    int deliverFrame_I420(NodeRenderType type, agora::rtc::uid_t uid, const IVideoFrame& videoFrame, int rotation, bool mirrored);
+    bool initialize(Isolate *isolate, const Nan::FunctionCallbackInfo<Value>& callbackinfo);
+    int deliverFrame_I420(NodeRenderType type, agora::rtc::uid_t uid, std::string channelId, const IVideoFrame& videoFrame, int rotation, bool mirrored);
     int deliverVideoSourceFrame(const char* payload, int len);
-    int setVideoDimension(NodeRenderType, agora::rtc::uid_t uid, uint32_t width, uint32_t height);
-    void addToHighVideo(agora::rtc::uid_t uid);
-    void removeFromeHighVideo(agora::rtc::uid_t uid);
+    int setVideoDimension(NodeRenderType, agora::rtc::uid_t uid, std::string channelId, uint32_t width, uint32_t height);
+    void addToHighVideo(agora::rtc::uid_t uid, std::string channelId);
+    void removeFromeHighVideo(agora::rtc::uid_t uid, std::string channelId);
     void setHighFPS(uint32_t fps);
     void setFPS(uint32_t fps);
     //bool deliveryFrame1(enum NodeRenderType type, agora::rtc::uid_t uid, const buffer_list& buffers);
@@ -156,11 +161,13 @@ private:
         uint16_t rotation;
         uint32_t timestamp;
     };
-    VideoFrameInfo& getVideoFrameInfo(NodeRenderType type, agora::rtc::uid_t uid);
+    VideoFrameInfo& getVideoFrameInfo(NodeRenderType type, agora::rtc::uid_t uid, std::string channelId);
     bool deinitialize();
-    VideoFrameInfo& getHighVideoFrameInfo(agora::rtc::uid_t uid);
+    VideoFrameInfo& getHighVideoFrameInfo(agora::rtc::uid_t uid, std::string channelId);
     void setupFrameHeader(image_header_type*header, int stride, int width, int height);
     void copyFrame(const agora::media::IVideoFrame& videoFrame, VideoFrameInfo& info, int dest_stride, int src_stride, int width, int height);
+    void copyAndCentreYuv(const unsigned char* srcYPlane, const unsigned char* srcUPlane, const unsigned char* srcVPlane, int width, int height, int srcStride,
+    unsigned char* dstYPlane, unsigned char* dstUPlane, unsigned char* dstVPlane, int dstStride);
     void FlushVideo();
     void highFlushVideo();
 private:
@@ -168,8 +175,8 @@ private:
     Isolate* env;
     Persistent<Function> callback;
     Persistent<Object> js_this;
-    std::unordered_map<agora::rtc::uid_t, VideoFrameInfo> m_remoteVideoFrames;
-    std::unordered_map<agora::rtc::uid_t, VideoFrameInfo> m_remoteHighVideoFrames;
+    std::unordered_map<std::string, std::unordered_map<agora::rtc::uid_t, VideoFrameInfo>> m_remoteVideoFrames;
+    std::unordered_map<std::string, std::unordered_map<agora::rtc::uid_t, VideoFrameInfo>> m_remoteHighVideoFrames;
     std::unique_ptr<VideoFrameInfo> m_localVideoFrame;
     std::unique_ptr<VideoFrameInfo> m_devTestVideoFrame;
     std::unique_ptr<VideoFrameInfo> m_videoSourceVideoFrame;
@@ -240,16 +247,17 @@ private:
  */
 #define BEGIN_PROPERTY_DEFINE(className, constructor, fieldCount) \
     Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, constructor); \
-    tpl->SetClassName(String::NewFromUtf8(isolate, #className)); \
+    tpl->SetClassName(Nan::New<v8::String>(#className).ToLocalChecked()); \
     tpl->InstanceTemplate()->SetInternalFieldCount(fieldCount);
 
 /**
  * Add member functions that could be called in JS layer directly.
  */
-#define PROPERTY_METHOD_DEFINE(name) NODE_SET_PROTOTYPE_METHOD(tpl, #name, name);
+// #define PROPERTY_METHOD_DEFINE(name) NODE_SET_PROTOTYPE_METHOD(tpl, #name, name);
+#define PROPERTY_METHOD_DEFINE(name) Nan::SetPrototypeMethod(tpl, #name, name);
 
 #define EN_PROPERTY_DEFINE() \
-    constructor.Reset(isolate, tpl->GetFunction());
+    constructor.Reset(tpl->GetFunction(context).ToLocalChecked());
 
 #define NAPI_AUTO_LENGTH SIZE_MAX
 
@@ -257,6 +265,8 @@ private:
  * get the utf8 string from V8 value.
  */
 int napi_get_value_string_utf8_(const Local<Value>& str, char *buffer, uint32_t len);
+
+napi_status napi_get_value_uid_t_(const Local<Value>& value, agora::rtc::uid_t& result);
 
 /**
  * get uint32 from V8 value.
@@ -288,6 +298,11 @@ napi_status napi_get_value_int64_(const Local<Value>& value, int64_t& result);
  * get nodestring from V8 value.
  */
 napi_status napi_get_value_nodestring_(const Local<Value>& str, NodeString& nodechar);
+
+/**
+ * get object from V8 value.
+ */
+napi_status napi_get_value_object_(Isolate* isolate, const Local<Value>& value, Local<Object>& object);
 
 /**
  * Create V8 value from uint32
@@ -364,6 +379,9 @@ napi_status napi_get_object_property_nodestring_(Isolate* isolate, const Local<O
 * get nodestring property from V8 object.
 */
 napi_status napi_get_object_property_uid_(Isolate* isolate, const Local<Object>& obj, const std::string& propName, agora::rtc::uid_t& uid);
+
+
+const char* nullable( char const* s);
 
 #ifdef _WIN32
 char* U2G(const char* srcstr);

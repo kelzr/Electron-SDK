@@ -2464,8 +2464,17 @@ export interface ChannelMediaInfo {
   uid: number;
 }
 
+
+export interface ChannelMediaOptions {
+  autoSubscribeAudio: boolean;
+  autoSubscribeVideo: boolean;
+}
+//TODO:
 /** @zh-cn
- * 跨频道媒体流转发参数配置
+ * 跨频道媒体流转发参数配置。
+ */
+/**
+ * The configuration of the media stream relay.
  * 
  * **Warning**:
  * - 如果你想将流转发到多个目标频道，可以定义多个 {@link ChannelMediaInfo} 类（最多
@@ -2691,6 +2700,10 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+  createChannel(channel: string): any;
+  /**
+   * @ignore
+   */
   getVersion(): string;
   /** @zh-cn
    * @ignore
@@ -2766,7 +2779,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  subscribe(uid: number): number;
+  subscribe(uid: number, channel?: string): number;
   /** @zh-cn
    * @ignore
    */
@@ -3064,7 +3077,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  enableAudioVolumeIndication(interval: number, smooth: number): number;
+  enableAudioVolumeIndication(interval: number, smooth: number, report_vad: boolean): number;
   /** @zh-cn
    * @ignore
    */
@@ -3362,6 +3375,14 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+  startAudioRecording(filePath: string, quality: number): number;
+  /**
+   * @ignore
+   */
+  stopAudioRecording(): number;
+  /**
+   * @ignore
+   */
   startAudioRecordingDeviceTest(indicateInterval: number): number;
   /** @zh-cn
    * @ignore
@@ -3544,6 +3565,30 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+  startScreenCaptureByWindow(
+    windowSymbol: number,
+    rect: CaptureRect,
+    param: CaptureParam
+  ): number;
+  /**
+   * @ignore
+   */
+  startScreenCaptureByScreen(
+    screenSymbol: ScreenSymbol,
+    rect: CaptureRect,
+    param: CaptureParam
+  ): number;
+  /**
+   * @ignore
+   */
+  updateScreenCaptureParameters(param: CaptureParam): number;
+  /**
+   * @ignore
+   */
+  setScreenCaptureContentHint(hint: VideoContentHint): number;
+  /**
+   * @ignore
+   */
   videoSourceStartPreview(): number;
   /** @zh-cn
    * @ignore
@@ -3581,6 +3626,14 @@ export interface NodeRtcEngine {
   /** @zh-cn
    * @ignore
    */
+  /**
+   * @ignore
+   */
+  videoSourceEnableLoopbackRecording(enable: boolean): number;
+  /**
+   * @ignore
+   */
+  videoSourceEnableAudio(): number;
   /**
    * @ignore
    */
@@ -4033,7 +4086,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  unsubscribe(uid: number): number;
+  unsubscribe(uid: number, channel?: string): number;
   /** @zh-cn
    * @ignore
    */
@@ -4166,4 +4219,225 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setPluginParameter(pluginId: string, param: string): number;
+  /**
+   * @ignore
+   */
+  getPluginParameter(pluginId: string, paramKey: string): string;
+}
+
+export interface NodeRtcChannel {
+  /**
+   * @ignore
+   */
+  onEvent(event: string, callback: Function): void;
+  /**
+   * @ignore
+   */
+  joinChannel(
+    token: string,
+    info: string,
+    uid: number,
+    options: ChannelMediaOptions
+  ): number;
+
+  /**
+   * @ignore
+   */
+  joinChannelWithUserAccount(
+    token: string,
+    userAccount: string,
+    options: ChannelMediaOptions
+  ): number;
+
+  /**
+   * @ignore
+   */
+  channelId(): string;
+
+  /**
+   * @ignore
+   */
+  getCallId(): string;
+
+  /**
+   * @ignore
+   */
+  setClientRole(
+    clientRole: ClientRoleType
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setRemoteUserPriority(
+    uid: number,
+    priority: Priority
+  ): number;
+
+  /**
+   * @ignore
+   */
+  renewToken(
+    token: string
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setEncryptionSecret(
+    secret: string
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setEncryptionMode(
+    mode: string
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setRemoteVoicePosition(
+    uid: number,
+    pan: number,
+    gain: number
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setDefaultMuteAllRemoteAudioStreams(
+    muted: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setDefaultMuteAllRemoteVideoStreams(
+    muted: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  muteAllRemoteAudioStreams(
+    muted: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  muteRemoteAudioStream(
+    uid: number,
+    muted: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  muteAllRemoteVideoStreams(
+    muted: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  muteRemoteVideoStream(
+    uid: number,
+    muted: boolean
+  ): number;
+  /**
+   * @ignore
+   */
+  setRemoteVideoStreamType(
+    uid: number,
+    type: StreamType
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setRemoteDefaultVideoStreamType(
+    type: StreamType
+  ): number;
+
+  /**
+   * @ignore
+   */
+  createDataStream(
+    reliable: boolean,
+    ordered: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  sendStreamMessage(
+    streamId: number,
+    msg: string
+  ): number;
+
+  /**
+   * @ignore
+   */
+  addPublishStreamUrl(
+    url: string,
+    transcodingEnabled: boolean
+  ): number;
+
+  /**
+   * @ignore
+   */
+  removePublishStreamUrl(
+    url: string
+  ): number;
+
+  /**
+   * @ignore
+   */
+  setLiveTranscoding(transcoding: TranscodingConfig): number;
+
+  /**
+   * @ignore
+   */
+  addInjectStreamUrl(url: string, config: InjectStreamConfig): number;
+  
+  /**
+   * @ignore
+   */
+  removeInjectStreamUrl(url: string): number;
+
+  /**
+   * @ignore
+   */
+  startChannelMediaRelay(config: ChannelMediaRelayConfiguration): number;
+  /**
+   * @ignore
+   */
+  updateChannelMediaRelay(config: ChannelMediaRelayConfiguration): number;
+  /**
+   * @ignore
+   */
+  stopChannelMediaRelay(): number;
+  /**
+   * @ignore
+   */
+  getConnectionState(): ConnectionState;
+  /**
+   * @ignore
+   */
+  publish(): number;
+  /**
+   * @ignore
+   */
+  unpublish(): number;
+  /**
+   * @ignore
+   */
+  leaveChannel(): number;
+  /**
+   * @ignore
+   */
+  release(): number;
 }
