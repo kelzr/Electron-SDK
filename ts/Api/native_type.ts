@@ -868,12 +868,24 @@ export interface RtcStats {
    */
   /** System CPU usage (%). */
   cpuTotalUsage: number;
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 客户端到本地路由器的往返时延 (ms)
+   */
   /**
    * @since v3.0.0
    * 
    * The round-trip time delay from the client to the local router.
    */
   gatewayRtt: number;
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 当前 App 的内存占比 (%)
+   * 
+   * 该值仅作参考。受系统限制可能无法获取。
+   */
   /**
    * @since v3.0.0
    * 
@@ -883,6 +895,13 @@ export interface RtcStats {
    * get the value of this member.
    */
   memoryAppUsageRatio: number;
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 当前系统的内存占比 (%)
+   * 
+   * 值仅作参考。受系统限制可能无法获取。
+   */
   /**
    * @since v3.0.0
    * 
@@ -892,6 +911,13 @@ export interface RtcStats {
    * get the value of this member.
    */
   memoryTotalUsageRatio: number;
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 当前 App 的内存大小 (KB)
+   * 
+   * 该值仅作参考。受系统限制可能无法获取。
+   */
   /**
    * @since v3.0.0
    * 
@@ -1364,6 +1390,13 @@ export interface VideoEncoderConfiguration {
    * See {@link DegradationPreference}.
    */
   degradationPreference: DegradationPreference;
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 本地视频编码镜像模式，仅影响远端用户所见。详见 {@link VideoMirrorModeType}
+   * 
+   * @note SDK 默认关闭镜像。
+   */
   /**
    * @since v3.0.0
    * 
@@ -1374,18 +1407,30 @@ export interface VideoEncoderConfiguration {
    */
   mirrorMode: VideoMirrorModeType;
 }
+/** @zh-cn
+ * 镜像模式的类型
+ */
 /**
  * The type of video mirror mode.
  */
 export enum VideoMirrorModeType {
+  /** @zh-cn
+   * `0`: (默认) SDK 确定是否开启镜像模式
+   */
   /**
    * `0`: (Default) The SDK determines whether enable the mirror mode.
    */
   AUTO = 0,
+  /** @zh-cn
+   * `1`: 开启镜像模式
+   */
   /**
    * `1`: Enable mirror mode.
    */
   ENABLED = 1,
+  /** @zh-cn
+   * `2`: 关闭镜像模式
+   */
   /**
    * `2`: Disable mirror mode. 
    */
@@ -2551,10 +2596,18 @@ export interface ChannelMediaOptions {
    */
   autoSubscribeVideo: boolean;
 }
+/** @zh-cn
+ * 水印图片的设置选项。
+ */
 /**
  * The watermark's options.
  */
 export interface WatermarkOptions {
+  /** @zh-cn
+   * 是否将水印设为预览时本地可见：
+   * - true：(默认) 预览时水印本地可见
+   * - false：预览时水印本地不可见
+   */
   /**
    * Sets whether or not the watermark image is visible in the local video 
    * preview:
@@ -2562,10 +2615,16 @@ export interface WatermarkOptions {
    * - false: The watermark image is not visible in preview. 
    */
   visibleInPreview: boolean,
+  /** @zh-cn
+   * 视频编码模式为横屏时的水印坐标。详见 {@link Rectangle}
+   */
   /**
    * The watermark position in the landscape mode. See Rectangle
    */
   portraitMode: Rectangle,
+  /** @zh-cn
+   * 视频编码模式为竖屏时的水印坐标。详见 {@link Rectangle}
+   */
   /**
    * The watermark position in the portrait mode. See Rectangle
    */

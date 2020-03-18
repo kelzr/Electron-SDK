@@ -946,6 +946,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
+   *  - `ERR_INVALID_APP_ID (101)`: App ID 无效，请检查你的 App ID
    */
   /**
    * Initializes the agora real-time-communicating engine with your App ID.
@@ -1063,6 +1064,9 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
+   *  - `ERR_INVALID_ARGUMENT (2)`
+   *  - `ERR_NOT_READY (3)`
+   *  - `ERR_REFUSED (5)`
    */
   /**
    * Allows a user to join a channel.
@@ -1686,6 +1690,37 @@ class AgoraRtcEngine extends EventEmitter {
   startEchoTestWithInterval(interval: number): number {
     return this.rtcEngine.startEchoTestWithInterval(interval);
   }
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 添加本地视频水印。
+   * 
+   * 该方法将一张 PNG 图片作为水印添加到本地发布的直播视频流上，同一直播频道中的观众、
+   * 旁路直播观众和录制设备都能看到或采集到该水印图片。Agora 当前只支持在直播视频流中添加一
+   * 个水印，后添加的水印会替换掉之前添加的水印。
+   * 
+   * 水印坐标和 {@link setVideoEncoderConfiguration} 中的设置有依赖关系：
+   * - 如果视频编码方向固定为横屏或自适应模式下的横屏，那么水印使用横屏坐标。
+   * - 如果视频编码方向固定为竖屏或自适应模式下的竖屏，那么水印使用竖屏坐标。
+   * - 设置水印坐标时，水印的图像区域不能超出 `setVideoEncoderConfiguration` 方法中设置
+   * 的视频尺寸，否则超出部分将被裁剪。
+   * 
+   * @note
+   * - 你需要在调用 {@link enableVideo} 后调用该方法。
+   * - 如果你只是在旁路直播（推流到CDN）中添加水印，你可以使用本方法或 
+   * {@link setLiveTranscoding} 设置水印。
+   * - 待添加水印图片必须是 PNG 格式。本方法支持所有像素格式的 PNG 图片：RGBA、RGB、Palette、Gray 和 Alpha_gray。
+   * - 如果待添加的 PNG 图片的尺寸与你在本方法中设置的尺寸不一致，SDK 会对 PNG 图片进行缩放或裁剪，以与设置相符。
+   * - 如果你已经使用 {@link startPreview} 开启本地视频预览，那么本方法的 `visibleInPreview` 可设置水印在预览时是否可见。
+   * - 如果你已设置本地视频为镜像模式，那么此处的本地水印也为镜像。为避免本地用户看本地视频时的水印也被镜像，
+   * Agora 建议你不要对本地视频同时使用镜像和水印功能，请在应用层实现本地水印功能。
+   * @param path 待添加的水印图片的本地路径。本方法支持从本地绝对/相对路径添加水印图片。
+   * @param options 待添加的水印图片的设置选项，详见 {@link WatermarkOptions}
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * @since v3.0.0
    * 
@@ -1738,6 +1773,14 @@ class AgoraRtcEngine extends EventEmitter {
   addVideoWatermark(path:string, options: WatermarkOptions){
     return this.rtcEngine.addVideoWatermark(path, options)
   }
+  /** @zh-cn
+   * @since v3.0.0
+   * 
+   * 删除已添加的视频水印。
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Removes the watermark image from the video stream added by the
    * {@link addVideoWatermark} method.
@@ -2933,9 +2976,12 @@ class AgoraRtcEngine extends EventEmitter {
    * 都会在说话声音音量提示回调 `groupAudioVolumeIndication` 回调中按设置的间隔时间返回音量提示。
    *
    * @param {number} interval 指定音量提示的时间间隔：
-   * - ≤ 0：不启用音量提示功能
-   * - &gt; 0：返回音量提示的间隔，单位为毫秒。建议设置到大于 200 毫秒。最小不得少于 10 毫秒，否则会收不到 `groupAudioVolumeIndication` 回调。
+   * - ≤ 0: 不启用音量提示功能
+   * - &gt; 0: 返回音量提示的间隔，单位为毫秒。建议设置到大于 200 毫秒。最小不得少于 10 毫秒，否则会收不到 `groupAudioVolumeIndication` 回调。
    * @param {number} smooth 平滑系数，指定音量提示的灵敏度。取值范围为 [0, 10]。建议值为 3，数字越大，波动越灵敏；数字越小，波动越平滑
+   * @param report_vad 
+   * - `true`: 开启本地人声检测功能。开启后，`groupAudioVolumeIndication` 回调的 `vad` 参数会报告是否在本地检测到人声。
+   * - `false`:（默认）关闭本地人声检测功能。除引擎自动进行本地人声检测的场景外，`groupAudioVolumeIndication` 回调的 `vad` 参数不会报告是否在本地检测到人声。
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -3273,6 +3319,8 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
+   * @deprecated 该方法已废弃。自 Native SDK v3.0.0 及之后，SDK 自动开启与 Web SDK 的互通，无需调用该方法开启。
+   * 
    * 打开与 Web SDK 的互通（仅在直播下适用）。
    *
    * 该方法打开或关闭与 Agora Web SDK 的互通。该方法仅在直播模式下适用，通信模式下默认互通是打开的。
@@ -3313,12 +3361,13 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置本地视频镜像。
    *
-   * 该方法设置本地视频镜像，须在开启本地预览前设置。如果在开启预览后设置，需要重新开启预览才能生效。
+   * 该方法设置本地视频镜像，须在 {@link startPreview} 前设置。如果在开启预览后设置，
+   * 需要重新开启预览才能生效。
    * 
-   * **Note**：SDK 默认启用镜像模式。
    * 
    * @param {number} mirrortype 设置本地视频镜像模式：
-   * - 0：（默认）SDK 启用镜像模式
+   * - 0：（默认）SDK 自动确定启用镜像模式：如果使用前置摄像头，SDK 开启镜像模式；如果使用后置摄像头，
+   * SDK 关闭镜像模式
    * - 1：启用镜像模式
    * - 2：关闭镜像模式
    * @returns {number}
@@ -3698,6 +3747,9 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
+   *  - `ERR_INVALID_ARGUMENT (2)`
+   *  - `ERR_NOT_READY (3)`
+   *  - `ERR_REFUSED (5)`
    */
   /**
    * Joins the channel with a user account.
@@ -3854,6 +3906,9 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
+   *  - `ERR_INVALID_ARGUMENT (2)`
+   *  - `ERR_NOT_READY (3)`
+   *  - `ERR_REFUSED (5)`
    */
   /**
    * Switches to a different channel.
@@ -4376,6 +4431,35 @@ class AgoraRtcEngine extends EventEmitter {
   ): number {
     return this.rtcEngine.enableLoopbackRecording(enable, deviceName);
   }
+  /** @zh-cn
+   * 开始客户端录音。
+   * 
+   * Agora SDK 支持通话过程中在客户端进行录音。调用该方法后，你可以录制频道内所有用户的音频，
+   * 并得到一个包含所有用户声音的录音文件。录音文件格式可以为:
+   * - .wav: 文件大，音质保真度较高。
+   * - .aac: 文件小，音质保真度较低。
+   * 
+   * @note
+   * - 请确保你在该方法中指定的路径存在并且可写。
+   * - 该接口需在 {@link joinChannel} 之后调用。如果调用 {@link leaveChannel} 时还在
+   * 录音，录音会自动停止。
+   * - 为保证录音效果，当 `sampleRate` 设为 44.1 kHz 或 48 kHz 时，建议将 `quality` 
+   * 设为 MEDIUM 或 HIGH 。
+   * @param filePath 录音文件在本地保存的绝对路径，由用户自行指定，需精确到文件名及格式，
+   * 例如：c:/music/audio.aac。
+   * @param sampleRate 录音采样率（Hz），可以设为以下值：
+   * - 16000
+   * - 32000（默认）
+   * - 44100
+   * - 48000
+   * @param quality 录音音质:
+   * - `0`: 低音质。采样率为 32 kHz，录制 10 分钟的文件大小为 1.2 M 左右。
+   * - `1`: 中音质。采样率为 32 kHz，录制 10 分钟的文件大小为 2 M 左右。
+   * - `2`: 高音质。采样率为 32 kHz，录制 10 分钟的文件大小为 3.75 M 左右。
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * @since v3.0.0
    * 
@@ -4419,6 +4503,15 @@ class AgoraRtcEngine extends EventEmitter {
   startAudioRecording(filePath: string, sampleRate:number, quality: number):number {
     return this.rtcEngine.startAudioRecording(filePath, sampleRate, quality)
   }
+  /**
+   * 停止客户端录音。
+   * 
+   * 调用 {@link leaveChannel} 离开频道时，也会自动停止客户端录音。
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Stops an audio recording on the client.
    * 
@@ -4571,6 +4664,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
+   *  - `ERR_INVALID_APP_ID (101)`: App ID 无效，请检查你的 App ID
    */
   /**
    * Initializes agora real-time-communicating video source with the app Id.
@@ -4599,6 +4693,8 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
+   * @deprecated 该方法已废弃。自 Native SDK v3.0.0 及之后，SDK 自动开启与 Web SDK 的互通，无需调用该方法开启。
+   * 
    * 双实例方法：开启 `videoSource` 与 Web SDK 互通
    *    
    * @note 该方法需要在 {@link videoSourceInitialize} 之后调用。
@@ -4913,6 +5009,20 @@ class AgoraRtcEngine extends EventEmitter {
   startScreenCapturePreview(): number {
     return this.rtcEngine.videoSourceStartPreview();
   }
+  /** @zh-cn
+   * 通过窗口 ID 共享窗口。
+   * 
+   * 共享一个窗口或该窗口的部分区域。用户需要在该方法中指定想要共享的窗口 ID。
+   * @param windowSymbol 指定待共享的窗口 ID
+   * @param rect 可选）指定待共享的区域相对于整个窗口的位置。如不填，则表示共享整个窗口。
+   * 如果设置的共享区域超出了窗口的边界，则只共享窗口内的内容；
+   * 如果宽或高为 0，则共享整个窗口。详见 {@link CaptureRect} 
+   * @param param 屏幕共享的编码参数配置。详见 {@link CaptureParam}
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Shares the whole or part of a window by specifying the window symbol.
    * 
@@ -4931,6 +5041,21 @@ class AgoraRtcEngine extends EventEmitter {
   startScreenCaptureByWindow(windowSymbol: number, rect: CaptureRect, param: CaptureParam): number {
     return this.rtcEngine.startScreenCaptureByWindow(windowSymbol, rect, param)
   }
+  /** @zh-cn
+   * 通过指定区域共享屏幕。
+   * 
+   * 共享一个屏幕或该屏幕的部分区域。用户需要在该方法中指定想要共享的屏幕区域。
+   * 
+   * @param screenSymbol 指定待共享的屏幕相对于虚拟屏的位置。详见 {@link screenSymbol}
+   * @param rect (可选）指定待共享区域相对于整个屏幕屏幕的位置。如不填，则表示共享整个屏幕。
+   * 如果设置的共享区域超出了屏幕的边界，则只共享屏幕内的内容；如果将 width 或 height 设为 0 ，
+   * 则共享整个屏幕。详见 {@link CaptureRect}
+   * @param param 屏幕共享的编码参数配置。详见 {@link CaptureParam}
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Shares the whole or part of a screen by specifying the screen symbol.
    * @param screenSymbol The screen symbol. See {@link screenSymbol}
@@ -4949,6 +5074,14 @@ class AgoraRtcEngine extends EventEmitter {
   startScreenCaptureByScreen(screenSymbol: ScreenSymbol, rect: CaptureRect, param: CaptureParam): number {
     return this.rtcEngine.startScreenCaptureByScreen(screenSymbol, rect, param)
   }
+  /** @zh-cn
+   * 更新屏幕共享的编码参数配置。
+   * @param param 屏幕共享的编码参数配置。详见 {@link CaptureParam}
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Updates the screen sharing parameters.
    * 
@@ -4962,6 +5095,17 @@ class AgoraRtcEngine extends EventEmitter {
   updateScreenCaptureParameters(param: CaptureParam): number {
     return this.rtcEngine.updateScreenCaptureParameters(param)
   }
+  /** @zh-cn
+   * 设置屏幕共享内容类型。
+   * 
+   * 设置屏幕共享的内容类型。Agora SDK 会根据不同的内容类型，使用不同的算法对共享效果进行优化。
+   * 如果不调用该方法，SDK 会将屏幕共享的内容默认为 CONTENT_HINT_NONE ，即无指定的内容类型。
+   * @param hint 指定屏幕共享的内容类型。详见 {@link VideoContentHint}
+   * 
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Sets the content hint for screen sharing.
    * 
@@ -7030,12 +7174,16 @@ declare interface AgoraRtcEngine {
    * 
    * @param cb.speakers 音量较高的说话者的信息，包含：
    *   - `uid`：用户 ID
-   *   - `volume`：该用户的说话音量
+   *   - `volume`：本地用户：该用户的说话音量；远端用户：说话者各自混音后的音量
+   *   - `vad`：本地用户：报告本地用户人声状态；远端用户：0
    * 
-   * @param cb.speakerNumber 音量较高的用户人数
+   * @param cb.speakerNumber 音量较高的用户人数：
+   * - 本地用户：1
+   * - 远端用户：3
    * 
-   * @param cb.totalVolume 混音后总音量（分贝）。取值范围 [0,255]
-   *
+   * @param cb.totalVolume 混音后总音量（分贝）。取值范围 [0,255]：
+   * - 本地用户：本地用户混音后的音量
+   * - 远端用户：所有说话者混音后的总音量
    */
   /** Reports which users are speaking, the speakers' volume and whether the 
    * local user is speaking.
