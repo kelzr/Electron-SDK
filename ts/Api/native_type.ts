@@ -868,6 +868,39 @@ export interface RtcStats {
    */
   /** System CPU usage (%). */
   cpuTotalUsage: number;
+  /**
+   * @since v3.0.0
+   * 
+   * The round-trip time delay from the client to the local router.
+   */
+  gatewayRtt: number;
+  /**
+   * @since v3.0.0
+   * 
+   * The memory usage ratio of the app (%).
+   * 
+   * This value is for reference only. Due to system limitations, you may not 
+   * get the value of this member.
+   */
+  memoryAppUsageRatio: number;
+  /**
+   * @since v3.0.0
+   * 
+   * The memory usage ratio of the system (%).
+   * 
+   * This value is for reference only. Due to system limitations, you may not 
+   * get the value of this member.
+   */
+  memoryTotalUsageRatio: number;
+  /**
+   * @since v3.0.0
+   * 
+   * The memory usage of the app (KB).
+   * 
+   * This value is for reference only. Due to system limitations, you may not 
+   * get the value of this member.
+   */
+  memoryAppUsageInKbytes: number;
 }
 /** @zh-cn
  * 本地视频自适应情况：
@@ -1331,6 +1364,32 @@ export interface VideoEncoderConfiguration {
    * See {@link DegradationPreference}.
    */
   degradationPreference: DegradationPreference;
+  /**
+   * @since v3.0.0
+   * 
+   * Sets the mirror mode of the published local video stream. It only affects 
+   * the video that the remote user sees. See VideoMirrorModeType
+   * 
+   * @note The SDK disables the mirror mode by default.
+   */
+  mirrorMode: VideoMirrorModeType;
+}
+/**
+ * The type of video mirror mode.
+ */
+export enum VideoMirrorModeType {
+  /**
+   * `0`: (Default) The SDK determines whether enable the mirror mode.
+   */
+  AUTO = 0,
+  /**
+   * `1`: Enable mirror mode.
+   */
+  ENABLED = 1,
+  /**
+   * `2`: Disable mirror mode. 
+   */
+  DISABLED = 2
 }
 /** @zh-cn
  * 带宽受限时的视频编码降级偏好。
@@ -1373,7 +1432,7 @@ export enum OrientationMode  {
   * captured video, because the receiver takes the rotational information 
   * passed on from the video encoder. 
   * 
-  * Mainly used between Agora’s SDKs.
+  * Mainly used between Agora SDK.
   * - If the captured video is in landscape mode, the output video is in 
   * landscape mode.
   * - If the captured video is in portrait mode, the output video is in 
@@ -1580,9 +1639,9 @@ export interface Rectangle {
  * - Windows 系统中，屏幕位置
  */
 /**
- * The display ID:
- * - macOS: The display ID.
- * - Windows: The screen rect.
+ * The screen symbol: 
+ * - The screen symbol on the macOS platform, see {@link MacScreenSymbol}
+ * - The screen symbol on the Windows platform, see {@link WindowsScreenSymbol}
  */
 export type ScreenSymbol = MacScreenSymbol | WindowsScreenSymbol;
 
@@ -2463,13 +2522,55 @@ export interface ChannelMediaInfo {
    */
   uid: number;
 }
-
-
+/**
+ * The channel media options.
+ */
 export interface ChannelMediaOptions {
+  /**
+   * Determines whether to subscribe to audio streams when the user joins the 
+   * channel:
+   * - true: (Default) Subscribe.
+   * - false: Do not subscribe.
+   * 
+   * This member serves a similar function to the 
+   * {@link AgoraRtcChannel.muteAllRemoteAudioStreams} method. After joining 
+   * the channel, you can call the `muteAllRemoteAudioStreams` method to set 
+   * whether to subscribe to audio streams in the channel.
+   */
   autoSubscribeAudio: boolean;
+  /**
+   * Determines whether to subscribe to video streams when the user joins the 
+   * channel:
+   * - true: (Default) Subscribe.
+   * - false: Do not subscribe.
+   * 
+   * This member serves a similar function to the 
+   * {@link AgoraRtcChannel.muteAllRemoteVideoStreams} method. After joining 
+   * the channel, you can call the `muteAllRemoteVideoStreams` method to set 
+   * whether to subscribe to video streams in the channel.
+   */
   autoSubscribeVideo: boolean;
 }
-//TODO:
+/**
+ * The watermark's options.
+ */
+export interface WatermarkOptions {
+  /**
+   * Sets whether or not the watermark image is visible in the local video 
+   * preview:
+   * - true: (Default) The watermark image is visible in preview.
+   * - false: The watermark image is not visible in preview. 
+   */
+  visibleInPreview: boolean,
+  /**
+   * The watermark position in the landscape mode. See Rectangle
+   */
+  portraitMode: Rectangle,
+  /**
+   * The watermark position in the portrait mode. See Rectangle
+   */
+  landscapeMode: Rectangle
+}
 /** @zh-cn
  * 跨频道媒体流转发参数配置。
  */
@@ -3091,13 +3192,6 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  setInEarMonitoringVolume(volume: number): number;
-  /** @zh-cn
-   * @ignore
-   */
-  /**
-   * @ignore
-   */
   pauseAudio(): number;
   /** @zh-cn
    * @ignore
@@ -3218,17 +3312,6 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setRemoteSubscribeFallbackOption(option: 0 | 1 | 2): number;
-  /** @zh-cn
-   * @ignore
-   */
-  /**
-   * @ignore
-   */
-  setExternalAudioSource(
-    enabled: boolean,
-    samplerate: number,
-    channels: number
-  ): number;
   /** @zh-cn
    * @ignore
    */
@@ -3375,7 +3458,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  startAudioRecording(filePath: string, quality: number): number;
+  startAudioRecording(filePath: string, sampleRate: number, quality: number): number;
   /**
    * @ignore
    */
@@ -3799,6 +3882,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+<<<<<<< HEAD
   setRecordingAudioFrameParameters(
     sampleRate: number,
     channel: 1 | 2,
@@ -3833,6 +3917,8 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+=======
+>>>>>>> doc/3.0.0
   createDataStream(reliable: boolean, ordered: boolean): number;
   /** @zh-cn
    * @ignore
@@ -4223,8 +4309,18 @@ export interface NodeRtcEngine {
    * @ignore
    */
   getPluginParameter(pluginId: string, paramKey: string): string;
+  /**
+   * @ignore
+   */
+  addVideoWatermark(path: string, options: WatermarkOptions): number;
+  /**
+   * @ignore
+   */
+  clearVideoWatermark(): number;
 }
-
+/**
+ * @ignore
+ */
 export interface NodeRtcChannel {
   /**
    * @ignore
