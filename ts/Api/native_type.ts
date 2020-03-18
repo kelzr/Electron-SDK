@@ -3882,43 +3882,6 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-<<<<<<< HEAD
-  setRecordingAudioFrameParameters(
-    sampleRate: number,
-    channel: 1 | 2,
-    mode: 0 | 1 | 2,
-    samplesPerCall: number
-  ): number;
-  /** @zh-cn
-   * @ignore
-   */
-  /**
-   * @ignore
-   */
-  setPlaybackAudioFrameParameters(
-    sampleRate: number,
-    channel: 1 | 2,
-    mode: 0 | 1 | 2,
-    samplesPerCall: number
-  ): number;
-  /** @zh-cn
-   * @ignore
-   */
-  /**
-   * @ignore
-   */
-  setMixedAudioFrameParameters(
-    sampleRate: number,
-    samplesPerCall: number
-  ): number;
-  /** @zh-cn
-   * @ignore
-   */
-  /**
-   * @ignore
-   */
-=======
->>>>>>> doc/3.0.0
   createDataStream(reliable: boolean, ordered: boolean): number;
   /** @zh-cn
    * @ignore
