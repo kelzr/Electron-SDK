@@ -1401,7 +1401,7 @@ export interface VideoEncoderConfiguration {
    * @since v3.0.0
    * 
    * Sets the mirror mode of the published local video stream. It only affects 
-   * the video that the remote user sees. See VideoMirrorModeType
+   * the video that the remote user sees. See {@link VideoMirrorModeType}
    * 
    * @note The SDK disables the mirror mode by default.
    */
@@ -1690,28 +1690,10 @@ export interface Rectangle {
  */
 export type ScreenSymbol = MacScreenSymbol | WindowsScreenSymbol;
 
-/** @zh-cn
- * macOS 系统中，屏幕ID
- */
-/**
- * macOS: The display ID.
- */
 export type MacScreenSymbol = number;
 
-/** @zh-cn
- * Windows 系统中，屏幕位置
- */
-/**
- * Windows: The screen rect.
- */
 export type WindowsScreenSymbol = Rectangle;
 
-/** @zh-cn
- * 待共享区域相对于整个屏幕的位置
- */
-/**
- * The relative location of the region to the screen.
- */
 export type CaptureRect = Rectangle;
 
 /** @zh-cn
@@ -2619,14 +2601,14 @@ export interface WatermarkOptions {
    * 视频编码模式为横屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
-   * The watermark position in the landscape mode. See Rectangle
+   * The watermark position in the landscape mode. See {@link Rectangle}
    */
   portraitMode: Rectangle,
   /** @zh-cn
    * 视频编码模式为竖屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
-   * The watermark position in the portrait mode. See Rectangle
+   * The watermark position in the portrait mode. See {@link Rectangle}
    */
   landscapeMode: Rectangle
 }
@@ -2643,7 +2625,6 @@ export interface WatermarkOptions {
  */
 /**
  * The configuration of the media stream relay.
- * 
  * **Warning**:
  * - If you want to relay the media stream to multiple channels, define as 
  * many {@link ChannelMediaInfo} interface (at most four).
@@ -4339,6 +4320,10 @@ export interface NodeRtcEngine {
    * @ignore
    */
   clearVideoWatermark(): number;
+  /**
+   * @ignore
+   */
+  adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
 }
 /**
  * @ignore
@@ -4558,4 +4543,8 @@ export interface NodeRtcChannel {
    * @ignore
    */
   release(): number;
+  /**
+   * @ignore
+   */
+  adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
 }
