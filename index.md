@@ -334,7 +334,7 @@ Agora Electron SDK 提供双实例的实现方法。第二个实例用以屏幕�
 
 ## 事件类
 
-Agora Electron SDK 通过 {@link AgoraRtcEngine.on on} 方法监听上述方法触发的事件。
+Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触发的事件。
 
 | 事件                             | 描述                                     |
 | -------------------------------- | ---------------------------------------- |

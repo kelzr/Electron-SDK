@@ -18,7 +18,7 @@
     "pretest": "npm run build:node",
     "test": "jest --detectOpenHandles --forceExit",
     "quicktest": "jest --detectOpenHandles --forceExit --coverage",
-    "doc": "typedoc ts/API --out ./docs --hideGenerator --mode file --target es6 --name Agora\\ Electron\\ SDK\\ API\\ Reference --excludeExternals --excludePrivate --readme index.md",
+    "doc": "typedoc ts/output --out ./docs --hideGenerator --mode file --target es6 --name Agora\\ Electron\\ SDK\\ API\\ Reference --excludeExternals --excludePrivate --readme index.md",
     "prepublishOnly": "npm run build:ts"
   },
   "files": [
