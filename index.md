@@ -1,7 +1,10 @@
 Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用 Node.js C++ 插件开发，是一个为 Electron 平台用户服务的开源 SDK。 通过声网全球部署的虚拟网络，提供可以灵活搭配的 API 组合，在各平台提供质量可靠的实时音视频通信。
 
-* `AgoraRtcEngine` 接口类包含应用程序调用的主要方法。
-* `Events` 接口类用于向应用程序发表事件回调通知。
+* {@link AgoraRtcEngine} 类包含应用程序调用的主要方法。
+* {@link AgoraRtcEngine.on} 用于向应用程序发送事件回调通知。
+
+* {@link AgoraRtcChannel} 类能在指定频道中实现实时音视频功能。通过创建多个 `AgoraRtcChannel` 对象，用户可以同时加入多个频道。
+* {@link AgoraRtcChannel.on} 监听和报告指定频道的事件和数据。
 
 ## 方法类
 
@@ -18,9 +21,8 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.leaveChannel leaveChannel}             | 离开频道                             |
 | {@link AgoraRtcEngine.subscribe subscribe}                   | 订阅远端用户并初始化视频渲染         |
 | {@link AgoraRtcEngine.renewToken renewToken}                 | 更新 Token                           |
-| {@link AgoraRtcEngine.enableWebSdkInteroperability enableWebSdkInteroperability} | 打开与 Agora Web SDK 的互通          |
 | {@link AgoraRtcEngine.getConnectionState getConnectionState} | 获取网络连接状态                     |
-| {@link AgoraRtcEngine.on on}                                 | 监听 `AgoraRtcEngine` 运行时的事件   |
+| {@link AgoraRtcEngine.on}                                 | 监听 `AgoraRtcEngine` 运行时的事件   |
 | {@link AgoraRtcEngine.off off}                               | 取消监听 `AgoraRtcEngine` 运行时的事件 |
 
 
@@ -33,6 +35,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.setAudioProfile setAudioProfile}       | 设置音频编码配置           |
 | {@link AgoraRtcEngine.adjustRecordingSignalVolume adjustRecordingSignalVolume}       | 调节录音音量           |
 | {@link AgoraRtcEngine.adjustPlaybackSignalVolume adjustPlaybackSignalVolume}       | 调节播放人声的音量     |
+| {@link AgoraRtcEngine.adjustUserPlaybackSignalVolume adjustUserPlaybackSignalVolume}       | 调节本地播放的指定远端用户音量。  |
 | {@link AgoraRtcEngine.enableLocalAudio enableLocalAudio}     | 开关本地音频采集           |
 | {@link AgoraRtcEngine.muteLocalAudioStream muteLocalAudioStream} | 停止/恢复发送本地音频流    |
 | {@link AgoraRtcEngine.muteRemoteAudioStream muteRemoteAudioStream} | 停止/恢复接收指定音频流    |
@@ -77,6 +80,15 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | ------------------------------------------------------------ | ---------------- |
 | {@link AgoraRtcEngine.setBeautyEffectOptions setBeautyEffectOptions} | 设置美颜设置选项 |
 
+### 多频道管理
+
+| API                                                         | 描述                  |
+| ------------------------------------------------------------ | --------------------- |
+| {@link AgoraRtcEngine.createChannel createChannel} | 创建并获取一个 `AgoraRtcChannel` 对象。通过创建多个对象，用户可以同时加入多个频道。  |
+| {@link AgoraRtcChannel} | 该类提供在指定频道内实现实时音视频功能的方法。 |
+| {@link AgoraRtcChannel.on} | 提供监听指定频道事件和数据的回调。|
+
+
 ### 屏幕共享
 
 | 方法                                                         | 描述                  |
@@ -85,6 +97,10 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.getScreenWindowsInfo getScreenWindowsInfo} | 获取窗口信息 |
 | {@link AgoraRtcEngine.startScreenCapture startScreenCapture} | 通过窗口信息共享屏幕|
 | {@link AgoraRtcEngine.stopScreenCapture stopScreenCapture} | 停止共享屏幕 |
+| {@link AgoraRtcEngine.startScreenCaptureByScreen startScreenCaptureByScreen} | 通过指定区域共享屏幕|
+| {@link AgoraRtcEngine.startScreenCaptureByWindow startScreenCaptureByWindow} | 通过窗口信息共享屏幕|
+| {@link AgoraRtcEngine.updateScreenCaptureParameters updateScreenCaptureParameters} |更新屏幕共享的编码参数配置|
+| {@link AgoraRtcEngine.setScreenCaptureContentHint setScreenCaptureContentHint} | 设置屏幕共享内容类型|
 | {@link AgoraRtcEngine.updateScreenCaptureRegion updateScreenCaptureRegion} | 更新屏幕共享区域 |
 
 ### 音乐文件播放管理
@@ -159,12 +175,6 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | ------------------------------------------------------------ | ------------------ |
 | {@link AgoraRtcEngine.enableAudioVolumeIndication enableAudioVolumeIndication} | 启用说话者音量提示 |
 
-### 耳返控制
-
-| 方法                                                         | 描述         |
-| ------------------------------------------------------------ | ------------ |
-| {@link AgoraRtcEngine.setInEarMonitoringVolume setInEarMonitoringVolume} | 设置耳返音量 |
-
 ### 视频双流模式
 
 | 方法                                                         | 描述                     |
@@ -192,6 +202,13 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.startLastmileProbeTest startLastmileProbeTest} | 开始通话前网络质量探测                           |
 | {@link AgoraRtcEngine.stopLastmileProbeTest stopLastmileProbeTest} | 停止通话前网络质量探测                           |
 
+### 直播水印
+
+| 方法                                                         | 描述                                             |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+| {@link AgoraRtcEngine.addVideoWatermark addVideoWatermark} | 添加本地视频水印 |
+| {@link AgoraRtcEngine.clearVideoWatermark clearVideoWatermark}   | 删除已添加的视频水印       |
+
 
 ### 加密
 
@@ -200,7 +217,15 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.setEncryptionSecret setEncryptionSecret} | 启用内置加密，并设置加密密码 |
 | {@link AgoraRtcEngine.setEncryptionMode setEncryptionMode} | 设置内置的加密方案 |
 
-### 导入在线媒体流（仅适用于互动直播）
+### 音频录制
+
+| 方法                                                         | 描述                         |
+| ------------------------------------------------------------ | ---------------------------- |
+| {@link AgoraRtcEngine.startAudioRecording startAudioRecording} | 开始客户端录音。 |
+| {@link AgoraRtcEngine.stopAudioRecording stopAudioRecording} | 停止客户端录音。 |
+
+
+### 输入在线媒体流（仅适用于互动直播）
 
 | 方法                                                         | 描述                 |
 | ------------------------------------------------------------ | -------------------- |
@@ -292,7 +317,6 @@ Agora Electron SDK 提供双实例的实现方法。第二个实例用以屏幕�
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin} | 加入频道 |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave} | 离开频道              |
 | {@link AgoraRtcEngine.videoSourceRenewToken videoSourceRenewToken} | 更新 Token        |
-| {@link AgoraRtcEngine.videoSourceEnableWebSdkInteroperability videoSourceEnableWebSdkInteroperability} | 开启与 Web SDK 互通      |
 | {@link AgoraRtcEngine.getScreenDisplaysInfo getScreenDisplaysInfo} |     获取屏幕信息         |
 | {@link AgoraRtcEngine.getScreenWindowsInfo getScreenWindowsInfo}       |   获取窗口信息            |
 | {@link AgoraRtcEngine.videoSourceStartScreenCaptureByScreen videoSourceStartScreenCaptureByScreen}     |    通过屏幕信息共享屏幕        |
@@ -345,13 +369,9 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on on} 方法监听上述方法�
 | `lastmileQuality`                  | 报告通话前本地用户的网络质量             |
 | `lastmileProbeResult`              | 报告通话前Last-mile 网络上下行质量       |
 | `firstLocalAudioFrame`             | 已发送本地音频首帧                       |
-| `firstRemoteAudioFrame`            | 已收到远端音频首帧                       |
-| `firstRemoteAudioDecoded`            | 已解码远端音频首帧                       |
 | `firstLocalVideoFrame`             | 已显示本地视频首帧                       |
-| `firstRemoteVideoFrame`            | 已显示远端视频首帧                       |
 | `videoSizeChanged`                 | 本地或远端视频大小或旋转信息发生改变     |
 | `removeStream`                    | 远端用户已离开频道                       |
-| `userMuteAudio`                    | 远端用户已暂停/重新发送音频流            |
 | `userMuteVideo`                    | 远端用户已暂停/重新发送视频流            |
 | `cameraReady`                      | 摄像头已启用                             |
 | `videoStopped`                     | 视频功能已停止                           |
@@ -364,8 +384,6 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on on} 方法监听上述方法�
 | `remoteVideoStateChanged`          | 远端视频状态已改变                       |
 | `cameraFocusAreaChanged`           | 摄像头对焦区域已改变                     |
 | `cameraExposureAreaChanged`        | 摄像头曝光区域已改变                     |
-| `streamPublished`                  | 已添加旁路推流地址                       |
-| `streamUnpublished`                | 已移除旁路推流地址                       |
 | `transcodingUpdated`               | 旁路推流配置已更新                       |
 | `channelMediaRelayState`   |跨频道媒体流转发状态发生改变回调|
 | `channelMediaRelayEvent`           |跨频道媒体流转发事件回调|

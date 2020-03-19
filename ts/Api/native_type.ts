@@ -2549,10 +2549,21 @@ export interface ChannelMediaInfo {
    */
   uid: number;
 }
+/** @zh-cn
+ * 频道媒体设置选项
+ */
 /**
  * The channel media options.
  */
 export interface ChannelMediaOptions {
+  /** @zh-cn
+   * 设置加入频道时是否自动订阅音频流：
+   * - true: （默认）订阅
+   * - false: 不订阅
+   * 
+   * 该成员功能与 {@link muteAllRemoteAudioStreams} 相同。加入频道后，你可以通过
+   *  `muteAllRemoteAudioStreams` 方法重新设置是否订阅频道内的远端音频流。
+   */
   /**
    * Determines whether to subscribe to audio streams when the user joins the 
    * channel:
@@ -2565,6 +2576,14 @@ export interface ChannelMediaOptions {
    * whether to subscribe to audio streams in the channel.
    */
   autoSubscribeAudio: boolean;
+  /** @zh-cn
+   * 设置加入频道是是否自动订阅视频流：
+   * - true: （默认）订阅
+   * - false: 不订阅
+   * 
+   * 该成员功能与 {@link muteAllRemoteVideoStreams} 相同。加入频道后，你可以通过
+   *  `muteAllRemoteVideoStreams` 方法重新设置是否订阅频道内的远端视频流。
+   */
   /**
    * Determines whether to subscribe to video streams when the user joins the 
    * channel:
@@ -3693,6 +3712,9 @@ export interface NodeRtcEngine {
     rect: CaptureRect,
     param: CaptureParam
   ): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -3701,14 +3723,23 @@ export interface NodeRtcEngine {
     rect: CaptureRect,
     param: CaptureParam
   ): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   updateScreenCaptureParameters(param: CaptureParam): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setScreenCaptureContentHint(hint: VideoContentHint): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -3753,10 +3784,16 @@ export interface NodeRtcEngine {
    * @ignore
    */
   videoSourceEnableLoopbackRecording(enable: boolean): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   videoSourceEnableAudio(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4308,31 +4345,52 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setPluginParameter(pluginId: string, param: string): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   getPluginParameter(pluginId: string, paramKey: string): string;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   addVideoWatermark(path: string, options: WatermarkOptions): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   clearVideoWatermark(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
 }
+/** @zh-cn
+ * @ignore
+ */
 /**
  * @ignore
  */
 export interface NodeRtcChannel {
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   onEvent(event: string, callback: Function): void;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4342,7 +4400,9 @@ export interface NodeRtcChannel {
     uid: number,
     options: ChannelMediaOptions
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4351,24 +4411,32 @@ export interface NodeRtcChannel {
     userAccount: string,
     options: ChannelMediaOptions
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   channelId(): string;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   getCallId(): string;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setClientRole(
     clientRole: ClientRoleType
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4376,28 +4444,36 @@ export interface NodeRtcChannel {
     uid: number,
     priority: Priority
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   renewToken(
     token: string
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setEncryptionSecret(
     secret: string
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setEncryptionMode(
     mode: string
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4406,28 +4482,36 @@ export interface NodeRtcChannel {
     pan: number,
     gain: number
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setDefaultMuteAllRemoteAudioStreams(
     muted: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setDefaultMuteAllRemoteVideoStreams(
     muted: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   muteAllRemoteAudioStreams(
     muted: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4435,14 +4519,18 @@ export interface NodeRtcChannel {
     uid: number,
     muted: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   muteAllRemoteVideoStreams(
     muted: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4450,6 +4538,9 @@ export interface NodeRtcChannel {
     uid: number,
     muted: boolean
   ): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4457,14 +4548,18 @@ export interface NodeRtcChannel {
     uid: number,
     type: StreamType
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setRemoteDefaultVideoStreamType(
     type: StreamType
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4472,7 +4567,9 @@ export interface NodeRtcChannel {
     reliable: boolean,
     ordered: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4480,7 +4577,9 @@ export interface NodeRtcChannel {
     streamId: number,
     msg: string
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4488,61 +4587,95 @@ export interface NodeRtcChannel {
     url: string,
     transcodingEnabled: boolean
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   removePublishStreamUrl(
     url: string
   ): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setLiveTranscoding(transcoding: TranscodingConfig): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   addInjectStreamUrl(url: string, config: InjectStreamConfig): number;
-  
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   removeInjectStreamUrl(url: string): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   startChannelMediaRelay(config: ChannelMediaRelayConfiguration): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   updateChannelMediaRelay(config: ChannelMediaRelayConfiguration): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   stopChannelMediaRelay(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   getConnectionState(): ConnectionState;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   publish(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   unpublish(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   leaveChannel(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   release(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
