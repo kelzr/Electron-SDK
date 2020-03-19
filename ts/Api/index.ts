@@ -9260,7 +9260,7 @@ class AgoraRtcChannel extends EventEmitter
    * @param uid The user ID. A 32-bit unsigned integer with a value ranging 
    * from 1 to (232-1). This parameter must be unique. If `uid` is not 
    * assigned (or set as `0`), the SDK assigns a `uid` and reports it in 
-   * the `onJoinChannelSuccess` callback. 
+   * the `joinChannelSuccess` callback. 
    * The app must maintain this user ID.
    * @param options The channel media options, see 
    * {@link ChannelMediaOptions}
@@ -9963,7 +9963,7 @@ class AgoraRtcChannel extends EventEmitter
    * Creates a data stream.
    * 
    * Each user can create up to five data streams during the lifecycle of the 
-   * AgoraRtcEngine.
+   * AgoraRtcChannel.
    * 
    * @note Set both the `reliable` and `ordered` parameters to `true` or 
    * `false`. Do not set one as `true` and the other as `false`.
