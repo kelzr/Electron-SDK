@@ -2461,8 +2461,8 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * @param profile 设置采样率、码率、编码模式和声道数：
    * - `0`：默认设置
-   *  - 通信模式下，为 `1`
-   *  - 直播模式下，指定32 kHz 采样率，音乐编码，单声道，编码码率最大值为 44 Kbps 
+   *  - macOS：指定32 kHz 采样率，音乐编码，单声道，编码码率最大值为 44 Kbps
+   *  - Windows：指定 32 KHz 采样率，音乐编码，单声道，编码码率最大值为 64 Kbps
    * - `1`：Speech standard：指定 32 kHz 采样率，语音编码，单声道，编码码率最大值为 18 Kbps
    * - `2`：Music standard：指定 48 kHz 采样率，音乐编码，单声道，编码码率最大值为 48 Kbps
    * - `3`：Music standard stereo：指定 48 kHz采样率，音乐编码，双声道，编码码率最大值为 56 Kbps
