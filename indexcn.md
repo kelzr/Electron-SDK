@@ -207,7 +207,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | 方法                                                         | 描述                                             |
 | ------------------------------------------------------------ | ------------------------------------------------ |
 | {@link AgoraRtcEngine.addVideoWatermark addVideoWatermark} | 添加本地视频水印 |
-| {@link AgoraRtcEngine.clearVideoWatermark clearVideoWatermark}   | 删除已添加的视频水印       |
+| {@link AgoraRtcEngine.clearVideoWatermarks clearVideoWatermarks}   | 删除已添加的视频水印       |
 
 
 ### 加密

@@ -1813,8 +1813,8 @@ class AgoraRtcEngine extends EventEmitter {
    * - 0: Success
    * - < 0: Failure
    */
-  clearVideoWatermark(){
-    return this.rtcEngine.clearVideoWatermark();
+  clearVideoWatermarks(){
+    return this.rtcEngine.clearVideoWatermarks();
   }
 
   /** @zh-cn
@@ -2485,9 +2485,11 @@ class AgoraRtcEngine extends EventEmitter {
    * Sets audio parameters and application scenarios.
    * @param {number} profile Sets the sample rate, bitrate, encoding mode, and 
    * the number of channels:
-   * - 0: Default. In the Communication profile, the default value is 1: 
-   * Speech standard; in the Live Broadcast profile, the default value is 2: 
-   * Music standard.
+   * - 0: Default. 
+   *  - macOS: A sample rate of 32 kHz, music encoding, mono, and a bitrate of 
+   * up to 44 Kbps.
+   *  - Windows: A sample rate of 32 kHz, music encoding, mono, and a bitrate 
+   * of up to 64 Kbps.
    * - 1: speech standard. A sample rate of 32 kHz, audio encoding, mono, and 
    * a bitrate of up to 18 Kbps.
    * - 2: Music standard. A sample rate of 48 kHz, music encoding, mono, and 

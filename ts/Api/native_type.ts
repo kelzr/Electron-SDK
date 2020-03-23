@@ -2617,19 +2617,19 @@ export interface WatermarkOptions {
    */
   visibleInPreview: boolean,
   /** @zh-cn
-   * 视频编码模式为横屏时的水印坐标。详见 {@link Rectangle}
+   * 视频编码模式为竖屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
    * The watermark position in the landscape mode. See {@link Rectangle}
    */
-  portraitMode: Rectangle,
+  positionInPortraitMode: Rectangle,
   /** @zh-cn
-   * 视频编码模式为竖屏时的水印坐标。详见 {@link Rectangle}
+   * 视频编码模式为横屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
    * The watermark position in the portrait mode. See {@link Rectangle}
    */
-  landscapeMode: Rectangle
+  positionInLandscapeMode: Rectangle
 }
 /** @zh-cn
  * 跨频道媒体流转发参数配置。
@@ -4365,7 +4365,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  clearVideoWatermark(): number;
+  clearVideoWatermarks(): number;
   /** @zh-cn
    * @ignore
    */
