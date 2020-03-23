@@ -2620,14 +2620,14 @@ export interface WatermarkOptions {
    * 视频编码模式为竖屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
-   * The watermark position in the landscape mode. See {@link Rectangle}
+   * The watermark position in the portrait mode. See {@link Rectangle}
    */
   positionInPortraitMode: Rectangle,
   /** @zh-cn
    * 视频编码模式为横屏时的水印坐标。详见 {@link Rectangle}
    */
   /**
-   * The watermark position in the portrait mode. See {@link Rectangle}
+   * The watermark position in the landscape mode. See {@link Rectangle}
    */
   positionInLandscapeMode: Rectangle
 }
