@@ -889,6 +889,7 @@ class AgoraRtcEngine extends EventEmitter {
     if (channelStreams.has(String(key))) {
       this.destroyRender(key, channelId || "");
     }
+    channelStreams = this._getChannelRenderers(channelId || "")
     let renderer: IRenderer;
     if (this.renderMode === 1) {
       renderer = new GlRenderer();
@@ -928,7 +929,7 @@ class AgoraRtcEngine extends EventEmitter {
     try {
       (renderer as IRenderer).unbind();
       channelStreams.delete(String(key));
-      if(channelStreams.keys.length === 0) {
+      if(channelStreams.size === 0) {
         this.streams.delete(channelId || "")
       }
     } catch (err) {
@@ -2873,9 +2874,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 该方法不影响接收或播放远端音频流，`enableLocalAudio(false)` 适用于只听不发的用户场景。语音功能关闭或重新开启后，会收到回调 `microphoneEnabled`。
    * 
-   * @note
-   * - 调用 `enableLocalAudio(false)` 关闭本地采集后，系统会走媒体音量；调用 `enableLocalAudio(true)` 重新打开本地采集后，系统会恢复为通话音量。
-   * - 该方法与 {@link muteLocalAudioStream} 的区别在于：
+   * @note 该方法与 {@link muteLocalAudioStream} 的区别在于：
    *  - `enableLocalAudio`: 使用 `enableLocalAudio` 关闭或开启本地采集后，本地听远端播放会有短暂中断。
    *  - `muteLocalAudioStream`: 使用 `muteLocalAudioStream` 停止或继续发送本地音频流后，本地听远端播放不会有短暂中断。
    * 
@@ -2910,13 +2909,8 @@ class AgoraRtcEngine extends EventEmitter {
    * - false: Disable the local audio function, that is, to stop local audio 
    * capture and processing.
    * 
-   * **Note**:
-   * - After you disable local audio recording using the 
-   * `enableLocalAudio(false)` method, the system volume switches to the media 
-   * volume. Re-enabling local audio recording using the 
-   * `enableLocalAudio(true)` method switches the system volume back to the 
-   * in-call volume.
-   * - This method is different from the {@link muteLocalAudioStream} method:
+   * @note This method is different from the {@link muteLocalAudioStream} 
+   * method:
    *  - enableLocalAudio: If you disable or re-enable local audio recording 
    * using the enableLocalAudio method, the local user may hear a pause in the 
    * remote audio playback.
@@ -3906,14 +3900,13 @@ class AgoraRtcEngine extends EventEmitter {
    * account of the remote user from the UserInfo object by passing in the 
    * user ID.
    * @param uid The user ID. Ensure that you set this parameter.
-   * @param errCode Error code.
-   * @param userInfo [in/out] A UserInfo object that identifies the user:
-   * - Input: A UserInfo object.
-   * - Output: A UserInfo object that contains the user account and user ID 
+   * 
+   * @return 
+   * - errCode Error code.
+   * - userInfo [in/out] A UserInfo object that identifies the user:
+   *  - Input: A UserInfo object.
+   *  - Output: A UserInfo object that contains the user account and user ID 
    * of the user.
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
    */
   getUserInfoByUid(uid: number): { errCode: number; userInfo: UserInfo } {
     return this.rtcEngine.getUserInfoByUid(uid);
@@ -7445,11 +7438,14 @@ declare interface AgoraRtcEngine {
    * 
    * Reports the transport-layer statistics of each remote audio stream.
    * 
-   * - stats: The transport-layer statistics. See 
-   * {@link remoteAudioTransportStats}.
+   * @param cb.stats The transport-layer statistics. See 
+   * {@link RemoteAudioTransportStats}.
    */
   on(evt: 'remoteAudioTransportStats', cb: (stats: RemoteAudioTransportStats) => void): this;
   /** @zh-cn
+   * 
+   * 该回调没有实现。
+   * 
    * 音频设备状态已改变回调。
    * 
    * @param cb.deviceId 设备 ID
@@ -7530,6 +7526,8 @@ declare interface AgoraRtcEngine {
   /** Occurs when the local audio effect playback finishes. */
   on(evt: 'audioEffectFinished', cb: (soundId: number) => void): this;
   /** @zh-cn
+   * 该回调没有实现。
+   * 
    * 视频设备变化回调。
    * 
    * 该回调提示系统视频设备状态发生改变，比如被拔出或移除。如果设备已使用外接摄像头采集，外接摄像头被拔开后，视频会中断。

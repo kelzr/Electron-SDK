@@ -345,6 +345,23 @@ export interface TranscodingConfig {
    */
   audioChannels: number;
   /** @zh-cn
+   * 预留属性。
+   * 
+   * CDN 推流时，用户自定义发送的信息，可用于填充 H.264 或 H.265 流中 SEI 帧内容。最大长度
+   * 不能超过 4096 字节。
+   * 
+   * 详见 [SEI 帧相关问题](https://docs.agora.io/cn/faq/sei)。
+   */
+  /**
+   * The reserved property.
+   * 
+   * Extra user-defined information to send SEI for the H.264 or H.265 stream
+   * to the CDN streaming client. The maximum length is 4096 bytes.
+   * 
+   * See [SEI-related FAQ](https://docs.agora.io/en/faq/sei) for more details.
+   */
+  transcodingExtraInfo: string;
+  /** @zh-cn
    * 直播视频上的水印图片
    * 
    */

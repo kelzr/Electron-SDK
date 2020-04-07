@@ -359,8 +359,6 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `remoteVideoStats`                 | 报告远端视频流统计信息                   |
 | `localAudioStats`                  | 报告通话中本地音频流统计信息|
 | `remoteAudioStats`                 | 报告通话中远端音频流的统计信息           |
-| `audioDeviceStateChanged`          | 音频设备状态发生改变                     |
-| `videoDeviceStateChanged`          | 视频文件状态发生改变事件                 |
 | `audioMixingStateChanged`          | 本地音乐文件播放状态已改变               |
 | `remoteAudioMixingBegin`           | 远端音乐文件播放已开始                   |
 | `remoteAudioMixingEnd`             | 远端音乐文件播放已结束                   |
