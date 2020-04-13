@@ -249,9 +249,6 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.startAudioDeviceLoopbackTest startAudioDeviceLoopbackTest} | 开始音频设备回路测试       |
 | {@link AgoraRtcEngine.stopAudioDeviceLoopbackTest stopAudioDeviceLoopbackTest} | 停止音频设备回路测试       |
 
-
-
-
 ### 音频采集设备管理
 
 | 方法                                                         | 描述                       |
@@ -270,7 +267,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.stopAudioDeviceLoopbackTest stopAudioDeviceLoopbackTest} | 停止音频设备回路测试       |
 
 
-## 视频设备管理
+### 视频设备管理
 | 方法                                                         | 描述                       |
 | ------------------------------------------------------------ | -------------------------- |
 | {@link AgoraRtcEngine.setVideoDevice setVideoDevice}         | 设置视频设备               |
