@@ -449,16 +449,16 @@ export interface LastmileProbeConfig {
    * 用户期望的最高发送码率，单位为 Kbps，范围为 [100, 5000]。
    */
   /**
-   * The expected maximum sending bitrate (Kbps) of the local user. 
-   * The value ranges between 100 and 5000.
+   * The expected maximum sending bitrate (bps) of the local user. 
+   * The value ranges between 100000 and 5000000.
    */
   expectedUplinkBitrate: number;
   /** @zh-cn
    * 用户期望的最高接收码率，单位为 Kbps，范围为 [100, 5000]。
    */
   /**
-   * The expected maximum receiving bitrate (Kbps) of the local user. 
-   * The value ranges between 100 and 5000.
+   * The expected maximum receiving bitrate (bps) of the local user. 
+   * The value ranges between 100000 and 5000000.
    */
   expectedDownlinkBitrate: number;
 }
