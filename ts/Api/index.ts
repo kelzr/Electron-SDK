@@ -1068,7 +1068,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 该方法让用户加入通话频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。使用不同 App ID 的 App 是不能互通的。如果已在通话中，用户必须调用 {@link leaveChannel} 退出当前通话，才能进入下一个频道。
    *
-   * 成功调用该方加入频道后，本地会触发 `joinedChannel` 回调；通信模式下的用户和直播模式下的主播加入频道后，远端会触发 `userJoined` 回调。
+   * 成功调用该方加入频道后，本地会触发 `joinedChannel` 回调；通信场景下的用户和直播场景下的主播加入频道后，远端会触发 `userJoined` 回调。
    *
    * 在网络状况不理想的情况下，客户端可能会与 Agora 的服务器失去连接；SDK 会自动尝试重连，重连成功后，本地会触发 `rejoinedChannel` 回调。
    *
@@ -1159,7 +1159,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 离开频道，即机挂断或退出通话。
    * 
    * 该方法会把回话相关的所有资源都释放掉。该方法是异步操作，调用返回时并没有真正退出频道。
-   * 真正退出频道后，本地会触发 `leaveChannel` 回调；通信模式下的用户和直播模式下的主播离开频道后，远端会触发 `removeStream` 回调。
+   * 真正退出频道后，本地会触发 `leaveChannel` 回调；通信场景下的用户和直播场景下的主播离开频道后，远端会触发 `removeStream` 回调。
    * 
    * @note
    * - 若想开始下一次通话，必须先调用该方法结束本次通话。
@@ -1529,15 +1529,15 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置频道模式。
+   * 设置频道场景。
    *
    * Agora 会根据你的 app 使用场景进行不同的优化。
    *
    * @note
    * - 该方法必须在 {@link joinChannel} 方法之前调用
-   * - 相同频道内的所有用户必须使用相同的频道模式
+   * - 相同频道内的所有用户必须使用相同的频道场景
    *
-   * @param {number} profile 频道模式：
+   * @param {number} profile 频道场景：
    * - `0`：（默认）通信
    * - `1`：直播
    * - `2`：游戏
@@ -1567,11 +1567,11 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置直播模式下的用户角色。
+   * 设置直播场景下的用户角色。
    *
    * 加入频道前，用户需要通过本方法设置观众或主播模式。
    * 
-   * 加入频道后，用户可以通过本方法切换用户模式。直播模式下，如果你在加入频道后调用该方法切换用户角色，
+   * 加入频道后，用户可以通过本方法切换用户模式。直播场景下，如果你在加入频道后调用该方法切换用户角色，
    * 调用成功后，本地会触发 `clientRoleChanged` 事件；远端会触发 `userJoined` 事件。
    * 
    * @param {ClientRoleType} role 用户角色：
@@ -1618,7 +1618,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note 
    * - 请在加入频道 {@link joinChannel} 前调用该方法
    * - 调用该方法后必须调用 {@link stopEchoTest} 已结束测试，否则不能进行下一次回声测试，也不能调用 {@link joinChannel} 进行通话。
-   * - 直播模式下，该方法仅能由用户角色为主播的用户调用
+   * - 直播场景下，该方法仅能由用户角色为主播的用户调用
    *
    * @returns {number}
    * - 0：方法调用成功
@@ -1682,7 +1682,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note
    * - 请在加入频道 {@link joinChannel} 前调用该方法。
    * - 调用该方法后必须调用 {@link stopEchoTest} 已结束测试，否则不能进行下一次回声测试，也不能调用 {@link joinChannel} 进行通话。
-   * - 直播模式下，只有主播能调用该方法。
+   * - 直播场景下，只有主播能调用该方法。
    * @param interval 设置返回语音通话回路测试结果的时间间隔（s）。取值范围为 [2, 10]，默认为 10。
    * @returns {number}
    * - 0：方法调用成功
@@ -1825,7 +1825,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 
    * 该方法主要用于以下两种场景：
    * - 用户加入频道前，可以调用该方法判断和预测目前的上行网络质量是否足够好。
-   * - 直播模式下，当用户角色想由观众切换为主播时，可以调用该方法判断和预测目前的上行网络质量是否足够好。
+   * - 直播场景下，当用户角色想由观众切换为主播时，可以调用该方法判断和预测目前的上行网络质量是否足够好。
    *
    * @note 
    * - 该方法请勿与 {@link startLastmileProbeTest} 方法同时使用。
@@ -1833,7 +1833,7 @@ class AgoraRtcEngine extends EventEmitter {
    * API 操作过于频繁导致此回调无法执行。
    * - 启用该方法会消耗一定的网络流量，影响通话质量。在收到 `lastMileQuality` 回调后，
    * 需调用 {@link stopEchoTest} 方法停止测试，再加入频道或切换用户角色。
-   * - 直播模式下，主播在加入频道后，请勿调用该方法。
+   * - 直播场景下，主播在加入频道后，请勿调用该方法。
    * - 加入频道前调用该方法检测网络质量后，SDK 会占用一路视频的带宽，码率与 
    * {@link setVideoEncoderConfiguration} 中设置的码率相同。加入频道后，无论是否调用了 
    * {@link disableLastmileTest}，SDK 均会自动停止带宽占用。
@@ -1902,12 +1902,12 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 该方法主要用于以下两种场景：
    * - 用户加入频道前，可以调用该方法判断和预测目前的上行网络质量是否足够好。
-   * - 直播模式下，当用户角色想由观众切换为主播时，可以调用该方法判断和预测目前的上行网络质量是否足够好。
+   * - 直播场景下，当用户角色想由观众切换为主播时，可以调用该方法判断和预测目前的上行网络质量是否足够好。
    *
    * @note
    * - 该方法会消耗一定的网络流量，影响通话质量，因此我们建议不要同时使用该方法和 {@link enableLastmileTest}
    * - 调用该方法后，在收到 `lastMileQuality` 和 `lastmileProbeResult` 回调之前请不用调用其他方法，否则可能会由于 API 操作过于频繁导致此方法无法执行
-   * - 直播模式下，如果本地用户为主播，请勿在加入频道后调用该方法
+   * - 直播场景下，如果本地用户为主播，请勿在加入频道后调用该方法
    *
    * @param {LastmileProbeConfig} config last mile 网络探测配置
    * 
@@ -2340,7 +2340,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 该方法可以与 {@link setRemoteSubscribeFallbackOption} 搭配使用。如果开启了订阅流回退选项，弱网下 SDK 会优先保证高优先级用户收到的流的质量。
    *
    * @note 
-   * - 该方法仅适用于直播模式。
+   * - 该方法仅适用于直播场景。
    * - 目前 Agora SDK 仅允许将**一名**远端用户设为高优先级。
    *
    * @param {number} uid 远端用户的 ID
@@ -2524,7 +2524,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 设置视频偏好选项。
    *
-   * @note 该方法仅适用于直播模式。
+   * @note 该方法仅适用于直播场景。
    * @param {boolean} preferFrameRateOverImageQuality 视频偏好选项：
    * - true：视频画质和流畅度里，优先保证流畅度
    * - false：视频画质和流畅度里，优先保证画质（默认）
@@ -2639,7 +2639,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 成功调用该方法后，远端会触发 `userMuteAudio` 回调。
    * 
    * @note 我们建议你在 {@link setChannelProfile} 后调用该方法。因为如果你在该方法后调用 `setChannelProfile`方法，
-   * SDK 会根据你设置的频道模式以及用户角色，重新设置是否停止发送本地音频。
+   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否停止发送本地音频。
    * 
    * 
    * @param {boolean} mute
@@ -2778,7 +2778,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note 
    * - 调用该方法时，SDK 不再发送本地视频流，但摄像头仍然处于工作状态。
    * - 我们建议你在 {@link setChannelProfile} 后调用该方法。因为如果你在该方法后调用 `setChannelProfile`方法，
-   * SDK 会根据你设置的频道模式以及用户角色，重新设置是否停止发送本地视频。
+   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否停止发送本地视频。
    * 
    * @param {boolean} mute
    * - `true`：停止发送本地视频流
@@ -3281,6 +3281,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 
    * 视频小流默认的宽高比和视频大流的宽高比一致。根据当前大流的宽高比，系统会自动分配小流的分辨率、帧率及码率。
    * 
+   * 调用本方法的执行结果将在 `apiCallExecuted` 中返回。
    * @param {number} uid 用户 ID
    * @param {StreamType} streamType 视频流类型
    * @returns {number}
@@ -3355,7 +3356,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 
    * 打开与 Web SDK 的互通（仅在直播下适用）。
    *
-   * 该方法打开或关闭与 Agora Web SDK 的互通。该方法仅在直播模式下适用，通信模式下默认互通是打开的。
+   * 该方法打开或关闭与 Agora Web SDK 的互通。该方法仅在直播场景下适用，通信场景下默认互通是打开的。
    * 
    * 如果有用户通过 Web SDK 加入频道，请确保调用该方法，否则 Web 端用户看 Native 端的画面会是黑屏。
    * @param {boolean} enable 是否打开与 Agora Web SDK 的互通：
@@ -3398,8 +3399,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 
    * 
    * @param {number} mirrortype 设置本地视频镜像模式：
-   * - 0：（默认）SDK 自动确定启用镜像模式：如果使用前置摄像头，SDK 开启镜像模式；如果使用后置摄像头，
-   * SDK 关闭镜像模式
+   * - 0：（默认）SDK 自动开启镜像模式
    * - 1：启用镜像模式
    * - 2：关闭镜像模式
    * @returns {number}
@@ -3559,7 +3559,7 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置弱网条件下发布的音视频流回退选项。
    *
-   * 网络不理想的环境下，直播音视频的质量都会下降。使用该接口并将 option 设置为 `STREAM_FALLBACK_OPTION_AUDIO_ONLY (2)` 后，SDK 会：
+   * 网络不理想的环境下，音、视频的质量都会下降。使用该接口并将 option 设置为 `STREAM_FALLBACK_OPTION_AUDIO_ONLY (2)` 后，SDK 会：
    * - 在上行弱网且音视频质量严重受影响时，自动关断视频流，从而保证或提高音频质量。
    * - 持续监控网络质量，并在网络质量改善时恢复音视频流。
    *
@@ -3618,7 +3618,7 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置弱网条件下订阅的音视频流回退选项。
    *
-   * 网络不理想的环境下，直播音视频的质量都会下降。使用该接口并将 option 设置为 `STREAM_FALLBACK_OPTION_VIDEO_STREAM_LOW (1)` 或者 `STREAM_FALLBACK_OPTION_AUDIO_ONLY (2)`后，SDK 会：
+   * 网络不理想的环境下，音、视频的质量都会下降。使用该接口并将 option 设置为 `STREAM_FALLBACK_OPTION_VIDEO_STREAM_LOW (1)` 或者 `STREAM_FALLBACK_OPTION_AUDIO_ONLY (2)`后，SDK 会：
    * - 在下行弱网且音视频质量严重受影响时，将视频流切换为小流，或关断视频流，从而保证或提高音频质量。
    * - 持续监控网络质量，并在网络质量改善时恢复音视频流。
    *
@@ -3756,7 +3756,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
    * - 本地：`localUserRegistered` 和 `userInfoUpdated`
-   * - 远端：通信模式下的用户和直播模式下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
+   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
    *
    * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
    *
@@ -3915,7 +3915,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 成功调用该方切换频道后，本地会先收到离开原频道的回调 `leavechannel`，
    * 再收到成功加入新频道的回调 `joinedChannel`。
    * 
-   * @note 该方法仅适用直播频道中的观众用户。
+   * @note 该方法仅适用直播场景下的的观众。
    * 
    * @param token 在服务器端生成的用于鉴权的 Token：
    * - 安全要求不高：你可以填入在 Agora Console 获取到的临时 Token。详见
@@ -3977,10 +3977,10 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 调节录音音量。
    *
-   * @param {nummber} volume 录音信号音量，可在 0~400 范围内进行调节：
+   * @param {nummber} volume 录音信号音量，为避免回声并提升通话质量，Agora 建议取值为 
+   * [0,100]。如果设值需超过 100，请联系[技术支持](https://agora-ticket.agora.io/)。
    * - 0：静音
    * - 100：原始音量
-   * - 400：最大可为原始音量的 4 倍（自带溢出保护）
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -4004,10 +4004,10 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 调节播放人声的音量。
    *
-   * @param {nummber} volume 播放人声的信号音量，可在 0~400 范围内进行调节：
+   * @param {nummber} volume 播放人声的信号音量。为避免回声并提升通话质量，Agora 建议将取值
+   * 为 [0,100]。如设值需超过 100，请联系[技术支持](https://agora-ticket.agora.io/)。
    * - 0：静音
    * - 100：原始音量
-   * - 400：最大可为原始音量的 4 倍（自带溢出保护）
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -4502,7 +4502,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - 为保证录音效果，当 `sampleRate` 设为 44.1 kHz 或 48 kHz 时，建议将 `quality` 
    * 设为 MEDIUM 或 HIGH 。
    * @param filePath 录音文件在本地保存的绝对路径，由用户自行指定，需精确到文件名及格式，
-   * 例如：c:/music/audio.aac。
+   * 例如：`c:/music/audio.aac`（Windows）和 `file:///Users/Agora/Music/audio.aac`（macOS）。
    * @param sampleRate 录音采样率（Hz），可以设为以下值：
    * - 16000
    * - 32000（默认）
@@ -4891,10 +4891,10 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 双实例方法：设置 `videoSource` 的频道模式。
-   * @param {number} profile 频道模式：
-   * - 0：通信模式（默认）
-   * - 1：直播模式
+   * 双实例方法：设置 `videoSource` 的频道场景。
+   * @param {number} profile 频道场景：
+   * - 0：通信场景（默认）
+   * - 1：直播场景
    * - 2：游戏模式
    * @returns {number}
    * - 0：方法调用成功
@@ -5863,8 +5863,8 @@ class AgoraRtcEngine extends EventEmitter {
    * 调用该方法后，SDK 会在本地触发 streamPublished 回调，报告增加旁路推流地址的状态。
    *
    * @note
-   * - 该方法仅适用于直播模式，请在加入频道后调用该方法。
-   * - 确保已开通旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_windows?platform=Windows#前提条件)。
+   * - 该方法仅适用于直播场景下的主播，请在加入频道后调用该方法。
+   * - 确保已开通旁路推流的功能，详见《推流到 CDN》的 “前提条件”。
    * - 该方法每次只能增加一路旁路推流地址。若需推送多路流，则需多次调用该方法。
    * 
    * @param {string} url CDN 推流地址，格式为 RTMP。该字符长度不能超过 1024 字节，且不支持中文等特殊字符。
@@ -5918,9 +5918,9 @@ class AgoraRtcEngine extends EventEmitter {
    * 调用该方法后，SDK 会在本地触发 `streamUnpublished` 回调，报告删除旁路推流地址的状态。
    *
    * @note
+   * - 该方法只适用于直播场景下的主播。
    * - 该方法每次只能删除一路旁路推流地址。若需删除多路流，则需多次调用该方法。
    * - 推流地址不支持中文等特殊字符。
-   * - 该方法只适用于直播模式。
    * @param {string} url 待删除的推流地址，格式为 RTMP。该字符长度不能超过 1024 字节。
    * @returns {number}
    * - 0：方法调用成功
@@ -5950,7 +5950,8 @@ class AgoraRtcEngine extends EventEmitter {
    * 调用该方法更新 `transcoding` 参数时，SDK 会触发 `transcodingUpdated` 回调。
    * 
    * @note
-   * - 请确保已开通 CDN 旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_android?platform=Android#前提条件)。
+   * - 该方法只适用于直播场景下的主播。
+   * - 请确保已开通旁路推流的功能，详见《推流到 CDN》文档中的 “前提条件”。
    * - 首次调用 {@link setLiveTranscoding} 方法设置 `transcoding` 时，不会触发该回调。
    * 
    * @param {TranscodingConfig} transcoding 旁路推流转码合图相关设置
@@ -6000,8 +6001,8 @@ class AgoraRtcEngine extends EventEmitter {
    * 成功导入媒体流后，该音视频流会出现在频道中，频道内所有用户都会收到 `userJoined` 回调，其中 `uid` 为 666。
    *
    * @note
-   * - 该方法仅使用于直播。
-   * - 调用该方法前，请确保已开通旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_windows?platform=Windows#前提条件)。
+   * - 该方法只适用于直播场景下的主播。
+   * - 调用该方法前，请确保已开通旁路推流的功能，详见《推流到 CDN》文档中的 “前提条件”。
    * - 请确保在成功加入频道后再调用该接口。
    * - 该方法每次只能增加一路媒体流地址。若需输多路流，则需多次调用该方法。
    * 
@@ -6014,7 +6015,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0：方法调用失败
    *  - `2`: 输入的 URL 为空。请重新调用该方法，并确认输入的媒体流的 URL 是有效的。
    *  - `7`: 引擎没有初始化。请确认调用该方法前已创建 `AgoraRtcEngine` 对象并完成初始化。
-   *  - `4`: 频道非直播模式。请调用 {@link setChannelProfile} 并将频道设置为直播模式再调用该方法。
+   *  - `4`: 频道非直播场景。请调用 {@link setChannelProfile} 并将频道设置为直播场景再调用该方法。
    *  - `3`: 用户没有加入频道。
    */
   /**
@@ -6148,7 +6149,7 @@ class AgoraRtcEngine extends EventEmitter {
    * 若调用失败，远端会触发 `streamMessageError` 回调。
    * 
    * @note 
-   * - 该方法仅适用于通信模式以及直播模式下的主播用户，如果直播模式下的观众调用此方法可能会造成观众变主播。
+   * - 该方法仅适用于通信场景以及直播场景下的主播用户，如果直播场景下的观众调用此方法可能会造成观众变主播。
    * - 请确保在调用该方法前，已调用 {@link createDataStream} 创建了数据通道。
    * @param {number} streamId 数据流 ID，{@link createDataStream} 的返回值
    * @param {string} msg 待发送的数据
@@ -6208,7 +6209,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note
    * - 该功能需要联系 sales@agora.io 开通。
    * - 请在成功加入频道后调用该方法。
-   * - 该方法仅对直播模式下的主播有效。
+   * - 该方法仅对直播场景下的主播有效。
    * - 该功能不支持使用 String 型 `uid`。
    * - 成功调用该方法后，若你想再次调用该方法，必须先调用
    * {@link stopChannelMediaRelay} 方法退出当前的转发状态。
@@ -7766,10 +7767,10 @@ declare interface AgoraRtcEngine {
     elapsed: number
   ) => void): this;
   /** @zh-cn
-   * 远端用户（通信模式）/主播（直播模式）加入当前频道回调。
+   * 远端用户（通信场景）/主播（直播场景）加入当前频道回调。
    * 
-   * - 通信模式下，该回调提示有远端用户加入了频道，并返回新加入用户的 ID；如果加入之前，已经有其他用户在频道中了，新加入的用户也会收到这些已有用户加入频道的回调。
-   * - 直播模式下，该回调提示有主播加入了频道，并返回该主播的 ID。如果在加入之前，已经有主播在频道中了，新加入的用户也会收到已有主播加入频道的回调。声网建议连麦主播不超过 17 人。
+   * - 通信场景下，该回调提示有远端用户加入了频道，并返回新加入用户的 ID；如果加入之前，已经有其他用户在频道中了，新加入的用户也会收到这些已有用户加入频道的回调。
+   * - 直播场景下，该回调提示有主播加入了频道，并返回该主播的 ID。如果在加入之前，已经有主播在频道中了，新加入的用户也会收到已有主播加入频道的回调。声网建议连麦主播不超过 17 人。
    * 
    * 该回调在如下情况下会被触发：
    * - 远端用户/主播调用 {@link joinChannel} 方法加入频道
@@ -7847,11 +7848,11 @@ declare interface AgoraRtcEngine {
    */
   on(evt: 'removeStream', cb: (uid: number, reason: number) => void): this;
   /** @zh-cn
-   * 远端用户（通信模式）/主播（直播模式）离开当前频道回调。
+   * 远端用户（通信场景）/主播（直播场景）离开当前频道回调。
    * 
    * 用户离开频道有两个原因，即正常离开和超时掉线：
    * - 正常离开的时候，远端用户/主播会收到类似“再见”的消息，接收此消息后，判断用户离开频道
-   * - 超时掉线的依据是，在一定时间内（通信场景为 20 秒，直播场景稍有延时），用户没有收到对方
+   * - 超时掉线的依据是，在一定时间内（约 20 秒），用户没有收到对方
    * 的任何数据包，则判定为对方掉线。在网络较差的情况下，有可能会误报。Agora 建议使用信令系统
    * 来做可靠的掉线检测
    * 
@@ -7861,7 +7862,7 @@ declare interface AgoraRtcEngine {
    *  - 用户主动离开
    *  - 因过长时间收不到对方数据包，超时掉线。注意：由于 SDK 使用的是不可靠通道，也有可能对方
    * 主动离开本方没收到对方离开消息而误判为超时掉线
-   *  - （直播模式下）用户身份从主播切换为观众 
+   *  - （直播场景下）用户身份从主播切换为观众 
    * 
    */
   /** Occurs when a remote user (Communication)/host (Live Broadcast) leaves 
@@ -9287,7 +9288,7 @@ class AgoraRtcChannel extends EventEmitter
    *
    * 该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
    * - 本地：`localUserRegistered` 和 `userInfoUpdated`
-   * - 远端：通信模式下的用户和直播模式下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
+   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
    *
    * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
    *
@@ -9404,11 +9405,11 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.getCallId()
   }
   /** @zh-cn
-   * 设置直播模式下的用户角色。
+   * 设置直播场景下的用户角色。
    *
    * 加入频道前，用户需要通过本方法设置观众或主播模式。
    * 
-   * 加入频道后，用户可以通过本方法切换用户模式。直播模式下，如果你在加入频道后调用该方法切换用户角色，
+   * 加入频道后，用户可以通过本方法切换用户模式。直播场景下，如果你在加入频道后调用该方法切换用户角色，
    * 调用成功后，本地会触发 `clientRoleChanged` 事件；远端会触发 `userJoined` 事件。
    * 
    * @param {ClientRoleType} role 用户角色：
@@ -9855,6 +9856,7 @@ class AgoraRtcChannel extends EventEmitter
    * 
    * 视频小流默认的宽高比和视频大流的宽高比一致。根据当前大流的宽高比，系统会自动分配小流的分辨率、帧率及码率。
    * 
+   * 调用本方法的执行结果将在 `apiCallExecuted` 中返回。
    * @param {number} uid 用户 ID
    * @param {StreamType} streamType 视频流类型
    * @returns {number}
@@ -9996,7 +9998,7 @@ class AgoraRtcChannel extends EventEmitter
    * 若调用失败，远端会触发 `streamMessageError` 回调。
    * 
    * @note 
-   * - 该方法仅适用于通信模式以及直播模式下的主播用户，如果直播模式下的观众调用此方法可能会造成观众变主播。
+   * - 该方法仅适用于通信场景以及直播场景下的主播用户，如果直播场景下的观众调用此方法可能会造成观众变主播。
    * - 请确保在调用该方法前，已调用 {@link createDataStream} 创建了数据通道。
    * @param {number} streamId 数据流 ID，{@link createDataStream} 的返回值
    * @param {string} msg 待发送的数据
@@ -10042,8 +10044,8 @@ class AgoraRtcChannel extends EventEmitter
    * 调用该方法后，SDK 会在本地触发 streamPublished 回调，报告增加旁路推流地址的状态。
    *
    * @note
-   * - 该方法仅适用于直播模式，请在加入频道后调用该方法。
-   * - 确保已开通旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_windows?platform=Windows#前提条件)。
+   * - 该方法仅适用于直播场景下的主播，请在加入频道后调用该方法。
+   * - 确保已开通旁路推流的功能，详见《推流到 CDN》的 “前提条件”。
    * - 该方法每次只能增加一路旁路推流地址。若需推送多路流，则需多次调用该方法。
    * 
    * @param {string} url CDN 推流地址，格式为 RTMP。该字符长度不能超过 1024 字节，且不支持中文等特殊字符。
@@ -10104,9 +10106,9 @@ class AgoraRtcChannel extends EventEmitter
    * 调用该方法后，SDK 会在本地触发 `streamUnpublished` 回调，报告删除旁路推流地址的状态。
    *
    * @note
+   * - 该方法只适用于直播场景下的用户。
    * - 该方法每次只能删除一路旁路推流地址。若需删除多路流，则需多次调用该方法。
    * - 推流地址不支持中文等特殊字符。
-   * - 该方法只适用于直播模式。
    * @param {string} url 待删除的推流地址，格式为 RTMP。该字符长度不能超过 1024 字节。
    * @returns {number}
    * - 0：方法调用成功
@@ -10145,7 +10147,8 @@ class AgoraRtcChannel extends EventEmitter
    * 调用该方法更新 `transcoding` 参数时，SDK 会触发 `transcodingUpdated` 回调。
    * 
    * @note
-   * - 请确保已开通 CDN 旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_android?platform=Android#前提条件)。
+   * - 该方法只适用于直播场景下的主播。
+   * - 请确保已开通 CDN 旁路推流的功能，详见《推流到 CDN》文档的 “前提条件”。
    * - 首次调用 {@link setLiveTranscoding} 方法设置 `transcoding` 时，不会触发该回调。
    * 
    * @param {TranscodingConfig} transcoding 旁路推流转码合图相关设置
@@ -10205,7 +10208,7 @@ class AgoraRtcChannel extends EventEmitter
    * - < 0：方法调用失败
    *  - `2`: 输入的 URL 为空。请重新调用该方法，并确认输入的媒体流的 URL 是有效的。
    *  - `7`: 引擎没有初始化。请确认调用该方法前已创建 `AgoraRtcEngine` 对象并完成初始化。
-   *  - `4`: 频道非直播模式。请调用 {@link setChannelProfile} 并将频道设置为直播模式再调用该方法。
+   *  - `4`: 频道非直播场景。请调用 {@link setChannelProfile} 并将频道设置为直播场景再调用该方法。
    *  - `3`: 用户没有加入频道。
    */
   /** @zh-cn
@@ -10220,8 +10223,8 @@ class AgoraRtcChannel extends EventEmitter
    * 成功导入媒体流后，该音视频流会出现在频道中，频道内所有用户都会收到 `userJoined` 回调，其中 `uid` 为 666。
    *
    * @note
-   * - 该方法仅使用于直播。
-   * - 调用该方法前，请确保已开通旁路推流的功能，详见[前提条件](https://docs.agora.io/cn/Interactive%20Broadcast/cdn_streaming_windows?platform=Windows#前提条件)。
+   * - 该方法仅使用于直播场景下的主播。
+   * - 调用该方法前，请确保已开通旁路推流的功能，详见《推流到 CDN》文档的 “前提条件”。
    * - 请确保在成功加入频道后再调用该接口。
    * - 该方法每次只能增加一路媒体流地址。若需输入多路流，则需多次调用该方法。
    * 
@@ -10234,7 +10237,7 @@ class AgoraRtcChannel extends EventEmitter
    * - < 0：方法调用失败
    *  - `2`: 输入的 URL 为空。请重新调用该方法，并确认输入的媒体流的 URL 是有效的。
    *  - `7`: 引擎没有初始化。请确认调用该方法前已创建 `AgoraRtcChannel` 对象并完成初始化。
-   *  - `4`: 频道非直播模式。请调用 {@link setChannelProfile} 并将频道设置为直播模式再调用该方法。
+   *  - `4`: 频道非直播场景。请调用 {@link setChannelProfile} 并将频道设置为直播场景再调用该方法。
    *  - `3`: 用户没有加入频道。
    */
   /**
@@ -10326,7 +10329,7 @@ class AgoraRtcChannel extends EventEmitter
    * @note
    * - 该功能需要联系 sales@agora.io 开通。
    * - 请在成功加入频道后调用该方法。
-   * - 该方法仅对直播模式下的主播有效。
+   * - 该方法仅对直播场景下的主播有效。
    * - 该功能不支持使用 String 型 `uid`。
    * - 成功调用该方法后，若你想再次调用该方法，必须先调用
    * {@link stopChannelMediaRelay} 方法退出当前的转发状态。
@@ -10525,7 +10528,7 @@ class AgoraRtcChannel extends EventEmitter
    * 离开频道，即机挂断或退出通话。
    * 
    * 该方法会把回话相关的所有资源都释放掉。该方法是异步操作，调用返回时并没有真正退出频道。
-   * 真正退出频道后，本地会触发 `leaveChannel` 回调；通信模式下的用户和直播模式下的主播离开频道后，远端会触发 `removeStream` 回调。
+   * 真正退出频道后，本地会触发 `leaveChannel` 回调；通信场景下的用户和直播场景下的主播离开频道后，远端会触发 `removeStream` 回调。
    * 
    * @note
    * - 若想开始下一次通话，必须先调用该方法结束本次通话。
@@ -10737,10 +10740,10 @@ declare interface AgoraRtcChannel {
     cb: (oldRole: ClientRoleType, newRole: ClientRoleType) => void
   ): this;
   /** @zh-cn
-   * 远端用户（通信模式）/主播（直播模式）加入当前频道回调。
+   * 远端用户（通信场景）/主播（直播场景）加入当前频道回调。
    * 
-   * - 通信模式下，该回调提示有远端用户加入了频道，并返回新加入用户的 ID；如果加入之前，已经有其他用户在频道中了，新加入的用户也会收到这些已有用户加入频道的回调。
-   * - 直播模式下，该回调提示有主播加入了频道，并返回该主播的 ID。如果在加入之前，已经有主播在频道中了，新加入的用户也会收到已有主播加入频道的回调。声网建议连麦主播不超过 17 人。
+   * - 通信场景下，该回调提示有远端用户加入了频道，并返回新加入用户的 ID；如果加入之前，已经有其他用户在频道中了，新加入的用户也会收到这些已有用户加入频道的回调。
+   * - 直播场景下，该回调提示有主播加入了频道，并返回该主播的 ID。如果在加入之前，已经有主播在频道中了，新加入的用户也会收到已有主播加入频道的回调。声网建议连麦主播不超过 17 人。
    * 
    * 该回调在如下情况下会被触发：
    * - 远端用户/主播调用 {@link joinChannel} 方法加入频道
@@ -10787,7 +10790,7 @@ declare interface AgoraRtcChannel {
    * 
    * 用户离开频道有两个原因：
    * - 正常离开的时候，远端用户/主播会发送类似“再见”的消息。接收此消息后，判断用户离开频道。
-   * - 超时掉线的依据是，在一定时间内（通信场景为 20 秒，直播场景稍有延时），用户没有收到对方的任何数据包，则判定为对方掉线。在网络较差的情况下，有可能会误报。声网建议使用信令系统来做可靠的掉线检测。
+   * - 超时掉线的依据是，在一定时间内（约 20 秒），用户没有收到对方的任何数据包，则判定为对方掉线。在网络较差的情况下，有可能会误报。声网建议使用信令系统来做可靠的掉线检测。
    * 
    * @param cb.uid 离线用户或主播的用户 ID。
    * 
@@ -10839,7 +10842,7 @@ declare interface AgoraRtcChannel {
    * 
    * 调用 {@link joinChannel} 时如果指定了 Token，由于 Token 具有一定的时效，在通话过程中 SDK 可能由于网络原因和服务器失去连接，重连时可能需要新的 Token。
    * 
-   * 该回调通知 App 需要生成新的 Token，并需调用 {@link renewToken} 为 SDK 指定新的 Token。
+   * 该回调通知 App 需要生成新的 Token，并需调用 {@link joinChannel} 为 SDK 指定新的 Token。
    */ 
   /** Occurs when the token expires.
    * 

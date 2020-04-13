@@ -14,7 +14,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | ------------------------------------------------------------ | ------------------------------------ |
 | {@link AgoraRtcEngine.initialize initialize}                 | 初始化 `AgoraRtcEngine` 实例         |
 | {@link AgoraRtcEngine.release release}                       | 释放 `AgoraRtcEngine` 实例           |
-| {@link AgoraRtcEngine.setChannelProfile setChannelProfile}   | 设置频道模式                         |
+| {@link AgoraRtcEngine.setChannelProfile setChannelProfile}   | 设置频道场景                         |
 | {@link AgoraRtcEngine.setClientRole setClientRole}           | 设置直播场景下的用户角色             |
 | {@link AgoraRtcEngine.joinChannel joinChannel}               | 加入频道                             |
 | {@link AgoraRtcEngine.switchChannel switchChannel}           | 快速切换直播频道|
@@ -183,7 +183,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.setRemoteVideoStreamType setRemoteVideoStreamType} | 设置订阅的视频流类型     |
 | {@link AgoraRtcEngine.setRemoteDefaultVideoStreamType setRemoteDefaultVideoStreamType} | 设置默认订阅的视频流类型 |
 
-### 音视频回退（仅适用于互动直播）
+### 音视频流回退
 
 | 方法                                                         | 描述                                 |
 | ------------------------------------------------------------ | ------------------------------------ |
@@ -202,7 +202,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.startLastmileProbeTest startLastmileProbeTest} | 开始通话前网络质量探测                           |
 | {@link AgoraRtcEngine.stopLastmileProbeTest stopLastmileProbeTest} | 停止通话前网络质量探测                           |
 
-### 直播水印
+### 直播水印（仅适用于互动直播）
 
 | 方法                                                         | 描述                                             |
 | ------------------------------------------------------------ | ------------------------------------------------ |
@@ -232,37 +232,52 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.addInjectStreamUrl addInjectStreamUrl} | 导入在线媒体流 URL   |
 | {@link AgoraRtcEngine.removeInjectStreamUrl removeInjectStreamUrl} | 删除导入的在线媒体流 |
 
-### 设备管理
+### 音频播放设备管理
 
 | 方法                                                         | 描述                       |
 | ------------------------------------------------------------ | -------------------------- |
 | {@link AgoraRtcEngine.setAudioPlaybackDevice setAudioPlaybackDevice} | 设置音频播放设备           |
 | {@link AgoraRtcEngine.getAudioPlaybackDevices getAudioPlaybackDevices} | 获取音频播放设备           |
-| {@link AgoraRtcEngine.setAudioRecordingDevice setAudioRecordingDevice} | 设置音频录制设备           |
-| {@link AgoraRtcEngine.getAudioRecordingDevices getAudioRecordingDevices} | 获取音频录制设备           |
-| {@link AgoraRtcEngine.setVideoDevice setVideoDevice}         | 设置视频设备               |
-| {@link AgoraRtcEngine.getVideoDevices getVideoDevices}       | 获取视频设备               |
+| {@link AgoraRtcEngine.getPlaybackDeviceInfo getPlaybackDeviceInfo} | 获取音频播放设备信息          |
+| {@link AgoraRtcEngine.getCurrentAudioPlaybackDevice getCurrentAudioPlaybackDevice} | 获取当前的音频播放设备 |
 | {@link AgoraRtcEngine.setAudioPlaybackDeviceMute setAudioPlaybackDeviceMute} | 设置音频播放设备静音       |
 | {@link AgoraRtcEngine.getAudioPlaybackDeviceMute getAudioPlaybackDeviceMute} | 获取音频播放设备静音状态   |
-| {@link AgoraRtcEngine.setAudioRecordingDeviceMute setAudioRecordingDeviceMute} | 设置音频录制设备静音       |
-| {@link AgoraRtcEngine.getAudioRecordingDeviceMute getAudioRecordingDeviceMute} | 获取音频录制设备静音状态  |
-| {@link AgoraRtcEngine.getPlaybackDeviceInfo getPlaybackDeviceInfo} | 获取播放设备信息          |
-| {@link AgoraRtcEngine.getRecordingDeviceInfo getRecordingDeviceInfo} | 获取录制设备信息          |
-| {@link AgoraRtcEngine.getCurrentAudioPlaybackDevice getCurrentAudioPlaybackDevice} | 获取当前的音频播放设备 |
-| {@link AgoraRtcEngine.getCurrentAudioRecordingDevice getCurrentAudioRecordingDevice} | 获取当前的音频录制设备 |
-| {@link AgoraRtcEngine.getCurrentVideoDevice getCurrentVideoDevice} | 获取当前的视频设备         |
-| {@link AgoraRtcEngine.startAudioDeviceLoopbackTest startAudioDeviceLoopbackTest} | 开始音频设备回路测试       |
-| {@link AgoraRtcEngine.stopAudioDeviceLoopbackTest stopAudioDeviceLoopbackTest} | 停止音频设备回路测试       |
-| {@link AgoraRtcEngine.startAudioPlaybackDeviceTest startAudioPlaybackDeviceTest} | 开始音频播放设备测试       |
-| {@link AgoraRtcEngine.stopAudioPlaybackDeviceTest stopAudioPlaybackDeviceTest} | 停止音频播放设备测试       |
-| {@link AgoraRtcEngine.startAudioRecordingDeviceTest startAudioRecordingDeviceTest} | 开始音频录制设备测试       |
-| {@link AgoraRtcEngine.stopAudioRecordingDeviceTest stopAudioRecordingDeviceTest} | 停止音频录制设备测试       |
-| {@link AgoraRtcEngine.startVideoDeviceTest startVideoDeviceTest} | 开始视频设备测试           |
-| {@link AgoraRtcEngine.stopVideoDeviceTest stopVideoDeviceTest} | 停止视频设备测试           |
 | {@link AgoraRtcEngine.setAudioPlaybackVolume setAudioPlaybackVolume} | 设置音频播放设备的音量           |
 | {@link AgoraRtcEngine.getAudioPlaybackVolume getAudioPlaybackVolume} | 获取音频播放设备的音量           |
-| {@link AgoraRtcEngine.setAudioRecordingVolume setAudioRecordingVolume} | 设置录音设备的音量 |
-| {@link AgoraRtcEngine.getAudioRecordingVolume getAudioRecordingVolume} | 获取录音设备的音量 |
+| {@link AgoraRtcEngine.startAudioPlaybackDeviceTest startAudioPlaybackDeviceTest} | 开始音频播放设备测试       |
+| {@link AgoraRtcEngine.stopAudioPlaybackDeviceTest stopAudioPlaybackDeviceTest} | 停止音频播放设备测试       |
+| {@link AgoraRtcEngine.startAudioDeviceLoopbackTest startAudioDeviceLoopbackTest} | 开始音频设备回路测试       |
+| {@link AgoraRtcEngine.stopAudioDeviceLoopbackTest stopAudioDeviceLoopbackTest} | 停止音频设备回路测试       |
+
+
+
+
+### 音频采集设备管理
+
+| 方法                                                         | 描述                       |
+| ------------------------------------------------------------ | -------------------------- |
+| {@link AgoraRtcEngine.setAudioRecordingDevice setAudioRecordingDevice} | 设置音频采集设备           |
+| {@link AgoraRtcEngine.getAudioRecordingDevices getAudioRecordingDevices} | 获取音频采集设备           |
+| {@link AgoraRtcEngine.getRecordingDeviceInfo getRecordingDeviceInfo} | 获取音频采集设备信息          |
+| {@link AgoraRtcEngine.getCurrentAudioRecordingDevice getCurrentAudioRecordingDevice} | 获取当前的音频采集设备 |
+| {@link AgoraRtcEngine.setAudioRecordingDeviceMute setAudioRecordingDeviceMute} | 设置音频采集设备静音       |
+| {@link AgoraRtcEngine.getAudioRecordingDeviceMute getAudioRecordingDeviceMute} | 获取音频采集设备静音状态  |
+| {@link AgoraRtcEngine.setAudioRecordingVolume setAudioRecordingVolume} | 设置音频采集设备的音量 |
+| {@link AgoraRtcEngine.getAudioRecordingVolume getAudioRecordingVolume} | 获取音频采集的音量 |
+| {@link AgoraRtcEngine.startAudioRecordingDeviceTest startAudioRecordingDeviceTest} | 开始音频采集设备测试       |
+| {@link AgoraRtcEngine.stopAudioRecordingDeviceTest stopAudioRecordingDeviceTest} | 停止音频采集设备测试       |
+| {@link AgoraRtcEngine.startAudioDeviceLoopbackTest startAudioDeviceLoopbackTest} | 开始音频设备回路测试       |
+| {@link AgoraRtcEngine.stopAudioDeviceLoopbackTest stopAudioDeviceLoopbackTest} | 停止音频设备回路测试       |
+
+
+## 视频设备管理
+| 方法                                                         | 描述                       |
+| ------------------------------------------------------------ | -------------------------- |
+| {@link AgoraRtcEngine.setVideoDevice setVideoDevice}         | 设置视频设备               |
+| {@link AgoraRtcEngine.getVideoDevices getVideoDevices}       | 获取视频设备               |
+| {@link AgoraRtcEngine.getCurrentVideoDevice getCurrentVideoDevice} | 获取当前的视频设备         |
+| {@link AgoraRtcEngine.startVideoDeviceTest startVideoDeviceTest} | 开始视频设备测试           |
+| {@link AgoraRtcEngine.stopVideoDeviceTest stopVideoDeviceTest} | 停止视频设备测试           |
 
 ### 流消息
 
@@ -312,7 +327,7 @@ Agora Electron SDK 提供双实例的实现方法。第二个实例用以屏幕�
 | {@link AgoraRtcEngine.videoSourceInitialize videoSourceInitialize} | 初始化 `videoSource` 对象               |
 | {@link AgoraRtcEngine.videoSourceRelease videoSourceRelease}       | 释放 `videoSource` 对象         |
 | {@link AgoraRtcEngine.videoSourceSetLogFile videoSourceSetLogFile}     | 设置日志文件                   |
-| {@link AgoraRtcEngine.videoSourceSetChannelProfile videoSourceSetChannelProfile} | 设置频道模式      |
+| {@link AgoraRtcEngine.videoSourceSetChannelProfile videoSourceSetChannelProfile} | 设置频道场景      |
 | {@link AgoraRtcEngine.setupLocalVideoSource setupLocalVideoSource} | 设置 `videoSource` 的渲染器     |
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin} | 加入频道 |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave} | 离开频道              |

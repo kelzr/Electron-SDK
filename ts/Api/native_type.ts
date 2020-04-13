@@ -446,7 +446,7 @@ export interface LastmileProbeConfig {
    */
   probeDownlink: boolean;
   /** @zh-cn
-   * 用户期望的最高发送码率，单位为 Kbps，范围为 [100, 5000]。
+   * 用户期望的最高发送码率，单位为 bps，范围为 [100000, 5000000]。
    */
   /**
    * The expected maximum sending bitrate (bps) of the local user. 
@@ -454,7 +454,7 @@ export interface LastmileProbeConfig {
    */
   expectedUplinkBitrate: number;
   /** @zh-cn
-   * 用户期望的最高接收码率，单位为 Kbps，范围为 [100, 5000]。
+   * 用户期望的最高接收码率，单位为 bps，范围为 [100000, 5000000]。
    */
   /**
    * The expected maximum receiving bitrate (bps) of the local user. 
@@ -1152,14 +1152,12 @@ export interface VideoEncoderConfiguration {
    * 
    * 你也可以选择如下一种模式进行设置：
    * - `STANDARD_BITRATE (0)`：（推荐）标准模式
-   *  - 通信模式码率：与基准码率一致
-   *  - 直播模式码率：基准码率的两倍
+   *  - 通信场景码率：与基准码率一致
+   *  - 直播场景码率：基准码率的两倍
    * - `COMPATIBLE_BITRATE (1)`：适配模式
-   *  - 通信模式码率：与基准码率一致
-   *  - 直播模式码率：与基准码率一致
+   *  - 通信场景码率：与基准码率一致
+   *  - 直播场景码率：与基准码率一致
    * 
-   * Agora 在通信和直播模式下采用不同的编码方式，以提升不同场景下的用户体验。通信场景保证流畅，
-   * 而直播场景则更注重画面质量，因此直播模式对码率的需求大于通信模式。所以 Agora 推荐将该参数设置为 `STANDARD_BITRATE (0)`。
    *
    * | 分辨率 (宽 x 高) | 帧率 (fps) | 基准码率 (Kbps) |
      | :--------------- | :--------- | :-------------- |
@@ -2233,7 +2231,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_LANDSCAPE_360P_8 = 37,
   /** @zh-cn
    * 38：分辨率 640 × 360，帧率 15 fps，码率 800 Kbps。
-   * **Note**：该视频属性仅适用于直播频道模式。
+   * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** @zh-cn
    * 38: 640 &times; 360, frame rate 15 fps, bitrate 800 Kbps.
@@ -2242,7 +2240,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_LANDSCAPE_360P_9 = 38,
   /** @zh-cn
    * 39：分辨率 640 × 360，帧率 24 fps，码率 800 Kbps。
-   * **Note**：该视频属性仅适用于直播频道模式。
+   * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** @zh-cn
    * 39: 640 &times; 360, frame rate 24 fps, bitrate 800 Kbps.
@@ -2251,7 +2249,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_LANDSCAPE_360P_10 = 39,
   /** @zh-cn
    * 100：分辨率 640 × 360，帧率 24 fps，码率 1000 Kbps。
-   * **Note**：该视频属性仅适用于直播频道模式。
+   * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** @zh-cn
    * 100: 640 &times; 360, frame rate 24 fps, bitrate 1000 Kbps.
@@ -2409,7 +2407,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_PORTRAIT_360P_8 = 1037,
   /** @zh-cn
    * 1038：分辨率 360 × 640，帧率 15 fps，码率 800 Kbps。
-   * **Note**：该视频属性仅适用于直播频道模式。
+   * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** 1038: 360 &times; 640, frame rate 15 fps, bitrate 800 Kbps.
    * **Note**: Live broadcast profile only.
@@ -2417,7 +2415,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_PORTRAIT_360P_9 = 1038,
   /** @zh-cn
    * 1039：分辨率 360 × 640，帧率 24 fps，码率 800 Kbps。
-   * **Note**：该视频属性仅适用于直播频道模式。
+   * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** 1039: 360 &times; 640, frame rate 24 fps, bitrate 800 Kbps.
    * **Note**: Live broadcast profile only.
@@ -2425,7 +2423,7 @@ export enum VIDEO_PROFILE_TYPE {
   VIDEO_PROFILE_PORTRAIT_360P_10 = 1039,
   /** @zh-cn
    * 1100：分辨率 360 × 640，帧率 24 fps，码率 1000 Kbps。
-   * **Note**： 该视频属性仅适用于直播频道模式。
+   * **Note**： 该视频属性仅适用于直播频道场景。
    */
   /** 1100: 360 &times; 640, frame rate 24 fps, bitrate 1000 Kbps.
    * **Note**: Live broadcast profile only.
