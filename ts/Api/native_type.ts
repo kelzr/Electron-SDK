@@ -876,12 +876,12 @@ export interface RtcStats {
   /** Number of users in the channel. */
   userCount: number;
   /** @zh-cn
-   * 当前系统的 CPU 使用率 (%)。
+   * 当前应用的 CPU 使用率 (%)。
    */
   /** Application CPU usage (%). */
   cpuAppUsage: number;
   /** @zh-cn
-   * 当前 App 的 CPU 使用率 (%)。
+   * 当前系统的 CPU 使用率 (%)。
    */
   /** System CPU usage (%). */
   cpuTotalUsage: number;
