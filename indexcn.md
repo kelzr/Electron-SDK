@@ -95,10 +95,9 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | ------------------------------------------------------------ | --------------------- |
 | {@link AgoraRtcEngine.getScreenDisplaysInfo getScreenDisplaysInfo} | 获取屏幕信息  |
 | {@link AgoraRtcEngine.getScreenWindowsInfo getScreenWindowsInfo} | 获取窗口信息 |
-| {@link AgoraRtcEngine.startScreenCapture startScreenCapture} | 通过窗口信息共享屏幕|
-| {@link AgoraRtcEngine.stopScreenCapture stopScreenCapture} | 停止共享屏幕 |
 | {@link AgoraRtcEngine.startScreenCaptureByScreen startScreenCaptureByScreen} | 通过指定区域共享屏幕|
 | {@link AgoraRtcEngine.startScreenCaptureByWindow startScreenCaptureByWindow} | 通过窗口信息共享屏幕|
+| {@link AgoraRtcEngine.stopScreenCapture stopScreenCapture} | 停止共享屏幕 |
 | {@link AgoraRtcEngine.updateScreenCaptureParameters updateScreenCaptureParameters} |更新屏幕共享的编码参数配置|
 | {@link AgoraRtcEngine.setScreenCaptureContentHint setScreenCaptureContentHint} | 设置屏幕共享内容类型|
 | {@link AgoraRtcEngine.updateScreenCaptureRegion updateScreenCaptureRegion} | 更新屏幕共享区域 |

@@ -5459,6 +5459,8 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 通过窗口信息共享屏幕
    * 
+   * @deprecated 该方法已废弃，请改用 {@link startScreenCaptureByWindow} 方法。
+   * 
    * 共享一个窗口或该窗口的部分区域。你需要在该方法中指定想要共享的窗口 ID。
    * 
    * @note 设置 `rect` 时你需要注意：
