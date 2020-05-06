@@ -74,13 +74,16 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置渲染模式。该方法确定是使用 WebGL 渲染还是软件渲染。
+   * 设置渲染模式。
+   * 
+   * 该方法确定是使用 WebGL 渲染还是软件渲染。
    * @param {1|2|3} mode 渲染模式：
    * - 1：使用 WebGL 渲染
    * - 2：使用软件渲染
    * - 3：使用自定义渲染
    */
-  /**
+  /** Sets the view render mode.
+   * 
    * Decide whether to use webgl/software/custom rendering.
    * @param {1|2|3} mode:
    * - 1 for old webgl rendering.
@@ -2280,8 +2283,12 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 开启或关闭本地美颜功能，并设置美颜效果选项。
-   *
+   * 开启或关闭本地美颜功能，并设置美颜效果选项（仅适用于 Windows 平台）。
+   * 
+   * @since v3.0.
+   * 
+   * @note 请不要在 macOS 平台上调用该方法，否则会报错误码 `-4`。
+   * 
    * @param {boolean} enable 是否开启美颜功能：
    * - `true`：开启
    * - `false`：（默认）关闭
@@ -2300,7 +2307,13 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0：方法调用失败
    */
   /**
-   * Enables/Disables image enhancement and sets the options
+   * Enables/Disables image enhancement and sets the options. (Windows only)
+   * 
+   * @since v3.0.0
+   * 
+   * @note Do not call this method on the macOS platform, otherwise the SDK 
+   * returns the `-4` error code.
+   * 
    * @param {boolean} enable Sets whether or not to enable image enhancement:
    * - true: Enables image enhancement.
    * - false: Disables image enhancement.
@@ -2458,10 +2471,17 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置音频编码配置。
    *
-   * @note 请在 {@link joinChannel} 之前调用该方法，否则不生效。
+   * @note 
+   * - 请在 {@link joinChannel} 之前调用该方法，否则不生效。
+   * - 通信和直播场景下，音质（码率）会有网络自适应的调整，通过该方法设置的是一个最高码率。
+   * - 在有高音质需求的场景（例如音乐教学场景）中，建议将 `profile` 设置为 `4`，`scenario` 
+   * 设置为 `3`。
    *
    * @param profile 设置采样率、码率、编码模式和声道数：
-   * - `0`：默认设置：48 KHz 采样率，音乐编码，单声道，编码码率最大值为 52 Kbps
+   * - `0`：默认设置：
+   *   - 直播场景：48 KHz 采样率，音乐编码，单声道，编码码率最大值为 52 Kbps
+   *   - 通信场景：32 KHz 采样率，音乐编码，单声道，编码码率最大值为 18 Kbps（macOS）；
+   * 16 KHz 采样率，音乐编码，单声道，编码码率最大值为 16 Kbps（Windows）
    * - `1`：Speech standard：指定 32 kHz 采样率，语音编码，单声道，编码码率最大值为 18 Kbps
    * - `2`：Music standard：指定 48 kHz 采样率，音乐编码，单声道，编码码率最大值为 48 Kbps
    * - `3`：Music standard stereo：指定 48 kHz采样率，音乐编码，双声道，编码码率最大值为 56 Kbps
@@ -2482,10 +2502,22 @@ class AgoraRtcEngine extends EventEmitter {
    */
   /**
    * Sets audio parameters and application scenarios.
+   * 
+   * @note
+   * - You must call this method before calling the {@link joinChannel} method.
+   * - In the Communicaiton and Live-broadcast profiles, the bitrate may be 
+   * different from your settings due to network self-adaption.
+   * - In scenarios requiring high-quality audio, for example, a music teaching 
+   * scenario, we recommend setting `profile` as `4` and `scenario` as `3`.
+   *  
    * @param {number} profile Sets the sample rate, bitrate, encoding mode, and 
    * the number of channels:
-   * - 0: Default. A sample rate of 48 kHz, music encoding, mono, and a bitrate of 
-   * up to 52 Kbps.
+   * - 0: Default. 
+   *   - For the Live-broadcast profile: A sample rate of 48 kHz, music 
+   * encoding, mono, and a bitrate of up to 52 Kbps.
+   *   - For the Communication profile: A sample rate of 32 kHz, music 
+   * encoding, mono, and a bitrate of up to 18 Kbps for macOS; a sample rate of 
+   * 16 kHz, music encoding, mono, and a bitrate of up to 16 Kbps for Windows.
    * - 1: speech standard. A sample rate of 32 kHz, audio encoding, mono, and 
    * a bitrate of up to 18 Kbps.
    * - 2: Music standard. A sample rate of 48 kHz, music encoding, mono, and 
