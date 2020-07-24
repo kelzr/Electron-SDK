@@ -41,7 +41,7 @@ import {
   UserInfo
 } from './native_type';
 import { EventEmitter } from 'events';
-import { deprecate } from '../Utils';
+import { deprecate, config, Config } from '../Utils';
 import { ChannelMediaOptions, WatermarkOptions } from './native_type';
 import {
   ChannelMediaRelayEvent,
@@ -73,9 +73,15 @@ class AgoraRtcEngine extends EventEmitter {
     this.customRenderer = CustomRenderer;
   }
 
+  /**
+   * return sdk config object
+   */
+  getConfigObject(): Config {
+    return config
+  }
   /** @zh-cn
    * 设置渲染模式。
-   * 
+   *
    * 该方法确定是使用 WebGL 渲染还是软件渲染。
    * @param {1|2|3} mode 渲染模式：
    * - 1：使用 WebGL 渲染
@@ -83,7 +89,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - 3：使用自定义渲染
    */
   /** Sets the view render mode.
-   * 
+   *
    * Decide whether to use webgl/software/custom rendering.
    * @param {1|2|3} mode:
    * - 1 for old webgl rendering.
@@ -5044,6 +5050,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @deprecated This method is deprecated. Use 
    * {@link videoSourceStartScreenCaptureByScreen} or 
    * {@link videoSourceStartScreenCaptureByWindow} instead.
+   * 
    * Starts the video source.
    * @param {number} wndid Sets the video source area.
    * @param {number} captureFreq (Mandatory) The captured frame rate. The value 
@@ -5309,8 +5316,8 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceUpdateScreenCaptureRegion(rect);
   }
 
-  videoSourceEnableLoopbackRecording(enabled: boolean) : number {
-    return this.rtcEngine.videoSourceEnableLoopbackRecording(enabled)
+  videoSourceEnableLoopbackRecording(enabled: boolean, deviceName: string | null = null) : number {
+    return this.rtcEngine.videoSourceEnableLoopbackRecording(enabled, deviceName)
   }
 
   videoSourceEnableAudio() : number {
@@ -5482,6 +5489,10 @@ class AgoraRtcEngine extends EventEmitter {
    */
   /**
    * Starts the screen sharing.
+   * 
+   * @deprecated This method is deprecated. Use 
+   * {@link startScreenCaptureByWindow} instead.
+   * 
    * @param {number} wndid Sets the screen sharing area.
    * @param {number} captureFreq (Mandatory) The captured frame rate. The 
    * value ranges between 1 fps and 15 fps.
@@ -6844,6 +6855,10 @@ class AgoraRtcEngine extends EventEmitter {
    */
   complain(callId: string, desc: string): number {
     return this.rtcEngine.complain(callId, desc);
+  }
+
+  setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number {
+    return this.rtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
   }
 
   // ===========================================================================
