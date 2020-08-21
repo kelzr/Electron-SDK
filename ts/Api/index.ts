@@ -38,7 +38,14 @@ import {
   CaptureParam,
   VideoContentHint,
   VideoEncoderConfiguration,
-  UserInfo
+  UserInfo,
+  RendererOptions,
+  Metadata,
+  RTMP_STREAMING_EVENT,
+  AREA_CODE,
+  STREAM_PUBLISH_STATE,
+  STREAM_SUBSCRIBE_STATE,
+  EncryptionConfig
 } from './native_type';
 import { EventEmitter } from 'events';
 import { deprecate, config, Config } from '../Utils';
@@ -60,7 +67,7 @@ const agora = require('../../build/Release/agora_node_ext');
  */
 class AgoraRtcEngine extends EventEmitter {
   rtcEngine: NodeRtcEngine;
-  streams: Map<string, Map<string, IRenderer>>;
+  streams: Map<string, Map<string, IRenderer[]>>;
   renderMode: 1 | 2 | 3;
   customRenderer: any;
   constructor() {
@@ -695,6 +702,33 @@ class AgoraRtcEngine extends EventEmitter {
       fire('rtmpStreamingStateChanged', url, state, errCode);
     })
 
+    this.rtcEngine.onEvent('firstLocalAudioFramePublished', function(elapsed: number) {
+      fire('firstLocalAudioFramePublished', elapsed);
+    })
+
+    this.rtcEngine.onEvent('firstLocalVideoFramePublished', function(elapsed: number) {
+      fire('firstLocalVideoFramePublished', elapsed);
+    })
+
+    this.rtcEngine.onEvent('rtmpStreamingEvent', function(url: string, eventCode: RTMP_STREAMING_EVENT) {
+      fire('rtmpStreamingEvent', url, eventCode);
+    })
+
+    this.rtcEngine.onEvent('audioPublishStateChanged', function(channel: string, oldState: STREAM_PUBLISH_STATE, newState: STREAM_PUBLISH_STATE, elapseSinceLastState: number) {
+      fire('audioPublishStateChanged', channel, oldState, newState, elapseSinceLastState);
+    })
+
+    this.rtcEngine.onEvent('videoPublishStateChanged', function(channel: string, oldState: STREAM_PUBLISH_STATE, newState: STREAM_PUBLISH_STATE, elapseSinceLastState: number) {
+      fire('videoPublishStateChanged', channel, oldState, newState, elapseSinceLastState);
+    })
+
+    this.rtcEngine.onEvent('audioSubscribeStateChanged', function(channel: string, uid: number, oldState: STREAM_SUBSCRIBE_STATE, newState: STREAM_SUBSCRIBE_STATE, elapseSinceLastState: number) {
+      fire('audioSubscribeStateChanged', channel, uid, oldState, newState, elapseSinceLastState);
+    })
+  
+    this.rtcEngine.onEvent('videoSubscribeStateChanged', function(channel: string, uid: number, oldState: STREAM_SUBSCRIBE_STATE, newState: STREAM_SUBSCRIBE_STATE, elapseSinceLastState: number) {
+      fire('videoSubscribeStateChanged', channel, uid, oldState, newState, elapseSinceLastState);
+    })
     this.rtcEngine.registerDeliverFrame(function(infos: any) {
       self.onRegisterDeliverFrame(infos);
     });
@@ -706,7 +740,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @param {number} type 0-local 1-remote 2-device_test 3-video_source
    * @param {number} uid uid get from native engine, differ from electron engine's uid
    */
-  _getRenderer(type: number, uid: number, channelId: string | undefined): IRenderer | undefined {
+  _getRenderers(type: number, uid: number, channelId: string | undefined): IRenderer[] | undefined {
     let channelStreams = this._getChannelRenderers(channelId || "")
     if (type < 2) {
       if (uid === 0) {
@@ -726,13 +760,13 @@ class AgoraRtcEngine extends EventEmitter {
     }
   }
 
-  _getChannelRenderers(channelId: string): Map<string, IRenderer> {
-    let channel: Map<string, IRenderer>;
+  _getChannelRenderers(channelId: string): Map<string, IRenderer[]> {
+    let channel: Map<string, IRenderer[]>;
     if(!this.streams.has(channelId)) {
       channel = new Map()
       this.streams.set(channelId, channel)
     } else {
-      channel = this.streams.get(channelId) as Map<string, IRenderer>
+      channel = this.streams.get(channelId) as Map<string, IRenderer[]>
     }
     return channel
   }
@@ -806,19 +840,21 @@ class AgoraRtcEngine extends EventEmitter {
         );
         continue;
       }
-      const renderer = this._getRenderer(type, uid, channelId);
-      if (!renderer) {
+      const renderers = this._getRenderers(type, uid, channelId);
+      if (!renderers || renderers.length === 0) {
         console.warn(`Can't find renderer for uid : ${uid} ${channelId}`);
         continue;
       }
 
       if (this._checkData(header, ydata, udata, vdata)) {
-        renderer.drawFrame({
-          header,
-          yUint8Array: ydata,
-          uUint8Array: udata,
-          vUint8Array: vdata
-        });
+        renderers.forEach(renderer => {
+          renderer.drawFrame({
+            header,
+            yUint8Array: ydata,
+            uUint8Array: udata,
+            vUint8Array: vdata
+          });
+        })
       }
     }
   }
@@ -837,10 +873,8 @@ class AgoraRtcEngine extends EventEmitter {
   resizeRender(key: 'local' | 'videosource' | number, channelId:string | undefined) {
     let channelStreams = this._getChannelRenderers(channelId || "")
     if (channelStreams.has(String(key))) {
-      const renderer = channelStreams.get(String(key));
-      if (renderer) {
-        renderer.refreshCanvas();
-      }
+      const renderers = channelStreams.get(String(key)) || [];
+      renderers.forEach(renderer => renderer.refreshCanvas())
     }
   }
 
@@ -850,10 +884,24 @@ class AgoraRtcEngine extends EventEmitter {
    * e.g, uid or `videosource` or `local`.
    * @param view The Dom elements to render the video.
    */
-  initRender(key: 'local' | 'videosource' | number, view: Element, channelId: string | undefined) {
+  initRender(key: 'local' | 'videosource' | number, view: Element, channelId: string | undefined, options?: RendererOptions) {
+    let rendererOptions = {
+      append: options ? options.append : false
+    }
     let channelStreams = this._getChannelRenderers(channelId || "")
+
     if (channelStreams.has(String(key))) {
-      this.destroyRender(key, channelId || "");
+      if(!rendererOptions.append) {
+        this.destroyRender(key, channelId || "");
+      } else {
+        let renderers = channelStreams.get(String(key)) || []
+        for(let i = 0; i < renderers.length; i++) {
+          if(renderers[i].equalsElement(view)){
+            console.log(`view exists in renderer list, ignore`)
+            return
+          }
+        }
+      }
     }
     channelStreams = this._getChannelRenderers(channelId || "")
     let renderer: IRenderer;
@@ -868,8 +916,49 @@ class AgoraRtcEngine extends EventEmitter {
       renderer = new GlRenderer();
     }
     renderer.bind(view);
-    channelStreams.set(String(key), renderer);
+
+    if(!rendererOptions.append) {
+      channelStreams.set(String(key), [renderer]);
+    } else {
+      let renderers = channelStreams.get(String(key)) || []
+      renderers.push(renderer)
+      channelStreams.set(String(key), renderers)
+    }
   }
+
+  destroyRenderView(
+    key: 'local' | 'videosource' | number, channelId: string | undefined, view: Element,
+    onFailure?: (err: Error) => void
+  ) {
+    let channelStreams = this._getChannelRenderers(channelId || "")
+    if (!channelStreams.has(String(key))) {
+      return;
+    }
+    const renderers = channelStreams.get(String(key)) || [];
+    const matchRenderers = renderers.filter(renderer => renderer.equalsElement(view))
+    const otherRenderers = renderers.filter(renderer => !renderer.equalsElement(view))
+
+    if(matchRenderers.length > 0) {
+      let renderer = matchRenderers[0]
+      try {
+        (renderer as IRenderer).unbind();
+        if(otherRenderers.length > 0) {
+          // has other renderers left, update
+          channelStreams.set(String(key), otherRenderers)
+        } else {
+          // removed renderer is the only one, remove
+          channelStreams.delete(String(key));
+        }
+        if(channelStreams.size === 0) {
+          this.streams.delete(channelId || "")
+        }
+      } catch (err) {
+        onFailure && onFailure(err)
+      }
+    }
+
+  }
+
 
   /**
    * Destroys the renderer.
@@ -886,15 +975,24 @@ class AgoraRtcEngine extends EventEmitter {
     if (!channelStreams.has(String(key))) {
       return;
     }
-    const renderer = channelStreams.get(String(key));
-    try {
-      (renderer as IRenderer).unbind();
-      channelStreams.delete(String(key));
-      if(channelStreams.size === 0) {
-        this.streams.delete(channelId || "")
+    const renderers = channelStreams.get(String(key)) || [];
+
+    let exception = null
+    for(let i = 0; i < renderers.length; i++) {
+      let renderer = renderers[i]
+      try {
+        (renderer as IRenderer).unbind();
+        channelStreams.delete(String(key));
+        if(channelStreams.size === 0) {
+          this.streams.delete(channelId || "")
+        }
+      } catch (err) {
+        exception = err
+        console.error(`${err.stack}`)
       }
-    } catch (err) {
-      onFailure && onFailure(err);
+    }
+    if(exception) {
+      onFailure && onFailure(exception)
     }
   }
 
@@ -911,8 +1009,8 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `ERR_INVALID_APP_ID (101)`: The app ID is invalid. Check if it is in 
    * the correct format.
    */
-  initialize(appid: string): number {
-    return this.rtcEngine.initialize(appid);
+  initialize(appid: string, areaCode: AREA_CODE = (0xFFFFFFFF)): number {
+    return this.rtcEngine.initialize(appid, areaCode);
   }
 
   /**
@@ -1128,15 +1226,15 @@ class AgoraRtcEngine extends EventEmitter {
    * - 0: Success.
    * - < 0: Failure.
    */
-  subscribe(uid: number, view: Element): number {
-    this.initRender(uid, view, "");
+  subscribe(uid: number, view: Element, options?: RendererOptions): number {
+    this.initRender(uid, view, "", options);
     return this.rtcEngine.subscribe(uid);
   }
 
-  setupRemoteVideo(uid: number, view?: Element, channel?: string): number {
+  setupRemoteVideo(uid: number, view?: Element, channel?: string, options?: RendererOptions): number {
     if(view) {
       //bind
-      this.initRender(uid, view, channel);
+      this.initRender(uid, view, channel, options);
       return this.rtcEngine.subscribe(uid, channel);
     } else {
       //unbind
@@ -1152,8 +1250,8 @@ class AgoraRtcEngine extends EventEmitter {
    * - 0: Success.
    * - < 0: Failure.
    */
-  setupLocalVideo(view: Element): number {
-    this.initRender('local', view, "");
+  setupLocalVideo(view: Element, options?: RendererOptions): number {
+    this.initRender('local', view, "", options);
     return this.rtcEngine.setupLocalVideo();
   }
 
@@ -1255,8 +1353,11 @@ class AgoraRtcEngine extends EventEmitter {
   ): number {
     let channelStreams = this._getChannelRenderers(channelId || "")
     if (channelStreams.has(String(uid))) {
-      const renderer = channelStreams.get(String(uid));
-      (renderer as IRenderer).setContentMode(mode);
+      const renderers = channelStreams.get(String(uid)) || [];
+      for(let i = 0; i < renderers.length; i++) {
+        let renderer = renderers[i];
+        (renderer as IRenderer).setContentMode(mode);
+      }
       return 0;
     } else {
       return -1;
@@ -4791,6 +4892,41 @@ class AgoraRtcEngine extends EventEmitter {
   getPluginParameter(pluginId: string, paramKey: string): string {
     return this.rtcEngine.getPluginParameter(pluginId, paramKey);
   }
+ 
+  unRegisterMediaMetadataObserver(): number {
+    return this.rtcEngine.unRegisterMediaMetadataObserver();
+  }
+
+  registerMediaMetadataObserver(): number {
+    const fire = (event: string, ...args: Array<any>) => {
+      setImmediate(() => {
+        this.emit(event, ...args);
+      });
+    };
+
+    this.rtcEngine.addMetadataEventHandler((metadata: Metadata) => {
+      fire('receiveMetadata', metadata);
+    }, (metadata: Metadata) => {
+      fire('sendMetadataSuccess', metadata);
+    });
+    return this.rtcEngine.registerMediaMetadataObserver();
+  }
+
+  sendMetadata(metadata: Metadata): number {
+    return this.rtcEngine.sendMetadata(metadata);
+  }
+
+  setMaxMetadataSize(size: number): number {
+    return this.rtcEngine.setMaxMetadataSize(size);
+  }
+  
+  sendCustomReportMessage(id: string, category: string, event: string, label: string, value: number): number {
+    return this.rtcEngine.sendCustomReportMessage(id, category, event, label, value);
+  }
+
+  enableEncryption(enabled: boolean, config: EncryptionConfig) {
+    return this.rtcEngine.enableEncryption(enabled, config);
+  }
 }
 /** The AgoraRtcEngine interface. */
 declare interface AgoraRtcEngine {
@@ -4916,7 +5052,7 @@ declare interface AgoraRtcEngine {
    * {@link leaveChannel} method, the SDK uses
    * this callback to notify the app when the user leaves the channel.
    */
-  on(evt: 'leaveChannel', cb: () => void): this;
+  on(evt: 'leaveChannel', cb: (stats: RtcStats) => void): this;
   /** Reports the statistics of the AgoraRtcEngine once every two seconds.
    * 
    * @param cb.stats AgoraRtcEngine's statistics, see {@link RtcStats}
@@ -5388,7 +5524,7 @@ declare interface AgoraRtcEngine {
    * {@link joinChannel} until the
    * SDK triggers this callback.
    */
-  on(evt: 'fristLocalAudioFrame', cb: (elapsed: number) => void): this;
+  on(evt: 'firstLocalAudioFrame', cb: (elapsed: number) => void): this;
   /** @deprecated This callback is deprecated. Please use
    * `remoteAudioStateChanged` instead.
    * 
@@ -5805,7 +5941,57 @@ declare interface AgoraRtcEngine {
   on(evt: 'channelMediaRelayEvent', cb: (
     event: ChannelMediaRelayEvent
   ) => void): this;
- 
+  on(evt: 'receiveMetadata', cb: (
+    metadata: Metadata
+    ) => void): this;
+
+  on(evt: 'sendMetadataSuccess', cb: (
+    metadata: Metadata
+    ) => void): this;
+
+  on(evt: 'firstLocalAudioFramePublished', cb: (
+    elapsed: number
+  )=>void): this;
+
+  on(evt: 'firstLocalVideoFramePublished', cb: (
+    elapsed: number
+  )=>void): this;
+
+  on(evt: 'rtmpStreamingEvent', cb: (
+    url: string,
+    eventCode: RTMP_STREAMING_EVENT
+  )=>void): this;
+
+  on(evt: 'audioPublishStateChanged', cb: (
+    channel: string, 
+    oldState: STREAM_PUBLISH_STATE, 
+    newState: STREAM_PUBLISH_STATE,
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'videoPublishStateChanged', cb: (
+    channel: string, 
+    oldState: STREAM_PUBLISH_STATE, 
+    newState: STREAM_PUBLISH_STATE,
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'audioSubscribeStateChanged', cb: (
+    channel: string,
+    uid: number, 
+    oldState: STREAM_SUBSCRIBE_STATE, 
+    newState: STREAM_SUBSCRIBE_STATE, 
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'videoSubscribeStateChanged', cb: (
+    channel: string,
+    uid: number, 
+    oldState: STREAM_SUBSCRIBE_STATE, 
+    newState: STREAM_SUBSCRIBE_STATE, 
+    elapseSinceLastState: number
+  )=> void): this;
+
   on(evt: string, listener: Function): this;
 }
 
@@ -6063,7 +6249,22 @@ class AgoraRtcChannel extends EventEmitter
     ) => {
         fire('connectionStateChanged', state, reason);
     });
-    
+
+    this.rtcChannel.onEvent('audioPublishStateChanged', function(oldState: STREAM_PUBLISH_STATE, newState: STREAM_PUBLISH_STATE, elapseSinceLastState: number) {
+      fire('audioPublishStateChanged', oldState, newState, elapseSinceLastState);
+    })
+
+    this.rtcChannel.onEvent('videoPublishStateChanged', function(oldState: STREAM_PUBLISH_STATE, newState: STREAM_PUBLISH_STATE, elapseSinceLastState: number) {
+      fire('videoPublishStateChanged', oldState, newState, elapseSinceLastState);
+    })
+
+    this.rtcChannel.onEvent('audioSubscribeStateChanged', function(uid: number, oldState: STREAM_SUBSCRIBE_STATE, newState: STREAM_SUBSCRIBE_STATE, elapseSinceLastState: number) {
+      fire('audioSubscribeStateChanged', uid, oldState, newState, elapseSinceLastState);
+    })
+  
+    this.rtcChannel.onEvent('videoSubscribeStateChanged', function(uid: number, oldState: STREAM_SUBSCRIBE_STATE, newState: STREAM_SUBSCRIBE_STATE, elapseSinceLastState: number) {
+      fire('videoSubscribeStateChanged', uid, oldState, newState, elapseSinceLastState);
+    })
   }
   /**
    * Joins the channel with a user ID.
@@ -6922,6 +7123,7 @@ class AgoraRtcChannel extends EventEmitter
   release(): number {
     return this.rtcChannel.release()
   }
+
   /**
    * Adjusts the playback volume of a specified remote user.
    * 
@@ -6949,6 +7151,33 @@ class AgoraRtcChannel extends EventEmitter
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number {
     return this.rtcChannel.adjustUserPlaybackSignalVolume(uid, volume);
+  }
+
+  unRegisterMediaMetadataObserver(): number {
+    return this.rtcChannel.unRegisterMediaMetadataObserver();
+  }
+
+  registerMediaMetadataObserver(): number {
+    const fire = (event: string, ...args: Array<any>) => {
+      setImmediate(() => {
+        this.emit(event, ...args);
+      });
+    };
+
+    this.rtcChannel.addMetadataEventHandler((metadata: Metadata) => {
+      fire('receiveMetadata', metadata);
+    }, (metadata: Metadata) => {
+      fire('sendMetadataSuccess', metadata);
+    });
+    return this.rtcChannel.registerMediaMetadataObserver();
+  }
+
+  sendMetadata(metadata: Metadata): number {
+    return this.rtcChannel.sendMetadata(metadata);
+  }
+
+  setMaxMetadataSize(size: number): number {
+    return this.rtcChannel.setMaxMetadataSize(size);
   }
 }
 
@@ -7416,6 +7645,32 @@ declare interface AgoraRtcChannel {
     state: ConnectionState,
     reason: ConnectionChangeReason
   ) => void): this;
+
+  on(evt: 'audioPublishStateChanged', cb: (
+    oldState: STREAM_PUBLISH_STATE, 
+    newState: STREAM_PUBLISH_STATE,
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'videoPublishStateChanged', cb: (
+    oldState: STREAM_PUBLISH_STATE, 
+    newState: STREAM_PUBLISH_STATE,
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'audioSubscribeStateChanged', cb: (
+    uid: number, 
+    oldState: STREAM_SUBSCRIBE_STATE, 
+    newState: STREAM_SUBSCRIBE_STATE, 
+    elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'videoSubscribeStateChanged', cb: (
+    uid: number, 
+    oldState: STREAM_SUBSCRIBE_STATE, 
+    newState: STREAM_SUBSCRIBE_STATE, 
+    elapseSinceLastState: number
+  )=> void): this;
 }
 
 export default AgoraRtcEngine;

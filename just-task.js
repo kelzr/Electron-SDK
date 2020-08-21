@@ -28,29 +28,30 @@ task('switch:arch', () => {
 })
 
 task('sync:lib', () => {
-  const config = Object.assign({}, getArgvFromPkgJson(), getArgvFromNpmEnv() )
+  let pkgConfigs = getArgvFromPkgJson()
+  let argvConfigs = getArgvFromNpmEnv()
   return synclib({
     platform: argv().platform,
     // platform: 'win32',
     arch: argv().arch,
     libUrl: {
-      win: argv().liburl_win || config.libUrl.win,
-      mac: argv().liburl_mac || config.libUrl.mac,
-      win64: argv().liburl_win64 || config.libUrl.win64
+      win: argv().liburl_win || pkgConfigs.lib_sdk_win || argvConfigs.lib_sdk_win,
+      mac: argv().liburl_mac || pkgConfigs.lib_sdk_mac || argvConfigs.lib_sdk_mac,
+      win64: argv().liburl_win64 || pkgConfigs.lib_sdk_win64 || argvConfigs.lib_sdk_win64
     }
   })
 })
 
-// npm run build:electron -- 
+// npm run build:electron --
 task('build:electron', () => {
 
   cleanup(path.join(__dirname, "./build")).then(_ => {
     build({
-      electronVersion: argv().electron_version, 
-      runtime: argv().runtime, 
-      platform: argv().platform, 
-      packageVersion, 
-      debug: argv().debug, 
+      electronVersion: argv().electron_version,
+      runtime: argv().runtime,
+      platform: argv().platform,
+      packageVersion,
+      debug: argv().debug,
       silent: argv().silent,
       arch: argv().arch,
       msvsVersion: argv().msvs_version,
@@ -61,11 +62,11 @@ task('build:electron', () => {
 // npm run build:node --
 task('build:node', () => {
   build({
-    electronVersion: argv().electron_version, 
+    electronVersion: argv().electron_version,
     runtime: 'node',
     packageVersion,
     platform: argv().platform,
-    debug: argv().debug, 
+    debug: argv().debug,
     silent: argv().silent,
     msvsVersion: argv().msvs_version
   })
@@ -73,12 +74,12 @@ task('build:node', () => {
 // npm run download --
 task('download', () => {
   // work-around
-  const addonVersion = '3.0.0-build.660'
+  const addonVersion = '3.0.1-beta.1'
   cleanup(path.join(__dirname, "./build")).then(_ => {
     cleanup(path.join(__dirname, './js')).then(_ => {
       download({
-        electronVersion: argv().electron_version, 
-        platform: argv().platform, 
+        electronVersion: argv().electron_version,
+        platform: argv().platform,
         packageVersion: addonVersion,
         arch: argv().arch
       })
@@ -89,18 +90,40 @@ task('download', () => {
 task('install', () => {
   const config = Object.assign({}, getArgvFromNpmEnv(), getArgvFromPkgJson())
   // work-around
-  const addonVersion = '3.0.0-build.660'
+  const addonVersion = '3.0.1-beta.1'
   if (config.prebuilt) {
     download({
-      electronVersion: config.electronVersion, 
-      platform: config.platform, 
+      electronVersion: config.electronVersion,
+      platform: config.platform,
       packageVersion: addonVersion,
       arch: config.arch
     })
   } else {
-    build(Object.assign({}, config, {
-      packageVersion: addonVersion
-    }))
+    return new Promise((resolve, reject) => {
+      switcharch({
+        arch: argv().arch,
+        // platform: 'win32',
+      }).then(() => {
+        return synclib({
+          platform: argv().platform,
+          // platform: 'win32',
+          arch: argv().arch,
+          libUrl: {
+            win: argv().liburl_win || config.lib_sdk_win,
+            mac: argv().liburl_mac || config.lib_sdk_mac,
+            win64: argv().liburl_win64 || config.lib_sdk_win64
+          }
+        })
+      }).then(() => {
+        return build(Object.assign({}, config, {
+          packageVersion: addonVersion
+        }))
+      }).then(() => {
+        resolve()
+      }).catch(e => {
+        reject(e)
+      })
+    })
   }
 })
 

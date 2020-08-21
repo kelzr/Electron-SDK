@@ -10,11 +10,6 @@ const extractPromise = promisify(extract)
 const macExtractPromise = () => {
   return new Promise((resolve, reject) => {
     extractPromise('./tmp/sdk.zip', {dir: path.join(__dirname, '../tmp/')}).then(() => {
-      return globPromise(path.join(__dirname, '../tmp/Agora_Native_SDK_for_Mac_FULL/*_FULL.zip'))
-    }).then(folders => {
-      console.log(JSON.stringify(folders))
-      return extractPromise(folders[0], {dir: path.join(__dirname, '../tmp/')})
-    }).then(() => {
       resolve()
     }).catch((e) => {
       reject(e)
@@ -50,10 +45,12 @@ const winPrepare = (folder) => {
     ]).then(() => {
       return fs.mkdirp(path.join(__dirname, '../sdk/lib'))
     }).then(() => {
+      return fs.mkdirp(path.join(__dirname, '../sdk/dll'))
+    }).then(() => {
       return Promise.all([
-        fs.move(path.join(folder, './sdk/include'), path.join(__dirname, '../sdk/include')),
-        fs.move(path.join(folder, './sdk/dll'), path.join(__dirname, '../sdk/dll')),
-        fs.move(path.join(folder, './sdk/lib'), path.join(__dirname, '../sdk/lib/win')),
+        fs.move(path.join(folder, './libs/include'), path.join(__dirname, '../sdk/include')),
+        fs.move(path.join(folder, './libs/x86/agora_rtc_sdk.dll'), path.join(__dirname, '../sdk/dll/agora_rtc_sdk.dll')),
+        fs.move(path.join(folder, './libs/x86/agora_rtc_sdk.lib'), path.join(__dirname, '../sdk/lib/agora_rtc_sdk.lib')),
       ])
     }).then(() => {
       resolve()
@@ -68,10 +65,14 @@ const win64Prepare = (folder) => {
     Promise.all([
       fs.remove(path.join(__dirname, '../sdk'))
     ]).then(() => {
-      return fs.mkdirp(path.join(__dirname, '../sdk'))
+      return fs.mkdirp(path.join(__dirname, '../sdk/lib'))
+    }).then(() => {
+      return fs.mkdirp(path.join(__dirname, '../sdk/dll'))
     }).then(() => {
       return Promise.all([
-        fs.move(path.join(folder, './sdk'), path.join(__dirname, '../sdk/win64')),
+        fs.move(path.join(folder, './libs/include'), path.join(__dirname, '../sdk/include')),
+        fs.move(path.join(folder, './libs/x86_64/agora_rtc_sdk.dll'), path.join(__dirname, '../sdk/dll/agora_rtc_sdk.dll')),
+        fs.move(path.join(folder, './libs/x86_64/agora_rtc_sdk.lib'), path.join(__dirname, '../sdk/lib/agora_rtc_sdk.lib')),
       ])
     }).then(() => {
       resolve()
@@ -109,7 +110,7 @@ module.exports = ({
         downloadUrl = libUrl.mac
       }
     } else {
-      downloadUrl = (arch === 'ia32') ? libUrl.win : libUrl.win64
+      downloadUrl = libUrl.win
       if(!downloadUrl){
         logger.error(`no windows lib specified`)
         return reject(new Error(`no windows lib specified`))

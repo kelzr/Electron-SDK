@@ -1,6 +1,8 @@
-## 3.0.0-build.475 (June 17th, 2020)
+## 3.0.1-beta.1 (June 23rd, 2020)
 #### :house: Internal
-* fix live transcoding watermark bug
+* 3.0.1 SDK upgrade
+* support multi render
+* support electron 9.0.0
 
 ## 3.0.0-build.473 (April 22nd, 2020)
 #### :house: Internal
@@ -224,7 +226,7 @@
 * Add new api `getScreenWindowsInfo` to provide window info and id. You can use this to implement sharing windows (You can only share the whole screen before).
 * Refactor renderer module. Now video source can be rendered without webgl.
 * Optimize unit tests.
-* Modify the build script for windows. (Use VS 2015 as msbuilder) 
+* Modify the build script for windows. (Use VS 2015 as msbuilder)
 * Add new api `enableLoopbackRecording` to enable loopback recording. Once enabled, the SDK collects all local sounds.
 
 
@@ -247,7 +249,7 @@
 > Release for e-Education
 
 #### :house: Internal
-* Use 2.0.7 for Windows and 2.2.3 for Mac, which have done special optimization for e-Edu scenario. 
+* Use 2.0.7 for Windows and 2.2.3 for Mac, which have done special optimization for e-Edu scenario.
 
 * Docs and unit-tests are nearly completed.
 
@@ -280,7 +282,7 @@
   * pauseAllEffects
   * resumeEffect
   * resumeAllEffects
-  * setLocalVoicePitch 
+  * setLocalVoicePitch
   * setLocalVoiceEqualization
   * setLocalVoiceReverb
   * enableLoopbackRecording
