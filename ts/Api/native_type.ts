@@ -406,6 +406,41 @@ export interface TranscodingConfig {
     /** Height of the image on the broadcasting video. */
     height: number;
   };
+  background: {
+    /** @zh-cn
+     * //TODO
+     */
+    /** 
+     * HTTP/HTTPS URL address of the image on the broadcasting video.
+     * 
+     * The maximum length of this parameter is 1024 bytes.
+     */
+    url: string;
+    /** @zh-cn
+     * //TODO
+     */
+    /** Horizontal position of the image from the upper left of the 
+     * broadcasting video. 
+     */
+    x: number;
+    /** @zh-cn
+     * //TODO
+     */
+    /** Vertical position of the image from the upper left of the broadcasting 
+     * video. 
+     */
+    y: number;
+    /** @zh-cn
+     * //TODO
+     */
+    /** Width of the image on the broadcasting video. */
+    width: number;
+    /** @zh-cn
+     * //TODO
+     */
+    /** Height of the image on the broadcasting video. */
+    height: number;
+  };
   /** @zh-cn
    * TranscodingUser 类。
    * 
