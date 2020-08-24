@@ -334,7 +334,9 @@ export interface UserInfo {
   userAccount: string;
 }
 
-/** Sets the local voice changer option. */
+/**
+ * Local voice changer options.
+ */
 export enum VoiceChangerPreset {
   /**
    * The original voice (no local voice change).
@@ -409,13 +411,13 @@ export enum VoiceChangerPreset {
    */
   GENERAL_BEAUTY_VOICE_FEMALE_FRESH = 0x00200002,
   /**
-   * 	(For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
+   * (For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
    */
   GENERAL_BEAUTY_VOICE_FEMALE_VITALITY = 0x00200003
 
 }
 /**
- * Sets the local voice changer option.
+ * Local voice reverberation presets.
  */
 export enum AudioReverbPreset {
   /**
@@ -483,10 +485,11 @@ export enum AudioReverbPreset {
    */
   AUDIO_REVERB_STUDIO = 0x00000007,
   /**
-   * The reverberation of the virtual stereo. The virtual stereo is an effect that renders the monophonic
-   * audio as the stereo audio, so that all users in the channel can hear the stereo voice effect.
-   * To achieve better virtual stereo reverberation, Agora recommends setting `profile` in `setAudioProfile`
-   * as `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`.
+   * The reverberation of the virtual stereo. The virtual stereo is an effect
+   * that renders the monophonic audio as the stereo audio, so that all users
+   * in the channel can hear the stereo voice effect.
+   * To achieve better virtual stereo reverberation, Agora recommends setting
+   * `profile` in {@link setAudioProfile} as `5`.
    */
   AUDIO_VIRTUAL_STEREO = 0x00200001
 }
@@ -1054,13 +1057,36 @@ export interface CaptureParam {
    * dimensions of the current screen).
    */
   bitrate: number; //  The bitrate (Kbps) of the shared region. The default value is 0 (the SDK works out a bitrate according to the dimensions of the current screen).
-
+  /** Sets whether or not to capture the mouse for screen sharing:
+   * - true: (Default) Capture the mouse.
+   * - false: Do not capture the mouse.
+   */
   captureMouseCursor: boolean;
-
+  /** Whether to bring the window to the front when calling
+   * {@link startScreenCaptureByWindow} or
+   * {@link videoSourceStartScreenCaptureByWindow}
+   * to share the window:
+   * - true: Bring the window to the front.
+   * - false: (Default) Do not bring the window to the front.
+   */
   windowFocus: boolean;
-
+  /** A list of IDs of windows to be blocked.
+   *
+   * When calling {@link startScreenCaptureByScreen} or
+   * {@link videoSourceStartScreenCaptureByScreen}
+   * to start screen sharing,
+   * you can use this parameter to block the specified windows. When
+   * calling {@link updateScreenCaptureParameters} or
+   * {@link videoSourceUpdateScreenCaptureParameters}
+   * to update the
+   * configuration for screen sharing, you can use this parameter to
+   * dynamically block the specified windows during screen sharing.
+   *
+   * //TODO display id 0 for mac
+   */
   excludeWindowList: Array<number>;
-
+  /** The number of windows to be blocked.
+   */
   excludeWindowCount: number;
 }
 
@@ -1302,32 +1328,36 @@ export type ConnectionChangeReason =
   | 11 // 11: SDK reconnects for setting proxy server
   | 12 // 12: Network status change for renew token
   | 13; // 13: Client IP Address changed
-
+/** Encryption mode.
+ */
 export enum ENCRYPTION_MODE {
       /* OpenSSL Encryption Mode Start */
-      /** 1:"aes-128-xts": (Default) 128-bit AES encryption, XTS mode.
+      /** 1: (Default) 128-bit AES encryption, XTS mode.
        */
       AES_128_XTS = 1,
-      /** 2:"aes-128-ecb": 128-bit AES encryption, ECB mode.
+      /** 2: 128-bit AES encryption, ECB mode.
        */
       AES_128_ECB = 2,
-      /** 3:"aes-256-xts": 256-bit AES encryption, XTS mode.
+      /** 3: 256-bit AES encryption, XTS mode.
        */
       AES_256_XTS = 3,
       /* OpenSSL Encryption Mode End */
-
-      /** 4:"sm4-128-ecb": 128-bit SM4 encryption, ECB mode.
+      /** 4: 128-bit SM4 encryption, ECB mode.
        */
       SM4_128_ECB = 4,
 };
-
+/** Configurations of built-in encryption schemas. */
 export interface EncryptionConfig{
     /**
-     * Encryption mode.  The Agora SDK supports built-in encryption, which is set to the "aes-128-xts" mode by default. See ENCRYPTION_MODE.
+     * Encryption mode. The default encryption mode is `AES_128_XTS`. See
+     * {@link ENCRYPTION_MODE}.
      */
     encryptionMode: ENCRYPTION_MODE;
     /**
-     * Pointer to the encryption password.
+     * Encryption key in string type.
+     *
+     * @note If you do not set an encryption key or set it as NULL, you cannot
+     * use the built-in encryption, and the SDK returns error code `-2`.
      */
     encryptionKey: string;
 
@@ -1492,12 +1522,40 @@ export enum VIDEO_PROFILE_TYPE {
   /** Default 640 &times; 360, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_DEFAULT = VIDEO_PROFILE_LANDSCAPE_360P
 }
-
+/** Events during the RTMP streaming. */
 export enum RTMP_STREAMING_EVENT
 {
+  /** 1: An error occurs when you add a background image or a watermark image to
+   * the RTMP stream.
+   */
   RTMP_STREAMING_EVENT_FAILED_LOAD_IMAGE = 1,
 };
-
+/**
+ * The subscribing state.
+ * - 0: The initial subscribing state after joining the channel.
+ * - 1: Fails to subscribe to the remote stream. Possible reasons:
+ *  - The remote user:
+ *    - Calls {@link muteLocalAudioStream}(true) or
+ * {@link muteLocalVideoStream}(true) to stop sending local streams.
+ *    - Calls {@link disableAudio} or {@link disableVideo} to disable the
+ * entire audio or video modules.
+ *    - Calls {@link enableLocalAudio}(false) or
+ * {@link enableLocalVideo}(false) to disable the local audio sampling or video
+ * capturing.
+ *    - The role of the remote user is `AUDIENCE(2)`.
+ *  - The local user calls the following methods to stop receiving remote
+ * streams:
+ *    - Calls {@link muteRemoteAudioStream}(true),
+ * {@link muteAllRemoteAudioStreams}(true), or
+ * {@link setDefaultMuteAllRemoteAudioStreams}(true) to stop receiving remote
+ * audio streams.
+ *    - Calls {@link muteRemoteVideoStream}(true),
+ * {@link muteAllRemoteVideoStreams}(true), or
+ * {@link setDefaultMuteAllRemoteVideoStreams}(true) to stop receiving remote
+ * video streams.
+ * - 2: Subscribing.
+ * - 3: Subscribes to and receives the remote stream successfully.
+ */
 export type STREAM_SUBSCRIBE_STATE =
   | 0 //SUB_STATE_IDLE
   | 1 //SUB_STATE_NO_SUBSCRIBED
@@ -1705,7 +1763,15 @@ export type ChannelMediaRelayError =
   | 9 // 9: RELAY_ERROR_INTERNAL_ERROR
   | 10 // 10: RELAY_ERROR_SRC_TOKEN_EXPIRED
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
-
+/** IP areas.
+ * - 1: Mainland China.
+ * - 2: North America.
+ * - 4: Europe.
+ * - 8: Asia, excluding Mainland China.
+ * - 16: Japan.
+ * - 32: India.
+ * - 0xFFFFFFFF: (Default) Global.
+ */
 export type AREA_CODE =
   | 1 //AREA_CODE_CN = ,
   | 2 //AREA_CODE_NA = ,
@@ -1714,26 +1780,41 @@ export type AREA_CODE =
   | 16//AREA_CODE_JAPAN = ,
   | 32 //AREA_CODE_INDIA = ,
   | (0xFFFFFFFF); //AREA_CODE_GLOBAL =
-
+/** The publishing state.
+ * - 0: The initial publishing state after joining the channel.
+ * - 1: Fails to publish the local stream. Possible reasons:
+ *  - The local user calls {@link muteLocalAudioStream}(true) or
+ * {@link muteLocalVideoStream}(true) to stop sending local streams.
+ *  - The local user calls {@link disableAudio} or {@link disableVideo} to
+ * disable the entire audio or video module.
+ *  - The local user calls {@link enableLocalAudio}(false) or
+ * {@link enableLocalVideo}(false) to disable the local audio sampling or video
+ * capturing.
+ *  - The role of the local user is `AUDIENCE(2)`.
+ * - 2: Publishing.
+ * - 3: Publishes successfully.
+ */
 export type STREAM_PUBLISH_STATE =
     | 0 //PUB_STATE_IDLE
     | 1 //PUB_STATE_NO_PUBLISHED
     | 2 //PUB_STATE_PUBLISHING
     | 3 //PUB_STATE_PUBLISHED
-
+/** Metadata. */
 export interface Metadata {
-    /** The User ID.
-    - For the receiver: the ID of the user who sent the metadata.
-    - For the sender: ignore it.
-    */
+    /** ID of the user who sends the metadata.
+     *
+     * @note When sending the metadata, ignore this parameter. When receiving
+     * the metadata, use this parameter to determine who sends the metadata.
+     */
     uid: number;
-    /** Buffer size of the sent or received Metadata.
-      */
+    /**
+     * The metadata size.
+     */
     size: number;
-    /** Buffer address of the sent or received Metadata.
+    /** The metadata buffer.
      */
     buffer: string;
-    /** Time statmp of the frame following the metadata.
+    /** The RTP timestamp (ms) that the metadata sends.
      */
     timeStampMs: number;
   }
