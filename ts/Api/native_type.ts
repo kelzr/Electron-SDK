@@ -3,6 +3,12 @@ import {
   PluginInfo,
   Plugin
 } from './plugin';
+import { type } from 'os';
+
+export interface RendererOptions
+{
+  append: boolean
+}
 
 /** @zh-cn
  * 网络质量：
@@ -344,6 +350,9 @@ export interface TranscodingConfig {
    * - 5: Five-channel stereo.
    */
   audioChannels: number;
+  /** Bitrate of the CDN live audio output stream. The default value is 48 Kbps, and the highest value is 128.
+   */
+  audioBitrate: number;
   /** @zh-cn
    * 预留属性。
    * 
@@ -590,45 +599,83 @@ export interface UserInfo {
  */
 /** Sets the local voice changer option. */
 export enum VoiceChangerPreset {
-  /** @zh-cn
-   * 0：原声，即关闭本地语音变声。
-   * 
+  /**
+   * The original voice (no local voice change).
    */
-  /** 0: The original voice (no local voice change). */
-  VOICE_CHANGER_OFF = 0,
-  /** @zh-cn
-   * 1：老男孩。
-   * 
+  VOICE_CHANGER_OFF = 0x00000000, //Turn off the voice changer
+  /**
+   * The voice of an old man.
    */
-  /** 1: An old man's voice. */
-  VOICE_CHANGER_OLDMAN = 1,
-  /** @zh-cn
-   * 2：小男孩。
-   * 
+  VOICE_CHANGER_OLDMAN = 0x00000001,
+  /**
+   * The voice of a little boy.
    */
-  /** 2: A little boy's voice. */
-  VOICE_CHANGER_BABYBOY = 2,
-  /** @zh-cn3：小女孩。 */
-  /** 3: A little girl's voice. */
-  VOICE_CHANGER_BABYGIRL = 3,
-  /** @zh-cn
-   * 4：猪八戒。
-   * 
+  VOICE_CHANGER_BABYBOY = 0x00000002,
+  /**
+   * The voice of a little girl.
    */
-  /** 4: The voice of a growling bear. */
-  VOICE_CHANGER_ZHUBAJIE = 4,
-  /** @zh-cn
-   * 5：空灵。
-   * 
+  VOICE_CHANGER_BABYGIRL = 0x00000003,
+  /**
+   * The voice of Zhu Bajie, a character in Journey to the West who has a voice like that of a growling bear.
    */
-  /** 5: Ethereal vocal effects. */
-  VOICE_CHANGER_ETHEREAL = 5,
-  /** @zh-cn
-   * 6：绿巨人。
-   * 
+  VOICE_CHANGER_ZHUBAJIE = 0x00000004,
+  /**
+   * The ethereal voice.
    */
-  /** 6: Hulk's voice. */
-  VOICE_CHANGER_HULK = 6
+  VOICE_CHANGER_ETHEREAL = 0x00000005,
+  /**
+   * The voice of Hulk.
+   */
+  VOICE_CHANGER_HULK = 0x00000006,
+  /**
+   * A more vigorous voice.
+   */
+  VOICE_BEAUTY_VIGOROUS = 0x00100001,//7,
+  /**
+   * A deeper voice.
+   */
+  VOICE_BEAUTY_DEEP = 0x00100002,
+  /**
+   * A mellower voice.
+   */
+  VOICE_BEAUTY_MELLOW = 0x00100003,
+  /**
+   * Falsetto.
+   */
+  VOICE_BEAUTY_FALSETTO = 0x00100004,
+  /**
+   * A fuller voice.
+   */
+  VOICE_BEAUTY_FULL = 0x00100005,
+  /**
+   * A clearer voice.
+   */
+  VOICE_BEAUTY_CLEAR = 0x00100006,
+  /**
+   * A more resounding voice.
+   */
+  VOICE_BEAUTY_RESOUNDING = 0x00100007,
+  /**
+   * A more ringing voice.
+   */
+  VOICE_BEAUTY_RINGING = 0x00100008,
+  /**
+   * A more spatially resonant voice.
+   */
+  VOICE_BEAUTY_SPACIAL = 0x00100009,
+  /**
+   * (For male only) A more magnetic voice. Do not use it when the speaker is a female; otherwise, voice distortion occurs.
+   */
+  GENERAL_BEAUTY_VOICE_MALE_MAGNETIC = 0x00200001,
+  /**
+   * (For female only) A fresher voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
+   */
+  GENERAL_BEAUTY_VOICE_FEMALE_FRESH = 0x00200002,
+  /**
+   * 	(For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
+   */
+  GENERAL_BEAUTY_VOICE_FEMALE_VITALITY = 0x00200003
+
 }
 /** @zh-cn
  * 预设的本地语音混响效果选项：
@@ -637,46 +684,77 @@ export enum VoiceChangerPreset {
  * Sets the local voice changer option.
  */
 export enum AudioReverbPreset {
-  /** @zh-cn
-   * 0：原声，即关闭本地语音混响
+  /**
+   * Turn off local voice reverberation, that is, to use the original voice.
    */
-  /** 0: The original voice (no local voice reverberation). */
-  AUDIO_REVERB_OFF = 0, // Turn off audio reverb
-  /** @zh-cn
-   * 1：流行 
+  AUDIO_REVERB_OFF = 0x00000000, // Turn off audio reverb
+  /**
+   * The reverberation style typical of a KTV venue (enhanced).
    */
-  /** 1: Pop music. */
-  AUDIO_REVERB_POPULAR = 1,
-  /** @zh-cn
-   * 2：R&B
+  AUDIO_REVERB_FX_KTV = 0x00100001,
+  /**
+   * The reverberation style typical of a concert hall (enhanced).
    */
-  /** 2: R&B. */
-  AUDIO_REVERB_RNB = 2,
-  /** @zh-cn
-   * 3：摇滚
+  AUDIO_REVERB_FX_VOCAL_CONCERT = 0x00100002,
+  /**
+   * The reverberation style typical of an uncle's voice.
    */
-  /** 3: Rock music. */
-  AUDIO_REVERB_ROCK = 3,
-  /** @zh-cn
-   * 4：嘻哈
+  AUDIO_REVERB_FX_UNCLE = 0x00100003,
+  /**
+   * The reverberation style typical of a little sister's voice.
    */
-  /** 4: Hip-hop. */
-  AUDIO_REVERB_HIPHOP = 4,
-  /** @zh-cn
-   * 5：演唱会
+  AUDIO_REVERB_FX_SISTER = 0x00100004,
+  /**
+   * The reverberation style typical of a recording studio (enhanced).
    */
-  /** 5: Pop concert. */
-  AUDIO_REVERB_VOCAL_CONCERT = 5,
-  /** @zh-cn
-   * 6：KTV
+  AUDIO_REVERB_FX_STUDIO = 0x00100005,
+  /**
+   * The reverberation style typical of popular music (enhanced).
    */
-  /** 6: Karaoke. */
-  AUDIO_REVERB_KTV = 6,
-  /** @zh-cn
-   * 7：录音棚。
+  AUDIO_REVERB_FX_POPULAR = 0x00100006,
+  /**
+   * The reverberation style typical of R&B music (enhanced).
    */
-  /** 7: Recording studio. */
-  AUDIO_REVERB_STUDIO = 7
+  AUDIO_REVERB_FX_RNB = 0x00100007,
+  /**
+   * The reverberation style typical of the vintage phonograph.
+   */
+  AUDIO_REVERB_FX_PHONOGRAPH = 0x00100008,
+  /**
+   * The reverberation style typical of popular music.
+   */
+  AUDIO_REVERB_POPULAR = 0x00000001,
+  /**
+   * The reverberation style typical of R&B music.
+   */
+  AUDIO_REVERB_RNB = 0x00000002,
+  /**
+   * The reverberation style typical of rock music.
+   */
+  AUDIO_REVERB_ROCK = 0x00000003,
+  /**
+   * The reverberation style typical of hip-hop music.
+   */
+   AUDIO_REVERB_HIPHOP = 0x00000004,
+  /**
+   * The reverberation style typical of a concert hall.
+   */
+  AUDIO_REVERB_VOCAL_CONCERT = 0x00000005,
+  /**
+   * The reverberation style typical of a KTV venue.
+   */
+  AUDIO_REVERB_KTV = 0x00000006,
+  /**
+   * The reverberation style typical of a recording studio.
+   */
+  AUDIO_REVERB_STUDIO = 0x00000007,
+  /**
+   * The reverberation of the virtual stereo. The virtual stereo is an effect that renders the monophonic
+   * audio as the stereo audio, so that all users in the channel can hear the stereo voice effect.
+   * To achieve better virtual stereo reverberation, Agora recommends setting `profile` in `setAudioProfile`
+   * as `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`.
+   */
+  AUDIO_VIRTUAL_STEREO = 0x00200001
 }
 /** @zh-cn
  * 外部导入音视频流定义。
@@ -1104,6 +1182,14 @@ export interface LocalVideoStats {
    * The codec type of the local video. See {@link VIDEO_CODEC_TYPE}.
    */
   codecType: number;
+  /** 
+   * The video packet loss rate (%) from the local client to the Agora edge server before applying the anti-packet loss strategies.
+   */
+  txPacketLossRate: number;
+  /** 
+   * The capture frame rate (fps) of the local video.
+   */
+  captureFrameRate: number;
 }
 /** @zh-ch
  * 本地音频统计数据。
@@ -1133,6 +1219,10 @@ export interface LocalAudioStats {
    * The average sending bitrate (Kbps).
    */
   sentBitrate: number;
+  /** 
+   * The audio packet loss rate (%) from the local client to the Agora edge server before applying the anti-packet loss strategies.
+   */
+  txPacketLossRate: number;
 }
 /** @zh-cn
  * 视频编码属性定义。
@@ -1536,6 +1626,18 @@ export interface RemoteVideoStats {
    * anti-packet-loss method.
    */
   packetLossRate: number;
+  /**
+   * The total time (ms) when the remote user in the Communication profile or the remote
+   * broadcaster in the Live-broadcast profile neither stops sending the video stream nor
+   * disables the video module after joining the channel.
+
+     @since v3.0.1
+   */
+  totalActiveTime: number;
+  /**
+   * The total publish duration (ms) of the remote video stream.
+   */
+  publishDuration: number;
 }
 /** @zh-cn
  * 摄像头采集偏好。
@@ -1666,6 +1768,14 @@ export interface CaptureParam {
    * dimensions of the current screen).
    */
   bitrate: number; //  The bitrate (Kbps) of the shared region. The default value is 0 (the SDK works out a bitrate according to the dimensions of the current screen).
+
+  captureMouseCursor: boolean;
+
+  windowFocus: boolean;
+
+  excludeWindowList: Array<number>;
+
+  excludeWindowCount: number;
 }
 /** @zh-cn
  * 屏幕共享的内容类型。
@@ -1851,6 +1961,15 @@ export interface RemoteAudioStats {
    * when the audio is available.
    */
   frozenRate: number;
+  /** 
+   * The total time (ms) when the remote user in the `COMMUNICATION` profile or the remote host in
+   * the `LIVE_BROADCASTING` profile neither stops sending the audio stream nor disables the audio module after joining the channel.
+   */
+  totalActiveTime: number;
+  /**
+   * The total publish duration (ms) of the remote audio stream.
+   */
+  publishDuration: number;
 }
 /** @zh-cn
  * 远端视频状态：
@@ -2068,10 +2187,40 @@ export type ConnectionChangeReason =
   | 12 // 12: Network status change for renew token
   | 13; // 13: Client IP Address changed
 
+export enum ENCRYPTION_MODE {
+      /* OpenSSL Encryption Mode Start */
+      /** 1:"aes-128-xts": (Default) 128-bit AES encryption, XTS mode.
+       */
+      AES_128_XTS = 1,
+      /** 2:"aes-128-ecb": 128-bit AES encryption, ECB mode.
+       */
+      AES_128_ECB = 2,
+      /** 3:"aes-256-xts": 256-bit AES encryption, XTS mode.
+       */
+      AES_256_XTS = 3,
+      /* OpenSSL Encryption Mode End */
+  
+      /** 4:"sm4-128-ecb": 128-bit SM4 encryption, ECB mode.
+       */
+      SM4_128_ECB = 4,
+};
+
+export interface EncryptionConfig{
+    /**
+     * Encryption mode.  The Agora SDK supports built-in encryption, which is set to the "aes-128-xts" mode by default. See ENCRYPTION_MODE.
+     */
+    encryptionMode: ENCRYPTION_MODE;
+    /**
+     * Pointer to the encryption password.
+     */
+    encryptionKey: string;
+    
+};
 
 /** @zh-cn
  * @deprecated 该枚举已废弃。
- * 视频属性。 */
+ * 视频属性。 
+ */
 /**
  * @deprecated Video profile.
  */
@@ -2442,6 +2591,213 @@ export enum VIDEO_PROFILE_TYPE {
   /** Default 640 &times; 360, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_DEFAULT = VIDEO_PROFILE_LANDSCAPE_360P
 }
+
+export enum RTMP_STREAMING_EVENT
+{
+  RTMP_STREAMING_EVENT_FAILED_LOAD_IMAGE = 1,
+};
+
+export enum AUDIO_EFFECT_PRESET
+{
+    /** Turn off audio effects and use the original voice.
+     */
+    AUDIO_EFFECT_OFF = 0x00000000,
+    /** An audio effect typical of a KTV venue.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_KTV = 0x02010100,
+    /** An audio effect typical of a concert hall.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_VOCAL_CONCERT = 0x02010200,
+    /** An audio effect typical of a recording studio.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_STUDIO = 0x02010300,
+    /** An audio effect typical of a vintage phonograph.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_PHONOGRAPH = 0x02010400,
+    /** A virtual stereo effect that renders monophonic audio as stereo audio.
+     *
+     * @note Call \ref IRtcEngine::setAudioProfile "setAudioProfile" and set the `profile` parameter to
+     * `AUDIO_PROFILE_MUSIC_STANDARD_STEREO(3)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting this
+     * enumerator; otherwise, the enumerator setting does not take effect.
+     */
+    ROOM_ACOUSTICS_VIRTUAL_STEREO = 0x02010500,
+    /** A more spatial audio effect.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_SPACIAL = 0x02010600,
+    /** A more ethereal audio effect.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
+     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * before setting this enumerator.
+     */
+    ROOM_ACOUSTICS_ETHEREAL = 0x02010700,
+    /** A 3D voice effect that makes the voice appear to be moving around the user. The default cycle period of the 3D
+     * voice effect is 10 seconds. To change the cycle period, call \ref IRtcEngine::setAudioEffectParameters "setAudioEffectParameters"
+     * after this method.
+     *
+     * @note
+     * - Call \ref IRtcEngine::setAudioProfile "setAudioProfile" and set the `profile` parameter to `AUDIO_PROFILE_MUSIC_STANDARD_STEREO(3)`
+     * or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting this enumerator; otherwise, the enumerator setting does not take effect.
+     * - If the 3D voice effect is enabled, users need to use stereo audio playback devices to hear the anticipated voice effect.
+     */
+    ROOM_ACOUSTICS_3D_VOICE = 0x02010800,
+    /** The voice of an uncle.
+     *
+     * @note
+     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_UNCLE = 0x02020100,
+    /** The voice of an old man.
+     *
+     * @note
+     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
+     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting
+     * this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_OLDMAN = 0x02020200,
+    /** The voice of a boy.
+     *
+     * @note
+     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
+     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_BOY = 0x02020300,
+    /** The voice of a young woman.
+     *
+     * @note
+     * - Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
+     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_SISTER = 0x02020400,
+    /** The voice of a girl.
+     *
+     * @note
+     * - Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
+     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_GIRL = 0x02020500,
+    /** The voice of Pig King, a character in Journey to the West who has a voice like a growling bear.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_PIGKING = 0x02020600,
+    /** The voice of Hulk.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    VOICE_CHANGER_EFFECT_HULK = 0x02020700,
+    /** An audio effect typical of R&B music.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    STYLE_TRANSFORMATION_RNB = 0x02030100,
+    /** An audio effect typical of popular music.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    STYLE_TRANSFORMATION_POPULAR = 0x02030200,
+    /** A pitch correction effect that corrects the user's pitch based on the pitch of the natural C major scale.
+     * To change the basic mode and tonic pitch, call \ref IRtcEngine::setAudioEffectParameters "setAudioEffectParameters" after this method.
+     *
+     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
+     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
+     * setting this enumerator.
+     */
+    PITCH_CORRECTION = 0x02040100
+};
+
+/** The options for SDK preset voice beautifier effects.
+ */
+export enum VOICE_BEAUTIFIER_PRESET
+{
+    /** Turn off voice beautifier effects and use the original voice.
+     */
+    VOICE_BEAUTIFIER_OFF = 0x00000000,
+    /** A more magnetic voice.
+     *
+     * @note Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may experience vocal distortion.
+     */
+    CHAT_BEAUTIFIER_MAGNETIC = 0x01010100,
+    /** A fresher voice.
+     *
+     * @note Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may experience vocal distortion.
+     */
+    CHAT_BEAUTIFIER_FRESH = 0x01010200,
+    /** A more vital voice.
+     *
+     * @note Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may experience vocal distortion.
+     */
+    CHAT_BEAUTIFIER_VITALITY = 0x01010300,
+    /** A more vigorous voice.
+     */
+    TIMBRE_TRANSFORMATION_VIGOROUS = 0x01030100,
+    /** A deeper voice.
+     */
+    TIMBRE_TRANSFORMATION_DEEP = 0x01030200,
+    /** A mellower voice.
+     */
+    TIMBRE_TRANSFORMATION_MELLOW = 0x01030300,
+    /** A falsetto voice.
+     */
+    TIMBRE_TRANSFORMATION_FALSETTO = 0x01030400,
+    /** A falsetto voice.
+     */
+    TIMBRE_TRANSFORMATION_FULL = 0x01030500,
+    /** A clearer voice.
+     */
+    TIMBRE_TRANSFORMATION_CLEAR = 0x01030600,
+    /** A more resounding voice.
+     */
+    TIMBRE_TRANSFORMATION_RESOUNDING = 0x01030700,
+    /** A more ringing voice.
+     */
+    TIMBRE_TRANSFORMATION_RINGING = 0x01030800
+};
+
+export type STREAM_SUBSCRIBE_STATE =
+  | 0 //SUB_STATE_IDLE
+  | 1 //SUB_STATE_NO_SUBSCRIBED
+  | 2 //SUB_STATE_SUBSCRIBING
+  | 3 //SUB_STATE_SUBSCRIBED
+
 /** @zh-cn
  * 频道信息。
  */
@@ -2771,6 +3127,51 @@ export type ChannelMediaRelayError =
   | 10 // 10: RELAY_ERROR_SRC_TOKEN_EXPIRED
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
 
+export type AREA_CODE =
+  | 1 //AREA_CODE_CN = ,
+  | 2 //AREA_CODE_NA = ,
+  | 4 //AREA_CODE_EUR = ,
+  | 8 //AREA_CODE_AS = ,
+  | 16//AREA_CODE_JAPAN = ,
+  | 32 //AREA_CODE_INDIA = ,
+  | (0xFFFFFFFF); //AREA_CODE_GLOBAL = 
+
+export type STREAM_PUBLISH_STATE =
+    | 0 //PUB_STATE_IDLE
+    | 1 //PUB_STATE_NO_PUBLISHED
+    | 2 //PUB_STATE_PUBLISHING
+    | 3 //PUB_STATE_PUBLISHED
+
+export type AUDIO_ROUTE_TYPE = 
+    | -1 //AUDIO_ROUTE_DEFAULT
+    | 0  //AUDIO_ROUTE_HEADSET
+    | 1  //AUDIO_ROUTE_EARPIECE
+    | 2  //AUDIO_ROUTE_HEADSET_NO_MIC
+    | 3  //AUDIO_ROUTE_SPEAKERPHONE
+    | 4  //AUDIO_ROUTE_LOUDSPEAKER
+    | 5  //AUDIO_ROUTE_BLUETOOTH
+    | 6  //AUDIO_ROUTE_USB
+    | 7  //AUDIO_ROUTE_HDMI
+    | 8  //AUDIO_ROUTE_DISPLAYPORT
+    | 9  //AUDIO_ROUTE_AIRPLAY
+
+export interface Metadata {
+    /** The User ID.
+    - For the receiver: the ID of the user who sent the metadata.
+    - For the sender: ignore it.
+    */
+    uid: number;
+    /** Buffer size of the sent or received Metadata.
+      */
+    size: number;
+    /** Buffer address of the sent or received Metadata.
+     */
+    buffer: string;
+    /** Time statmp of the frame following the metadata.
+     */
+    timeStampMs: number;
+  }
+
 /** @zh-cn
  * @ignore
  */
@@ -2785,7 +3186,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  initialize(appId: string): number;
+  initialize(appId: string, areaCode?: AREA_CODE): number;
   /** @zh-cn
    * @ignore
    */
@@ -3729,6 +4130,18 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+  videoSourceEnableEncryption(enabled: boolean, encryptionConfig: EncryptionConfig): number;
+  /**
+   * @ignore
+   */
+  videoSourceSetEncryptionMode(mode: string): number;
+  /**
+   * @ignore
+   */
+  videoSourceSetEncryptionSecret(mode: string): number;
+  /**
+   * @ignore
+   */
   videoSourceRelease(): number;
   /** @zh-cn
    * @ignore
@@ -3853,6 +4266,10 @@ export interface NodeRtcEngine {
   /** @zh-cn
    * @ignore
    */
+  /**
+   * @ignore
+   */
+  setAudioMixingPitch(pitch: number): number;
   /**
    * @ignore
    */
@@ -4234,6 +4651,26 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
+  registerMediaMetadataObserver(): number;
+  /**
+   * @ignore
+   */
+  unRegisterMediaMetadataObserver(): number;
+  /**
+   * @ignore
+   */
+  sendMetadata(metadata: Metadata): number;
+  /**
+   * @ignore
+   */
+  addMetadataEventHandler(callback: Function, callback2: Function): number;
+  /**
+   * @ignore
+   */
+  setMaxMetadataSize(size: number): number;
+  /**
+   * @ignore
+   */
   initializePluginManager(): number;
   /** @zh-cn
    * @ignore
@@ -4305,8 +4742,26 @@ export interface NodeRtcEngine {
    * @ignore
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
-
-  setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number;
+  /**
+   * @ignore
+   */
+  sendCustomReportMessage(id: string, category: string, event: string, label: string, value: number): number;
+  /**
+   * @ignore
+   */
+  enableEncryption(enabled: boolean, config: EncryptionConfig): number;
+  /**
+   * @ignore
+   */
+  setAudioEffectPreset(preset: AUDIO_EFFECT_PRESET): number;
+  /**
+   * @ignore
+   */
+  setVoiceBeautifierPreset(preset: VOICE_BEAUTIFIER_PRESET): number;
+  /**
+   * @ignore
+   */
+  setAudioEffectParameters(presset: AUDIO_EFFECT_PRESET, param1: number, param2: number): number;
 }
 /** @zh-cn
  * @ignore
@@ -4337,6 +4792,27 @@ export interface NodeRtcChannel {
   /** @zh-cn
    * @ignore
    */
+  /**
+   * @ignore
+   */
+  registerMediaMetadataObserver(): number;
+  /**
+   * @ignore
+   */
+  unRegisterMediaMetadataObserver(): number;
+  /**
+   * @ignore
+   */
+  sendMetadata(metadata: Metadata): number;
+  /**
+   * @ignore
+   */
+  addMetadataEventHandler(callback: Function, callback2: Function): number;
+  /**
+   * @ignore
+   */
+  setMaxMetadataSize(size: number): number;
+
   /**
    * @ignore
    */
@@ -4614,4 +5090,8 @@ export interface NodeRtcChannel {
    * @ignore
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
+  /**
+   * @ignore
+   */
+  enableEncryption(enabled: boolean, config: EncryptionConfig): number;
 }
