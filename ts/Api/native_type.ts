@@ -25,7 +25,7 @@ export interface RendererOptions
  *
  * - 0: The network quality is unknown.
  * - 1: The network quality is excellent.
- * - 2: The network quality is quite good, but the bitrate may be slightly 
+ * - 2: The network quality is quite good, but the bitrate may be slightly
  * lower than excellent.
  * - 3: Users can feel the communication slightly impaired.
  * - 4: Users cannot communicate smoothly.
@@ -60,7 +60,7 @@ export type VIDEO_CODEC_TYPE =
  * - 2：观众
  */
 /**
- * Client roles in a live broadcast.
+ * Client roles in the live streaming.
  *
  * - 1: Host.
  * - 2: Audience.
@@ -113,31 +113,31 @@ export type MediaDeviceType =
 export interface TranscodingUser {
   /** @zh-cn
    * 旁路推流的主播用户 ID
-   * 
+   *
    */
   /** User ID of the user displaying the video in the CDN live. */
   uid: number;
   /** @zh-cn
    * 直播视频上用户视频在布局中的横坐标绝对值
-   * 
+   *
    */
   /** Horizontal position from the top left corner of the video frame. */
   x: number;
   /** @zh-cn
    * 直播视频上用户视频在布局中的纵坐标绝对值
-   * 
+   *
    */
   /** Vertical position from the top left corner of the video frame. */
   y: number;
   /** @zh-cn
    * 直播视频上用户视频的宽度，默认值为 360
-   * 
+   *
    */
   /** Width of the video frame. The default value is 360. */
   width: number;
   /** @zh-cn
    * 直播视频上用户视频的高度，默认值为 640
-   * 
+   *
    */
   /** Height of the video frame. The default value is 640. */
   height: number;
@@ -147,7 +147,7 @@ export interface TranscodingUser {
    * - 最小值为 0（默认值），表示该区域图像位于最下层
    * - 最大值为 100，表示该区域图像位于最上层
    */
-  /** 
+  /**
    * Layer position of the video frame. The value ranges between 0 and 100.
    *
    * - 0: (Default) Lowest.
@@ -156,10 +156,10 @@ export interface TranscodingUser {
   zOrder: number;
   /** @zh-cn
    * 直播视频上用户视频的透明度。取值范围为 [0.0, 1.0]。0.0 表示该区域图像完全透
-   * 明，而 1.0 表示该区域图像完全不透明。默认值为 1.0。 
+   * 明，而 1.0 表示该区域图像完全不透明。默认值为 1.0。
    */
-  /**  
-   * Transparency of the video frame in CDN live. 
+  /**
+   * Transparency of the video frame in CDN live.
    * The value ranges between 0 and 1:
    *
    * - 0: Completely transparent.
@@ -175,23 +175,23 @@ export interface TranscodingUser {
    * - 4：对应主播的音频，推流中位于 BL 声道。如果主播上行为双声道，会先把多声道混音成单声道
    * - 5：对应主播的音频，推流中位于 BR 声道。如果主播上行为双声道，会先把多声道混音成单声道
    */
-  /** The audio channel of the sound. 
-   * - 0: (Default) Supports dual channels at most, depending on the upstream 
+  /** The audio channel of the sound.
+   * - 0: (Default) Supports dual channels at most, depending on the upstream
    * of the broadcaster.
-   * - 1: The audio stream of the broadcaster uses the FL audio channel. 
-   * If the upstream of the broadcaster uses multiple audio channels, 
+   * - 1: The audio stream of the broadcaster uses the FL audio channel.
+   * If the upstream of the broadcaster uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 2: The audio stream of the broadcaster uses the FC audio channel. 
-   * If the upstream of the broadcaster uses multiple audio channels, 
+   * - 2: The audio stream of the broadcaster uses the FC audio channel.
+   * If the upstream of the broadcaster uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 3: The audio stream of the broadcaster uses the FR audio channel. 
-   * If the upstream of the broadcaster uses multiple audio channels, 
+   * - 3: The audio stream of the broadcaster uses the FR audio channel.
+   * If the upstream of the broadcaster uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 4: The audio stream of the broadcaster uses the BL audio channel. 
-   * If the upstream of the broadcaster uses multiple audio channels, 
+   * - 4: The audio stream of the broadcaster uses the BL audio channel.
+   * If the upstream of the broadcaster uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 5: The audio stream of the broadcaster uses the BR audio channel. 
-   * If the upstream of the broadcaster uses multiple audio channels, 
+   * - 5: The audio stream of the broadcaster uses the BR audio channel.
+   * If the upstream of the broadcaster uses multiple audio channels,
    * these channels will be mixed into mono first.
    */
   audioChannel: number;
@@ -199,74 +199,76 @@ export interface TranscodingUser {
 
 /** @zh-cn
  * 直播转码的相关配置。
+/**
+ * Sets the CDN live audio/video transcoding settings.
  */
-/** Sets the CDN live audio/video transcoding settings. */
 export interface TranscodingConfig {
   /** @zh-cn
    * 用于旁路直播的输出视频的总宽度，默认值为 360。
-   * 
+   *
    * - 如果你是视频推流，设置的 width × height 不得低于 64 × 64 (px)，否则系统会默认调整
    * 为 64 x 64 (px)。
    * - 如果你是音频推流，请将 width × height 设为 0 x 0 (px)。
    */
-  /** 
-   * Width of the video. The default value is 360. 
-   * 
-   * If you push video streams to the CDN, set the value of width x height to 
+  /**
+   * Width of the video. The default value is 360.
+   *
+   * If you push video streams to the CDN, set the value of width x height to
    * at least 64 x 64 (px), or the SDK will adjust it to 64 x 64 (px).
-   * 
-   * If you push audio streams to the CDN, set the value of width x height to 
+   *
+   * If you push audio streams to the CDN, set the value of width x height to
    * 0 x 0 (px).
    */
   width: number;
   /** @zh-cn
    * 用于旁路直播的输出视频的总高度，默认值为 640。
-   * 
+   *
    * - 如果你是视频推流，设置的 width × height 不得低于 64 × 64 (px)，否则系统会默认调整
    * 为 64 x 64 (px)。
    * - 如果你是音频推流，请将 width × height 设为 0 x 0 (px)。
    */
-  /** 
-   * Height of the video. The default value is 640. 
-   * 
-   * If you push video streams to the CDN, set the value of width x height to 
+  /**
+   * Height of the video. The default value is 640.
+   *
+   * If you push video streams to the CDN, set the value of width x height to
    * at least 64 x 64 (px), or the SDK will adjust it to 64 x 64 (px).
-   * 
-   * If you push audio streams to the CDN, set the value of width x height to 
+   *
+   * If you push audio streams to the CDN, set the value of width x height to
    * 0 x 0 (px).
    */
   height: number;
   /** @zh-cn
    * 用于旁路直播的输出视频的码率，单位为 Kbps，默认值为 400 Kbps。
-   * 
+   *
    * 用户可以根据码率参考表中的码率值进行设置；如果设置的码率超出合理范围，
-   * Agora 服务器会在合理区间内自动调整码率值。 
+   * Agora 服务器会在合理区间内自动调整码率值。
    */
-  /** Bitrate of the CDN live output video stream. 
-   * 
+  /**
+   * Bitrate of the CDN live output video stream.
    * The default value is 400 Kbps.
-   * 
-   * Set this parameter according to the Video Bitrate Table. If you set a 
-   * bitrate beyond the proper range, the SDK automatically 
+   *
+   * Set this parameter according to the Video Bitrate Table.
+   *
+   * If you set a bitrate beyond the proper range, the SDK automatically
    * adapts it to a value within the range.
    */
   videoBitrate: number;
   /** @zh-cn
    * 用于旁路直播的输出视频的帧率，单位为帧每秒，取值范围为 (0, 30]，
    * 默认值为 15 fps。
-   * 
+   *
    * 服务器会将将高于 30 的帧率设置改为 30。
    */
-  /** 
-   * Frame rate (fps) of the CDN live output video stream. 
-   * The value range is (0, 30]. The default value is 15. 
-   * 
+  /**
+   * Frame rate (fps) of the CDN live output video stream.
+   * The value range is (0, 30]. The default value is 15.
+   *
    * **Note**: Agora adjusts all values over 30 to 30.
    */
   videoFrameRate: number;
   /** @zh-cn
    * @deprecated 从 v2.8.0 起废弃。
-   * 
+   *
    * 是否启用低延时模式：
    * - true：低延时，不保证画质
    * - false：（默认值）高延时，保证画质
@@ -279,7 +281,7 @@ export interface TranscodingConfig {
   lowLatency: boolean;
   /** @zh-cn
    * 用于旁路直播的输出视频的 GOP，单位为帧。默认值为 30 帧
-   * 
+   *
    */
   /**
    * Video GOP in frames. The default value is 30 fps.
@@ -292,12 +294,12 @@ export interface TranscodingConfig {
    * - VIDEO_CODEC_PROFILE_HIGH = 100：（默认）High 级别的视频编码规格，一般用于广播及视频碟片存储，高清电视
    */
   /** Self-defined video codec profile.
-   * - VIDEO_CODEC_PROFILE_BASELINE = 66: Baseline video codec profile. 
+   * - VIDEO_CODEC_PROFILE_BASELINE = 66: Baseline video codec profile.
    * Generally used in video calls on mobile phones.
-   * - VIDEO_CODEC_PROFILE_MAIN = 77: Main video codec profile. 
-   * Generally used in mainstream electronics, such as MP4 players, portable 
+   * - VIDEO_CODEC_PROFILE_MAIN = 77: Main video codec profile.
+   * Generally used in mainstream electronics, such as MP4 players, portable
    * video players, PSP, and iPads.
-   * - VIDEO_CODEC_PROFILE_HIGH = 100: (Default) High video codec profile. 
+   * - VIDEO_CODEC_PROFILE_HIGH = 100: (Default) High video codec profile.
    * Generally used in high-resolution broadcasts or television.
    */
   videoCodecProfile: number;
@@ -306,14 +308,14 @@ export interface TranscodingConfig {
    * 用于旁路直播的输出视频的背景色，格式为 RGB 定义下的十六进制整数（不要带 # 号），
    * 如 0xFFB6C1 表示浅粉色。默认0x000000，黑色。
    */
-  /** 
-   * The background color in RGB hex value. Value only, do not include a #. 
+  /**
+   * The background color in RGB hex value. Value only, do not include a #.
    * For example, 0xFFB6C1 (light pink). The default value is 0x000000 (black).
    */
   backgroundColor: number;
   /** @zh-cn
    * 获取旁路直播中的用户人数
-   * 
+   *
    */
   /** The number of users in the live broadcast. */
   userCount: number;
@@ -337,11 +339,11 @@ export interface TranscodingConfig {
    * - 4：四声道
    * - 5：五声道
    */
-  /** 
-   * Agora's self-defined audio-channel types. 
-   * 
+  /**
+   * Agora's self-defined audio-channel types.
+   *
    * We recommend choosing option 1 or 2.
-   * 
+   *
    * A special player is required if you choose option 3, 4, or 5:
    * - 1: (Default) Mono.
    * - 2: Two-channel stereo.
@@ -355,62 +357,62 @@ export interface TranscodingConfig {
   audioBitrate: number;
   /** @zh-cn
    * 预留属性。
-   * 
+   *
    * CDN 推流时，用户自定义发送的信息，可用于填充 H.264 或 H.265 流中 SEI 帧内容。最大长度
    * 不能超过 4096 字节。
-   * 
+   *
    * 详见 [SEI 帧相关问题](https://docs.agora.io/cn/faq/sei)。
    */
   /**
    * The reserved property.
-   * 
+   *
    * Extra user-defined information to send SEI for the H.264 or H.265 stream
    * to the CDN streaming client. The maximum length is 4096 bytes.
-   * 
+   *
    * See [SEI-related FAQ](https://docs.agora.io/en/faq/sei) for more details.
    */
   transcodingExtraInfo: string;
   /** @zh-cn
    * 直播视频上的水印图片
-   * 
+   *
    */
   /** The watermark image added to the CDN live publishing stream. */
   watermark: {
     /** @zh-cn
      * 直播视频上图片的 HTTP/HTTPS 地址，字符长度不得超过 1024 字节
-     * 
+     *
      */
-    /** 
+    /**
      * HTTP/HTTPS URL address of the image on the broadcasting video.
-     * 
+     *
      * The maximum length of this parameter is 1024 bytes.
      */
     url: string;
     /** @zh-cn
      * 图片左上角在视频帧上的横轴坐标。
-     * 
+     *
      */
-    /** Horizontal position of the image from the upper left of the 
-     * broadcasting video. 
+    /** Horizontal position of the image from the upper left of the
+     * broadcasting video.
      */
     x: number;
     /** @zh-cn
      * 图片左上角在视频帧上的纵轴坐标。
-     * 
+     *
      */
-    /** Vertical position of the image from the upper left of the broadcasting 
-     * video. 
+    /** Vertical position of the image from the upper left of the broadcasting
+     * video.
      */
     y: number;
     /** @zh-cn
      * 图片在视频帧上的宽度。
-     * 
+     *
      */
     /** Width of the image on the broadcasting video. */
     width: number;
     /** @zh-cn
      * 图片在视频帧上的高度。
-     * 
+     *
      */
     /** Height of the image on the broadcasting video. */
     height: number;
@@ -419,24 +421,24 @@ export interface TranscodingConfig {
     /** @zh-cn
      * //TODO
      */
-    /** 
+    /**
      * HTTP/HTTPS URL address of the image on the broadcasting video.
-     * 
+     *
      * The maximum length of this parameter is 1024 bytes.
      */
     url: string;
     /** @zh-cn
      * //TODO
      */
-    /** Horizontal position of the image from the upper left of the 
-     * broadcasting video. 
+    /** Horizontal position of the image from the upper left of the
+     * broadcasting video.
      */
     x: number;
     /** @zh-cn
      * //TODO
      */
-    /** Vertical position of the image from the upper left of the broadcasting 
-     * video. 
+    /** Vertical position of the image from the upper left of the broadcasting
+     * video.
      */
     y: number;
     /** @zh-cn
@@ -452,7 +454,7 @@ export interface TranscodingConfig {
   };
   /** @zh-cn
    * TranscodingUser 类。
-   * 
+   *
    */
   /** The TranscodingUsers Array. */
   transcodingUsers: Array<TranscodingUser>;
@@ -470,7 +472,7 @@ export interface LastmileProbeConfig {
    * - false：不探测
    */
   /**
-   * Sets whether or not to test the uplink network. Some users, for example, 
+   * Sets whether or not to test the uplink network. Some users, for example,
    * the audience in a Live-broadcast channel, do not need such a test.
    *
    * - true: test
@@ -493,7 +495,7 @@ export interface LastmileProbeConfig {
    * 用户期望的最高发送码率，单位为 bps，范围为 [100000, 5000000]。
    */
   /**
-   * The expected maximum sending bitrate (bps) of the local user. 
+   * The expected maximum sending bitrate (bps) of the local user.
    * The value ranges between 100000 and 5000000.
    */
   expectedUplinkBitrate: number;
@@ -501,7 +503,7 @@ export interface LastmileProbeConfig {
    * 用户期望的最高接收码率，单位为 bps，范围为 [100000, 5000000]。
    */
   /**
-   * The expected maximum receiving bitrate (bps) of the local user. 
+   * The expected maximum receiving bitrate (bps) of the local user.
    * The value ranges between 100000 and 5000000.
    */
   expectedDownlinkBitrate: number;
@@ -513,19 +515,19 @@ export interface LastmileProbeConfig {
 export interface LastmileProbeOneWayResult {
   /** @zh-cn
    * 丢包率。
-   * 
+   *
    */
   /** The packet loss rate (%). */
   packetLossRate: number;
   /** @zh-cn
    * 网络抖动，单位为毫秒。
-   * 
+   *
    */
   /** The network jitter (ms). */
   jitter: number;
   /** @zh-cn
    * 可用网络带宽预计，单位为 Kbps。
-   * 
+   *
    */
   /** The estimated available bandwidth (Kbps). */
   availableBandwidth: number;
@@ -546,23 +548,23 @@ export interface LastmileProbeResult {
    * - 1: The last-mile network probe test is complete.
    * - 2: The last-mile network probe test is incomplete and the bandwidth
    * estimation is not available, probably due to limited test resources.
-   * - 3: The last-mile network probe test is not carried out, probably due 
+   * - 3: The last-mile network probe test is not carried out, probably due
    * to poor network conditions.
    */
   state: number;
   /** @zh-cn
    * 上行网络质量报告，详见 {@link LastmileProbeOneWayResult}。
    */
-  /** The uplink last-mile network probe test result. 
-   * See {@link LastmileProbeOneWayResult}. 
+  /** The uplink last-mile network probe test result.
+   * See {@link LastmileProbeOneWayResult}.
    */
   uplinkReport: LastmileProbeOneWayResult;
   /** @zh-cn
    * 下行网络质量报告，详见 {@link LastmileProbeOneWayResult}。
    */
   /** @en-us
-   * The downlink last-mile network probe test result. 
-   * See {@link LastmileProbeOneWayResult}. 
+   * The downlink last-mile network probe test result.
+   * See {@link LastmileProbeOneWayResult}.
    */
   downlinkReport: LastmileProbeOneWayResult;
   /** @zh-cn
@@ -585,17 +587,17 @@ export interface UserInfo {
   /** @zh-cn
    * 用户 User account。
    */
-  /** The user account. 
-   * 
+  /** The user account.
+   *
    * The maximum length of this parameter is 255 bytes.
-   * 
+   *
    * Ensure that you set this parameter and do not set it as null.
    */
   userAccount: string;
 }
 /** @zh-cn
  * 本地语音的变声效果选项。
- * 
+ *
  */
 /** Sets the local voice changer option. */
 export enum VoiceChangerPreset {
@@ -752,7 +754,7 @@ export enum AudioReverbPreset {
    * The reverberation of the virtual stereo. The virtual stereo is an effect that renders the monophonic
    * audio as the stereo audio, so that all users in the channel can hear the stereo voice effect.
    * To achieve better virtual stereo reverberation, Agora recommends setting `profile` in `setAudioProfile`
-   * as `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`.
+   * as `5`.
    */
   AUDIO_VIRTUAL_STEREO = 0x00200001
 }
@@ -765,46 +767,46 @@ export enum AudioReverbPreset {
 export interface InjectStreamConfig {
 
   /** @zh-cn
-   * 添加进入直播的外部视频源宽度。默认值为 0，即保留视频源原始宽度。 
+   * 添加进入直播的外部视频源宽度。默认值为 0，即保留视频源原始宽度。
    */
-  /** 
-   * Width of the added stream in the live broadcast. 
-   * 
-   * The default value is 0 pixel (same width as the original stream). 
+  /**
+   * Width of the added stream in the live broadcast.
+   *
+   * The default value is 0 pixel (same width as the original stream).
    */
   width: number;
   /** @zh-cn
-   * 添加进入直播的外部视频源高度。默认值为 0，即保留视频源原始高度。 
+   * 添加进入直播的外部视频源高度。默认值为 0，即保留视频源原始高度。
    */
-  /** 
-   * Height of the added stream in the live broadcast. 
-   * 
-   * The default value is 0 pixel (same height as the original stream). 
+  /**
+   * Height of the added stream in the live broadcast.
+   *
+   * The default value is 0 pixel (same height as the original stream).
    */
   height: number;
   /** @zh-cn
-   * 添加进入直播的外部视频源码率。默认设置为 400 Kbps。 
+   * 添加进入直播的外部视频源码率。默认设置为 400 Kbps。
    */
-  /** 
-   * Video bitrate of the added stream in the live broadcast. 
-   * 
-   * The default value is 400 Kbps. 
+  /**
+   * Video bitrate of the added stream in the live broadcast.
+   *
+   * The default value is 400 Kbps.
    */
   videoBitrate: number;
   /** @zh-cn
-   * 添加进入直播的外部视频源帧率。默认值为 15 fps。 
+   * 添加进入直播的外部视频源帧率。默认值为 15 fps。
    */
-  /** Video frame rate of the added stream in the live broadcast. 
-   * 
-   * The default value is 15 fps. 
+  /** Video frame rate of the added stream in the live broadcast.
+   *
+   * The default value is 15 fps.
    */
   videoFrameRate: number;
   /** @zh-cn
-   * 添加进入直播的外部视频源 GOP。默认值为 30 帧。 
+   * 添加进入直播的外部视频源 GOP。默认值为 30 帧。
    */
-  /** Video GOP of the added stream in the live broadcast in frames. 
-   * 
-   * The default value is 30 fps. 
+  /** Video GOP of the added stream in the live broadcast in frames.
+   *
+   * The default value is 30 fps.
    */
   videoGop: number;
   /** @zh-cn
@@ -815,10 +817,10 @@ export interface InjectStreamConfig {
    * - AUDIO_SAMPLE_RATE_48000 = 48000
    */
   /**
-   * Audio-sampling rate of the added stream in the live broadcast. 
-   * 
+   * Audio-sampling rate of the added stream in the live broadcast.
+   *
    * The default value is 44100 Hz.
-   * 
+   *
    * **Note**: Agora recommends setting the default value.
    * - AUDIO_SAMPLE_RATE_32000 = 32000 Hz
    * - AUDIO_SAMPLE_RATE_44100 = 44100 Hz
@@ -830,10 +832,10 @@ export interface InjectStreamConfig {
    * **Note**：声网建议目前采用默认值，不要自行设置。
    */
   /**
-   * Audio bitrate of the added stream in the live broadcast. 
-   * 
+   * Audio bitrate of the added stream in the live broadcast.
+   *
    * The default value is 48 Kbps.
-   * 
+   *
    * **Note**: Agora recommends setting the default value.
    */
   audioBitrate: number;
@@ -845,7 +847,7 @@ export interface InjectStreamConfig {
   /** Audio channels in the live broadcast.
    * - 1: (Default) Mono
    * - 2: Two-channel stereo
-   * 
+   *
    * **Note**: Agora recommends setting the default value.
    */
   audioChannels: number;
@@ -858,12 +860,12 @@ export interface InjectStreamConfig {
  */
 export enum Priority {
   /** @zh-cn
-   * 50：用户媒体流的优先级为高。 
+   * 50：用户媒体流的优先级为高。
    */
   /** 50: The user's priority is high. */
   PRIORITY_HIGH = 50,
   /** @zh-cn
-   * 100：（默认）用户媒体流的优先级正常。 
+   * 100：（默认）用户媒体流的优先级正常。
    */
   /** 100: (Default) The user's priority is normal. */
   PRIORITY_NORMAL = 100
@@ -908,8 +910,8 @@ export interface RtcStats {
   /** @zh-cn
    * 音频包的发送码率（Kbps），瞬时值。
    */
-  /** Audio transmission bitrate (Kbps), represented by an instantaneous 
-   * value. 
+  /** Audio transmission bitrate (Kbps), represented by an instantaneous
+   * value.
    */
   txAudioKBitRate: number;
   /** @zh-cn
@@ -920,48 +922,48 @@ export interface RtcStats {
   /** @zh-cn
    * 视频发送码率（Kbps），瞬时值。
    */
-  /** Video transmission bitrate (Kbps), represented by an instantaneous 
-   * value. 
+  /** Video transmission bitrate (Kbps), represented by an instantaneous
+   * value.
    */
   txVideoKBitRate: number;
   /** @zh-cn
    * 接收音频字节数（bytes），累计值。
    */
-  /** 
+  /**
    * @since 2.9.0
-   * 
-   * Total number of audio bytes received (bytes), represented by an aggregate 
-   * value. 
+   *
+   * Total number of audio bytes received (bytes), represented by an aggregate
+   * value.
    */
   rxAudioKBytes: number;
   /** @zh-cn
    * 发送音频字节数（bytes），累计值。
    */
-  /** 
+  /**
    * @since 2.9.0
-   * 
-   * Total number of audio bytes sent (bytes), represented by an aggregate 
-   * value. 
+   *
+   * Total number of audio bytes sent (bytes), represented by an aggregate
+   * value.
    */
   txAudioKBytes: number;
   /** @zh-cn
    * 接收视频字节数（bytes），累计值。
    */
-  /** 
+  /**
    * @since 2.9.0
-   * 
-   * Total number of video bytes received (bytes), represented by an aggregate 
-   * value. 
+   *
+   * Total number of video bytes received (bytes), represented by an aggregate
+   * value.
    */
   rxVideoKBytes: number;
   /** @zh-cn
    * 发送视频字节数（bytes），累计值。
    */
-  /** 
+  /**
    * @since 2.9.0
-   * 
-   * Total number of video bytes sent (bytes), represented by an aggregate 
-   * value. 
+   *
+   * Total number of video bytes sent (bytes), represented by an aggregate
+   * value.
    */
   txVideoKBytes: number;
   /** @zh-cn
@@ -972,7 +974,7 @@ export interface RtcStats {
   /** @zh-cn
    * 使用抗丢包技术前，客户端到 Agora 边缘服务器的丢包率(%)。
    */
-  /** The packet loss rate (%) from the local client to Agora's edge server, 
+  /** The packet loss rate (%) from the local client to Agora's edge server,
    * before using the anti-packet-loss method.
    */
   txPacketLossRate: number;
@@ -1000,60 +1002,60 @@ export interface RtcStats {
   cpuTotalUsage: number;
   /** @zh-cn
    * @since v3.0.0
-   * 
+   *
    * 客户端到本地路由器的往返时延 (ms)
    */
   /**
    * @since v3.0.0
-   * 
+   *
    * The round-trip time delay from the client to the local router.
    */
   gatewayRtt: number;
   /** @zh-cn
    * @since v3.0.0
-   * 
+   *
    * 当前 App 的内存占比 (%)
-   * 
+   *
    * 该值仅作参考。受系统限制可能无法获取。
    */
   /**
    * @since v3.0.0
-   * 
+   *
    * The memory usage ratio of the app (%).
-   * 
-   * This value is for reference only. Due to system limitations, you may not 
+   *
+   * This value is for reference only. Due to system limitations, you may not
    * get the value of this member.
    */
   memoryAppUsageRatio: number;
   /** @zh-cn
    * @since v3.0.0
-   * 
+   *
    * 当前系统的内存占比 (%)
-   * 
+   *
    * 值仅作参考。受系统限制可能无法获取。
    */
   /**
    * @since v3.0.0
-   * 
+   *
    * The memory usage ratio of the system (%).
-   * 
-   * This value is for reference only. Due to system limitations, you may not 
+   *
+   * This value is for reference only. Due to system limitations, you may not
    * get the value of this member.
    */
   memoryTotalUsageRatio: number;
   /** @zh-cn
    * @since v3.0.0
-   * 
+   *
    * 当前 App 的内存大小 (KB)
-   * 
+   *
    * 该值仅作参考。受系统限制可能无法获取。
    */
   /**
    * @since v3.0.0
-   * 
+   *
    * The memory usage of the app (KB).
-   * 
-   * This value is for reference only. Due to system limitations, you may not 
+   *
+   * This value is for reference only. Due to system limitations, you may not
    * get the value of this member.
    */
   memoryAppUsageInKbytes: number;
@@ -1064,17 +1066,17 @@ export interface RtcStats {
 /** Quality change of the local video. */
 export enum QualityAdaptIndication {
   /** @zh-cn
-   * 0：本地视频质量不变。 
+   * 0：本地视频质量不变。
    */
   /** 0: The quality of the local video stays the same. */
   ADAPT_NONE = 0,
   /** @zh-cn
-   * 1：因网络带宽增加，本地视频质量改善。 
+   * 1：因网络带宽增加，本地视频质量改善。
    */
   /** 1: The quality improves because the network bandwidth increases. */
   ADAPT_UP_BANDWIDTH = 1,
   /** @zh-cn
-   * 2：因网络带宽减少，本地视频质量变差。 
+   * 2：因网络带宽减少，本地视频质量变差。
    */
   /** 2: The quality worsens because the network bandwidth decreases. */
   ADAPT_DOWN_BANDWIDTH = 2
@@ -1085,16 +1087,16 @@ export enum QualityAdaptIndication {
 /** Statistics of the local video. */
 export interface LocalVideoStats {
   /** @zh-cn
-   * （实际发送码率 (Kbps)。 （Note: 不包含丢包后重传视频等的发送码率）
+   * 实际发送码率 (Kbps)。 （Note: 不包含丢包后重传视频等的发送码率）
    */
-  /** Bitrate (Kbps) sent in the reported interval, which does not include 
-   * the bitrate of the re-transmission video after packet loss. 
+  /** Bitrate (Kbps) sent in the reported interval, which does not include
+   * the bitrate of the re-transmission video after packet loss.
    */
   sentBitrate: number;
   /** @zh-cn
    * 实际发送帧率 (fps)。 （Note: 不包含丢包后重传视频等的发送帧率）
    */
-  /** Frame rate (fps) sent in the reported interval, which does not include 
+  /** Frame rate (fps) sent in the reported interval, which does not include
    * the frame rate of the re-transmission video after packet loss.
    */
   sentFrameRate: number;
@@ -1111,9 +1113,9 @@ export interface LocalVideoStats {
   /** @zh-cn
    * 当前编码器的目标编码码率，单位为 Kbps，该码率为 SDK 根据当前网络状况预估的一个值。
    */
-  /** The target bitrate (Kbps) of the current encoder. 
-   * 
-   * This value is estimated by the SDK based on the current network 
+  /** The target bitrate (Kbps) of the current encoder.
+   *
+   * This value is estimated by the SDK based on the current network
    * conditions.
    */
   targetBitrate: number;
@@ -1126,23 +1128,23 @@ export interface LocalVideoStats {
    * 统计周期内本地视频质量（基于目标帧率和目标码率）的自适应情况。
    * 详见 {@link QualityAdaptIndication}。
    */
-  /** Quality change of the local video in terms of target frame rate and 
-   * target bit rate in this reported interval. 
+  /** Quality change of the local video in terms of target frame rate and
+   * target bit rate in this reported interval.
    * See {@link QualityAdaptIndication}.
    */
   qualityAdaptIndication: QualityAdaptIndication;
-  
+
   /** @zh-cn
    * 视频编码码率（Kbps）。
-   * 
-   * **Note**: 
-   * 
+   *
+   * **Note**:
+   *
    * 不包含丢包后重传视频等的编码码率。
    */
   /**
    * @since 2.9.0
-   * 
-   * The encoding bitrate (Kbps), which does not include the bitrate of the 
+   *
+   * The encoding bitrate (Kbps), which does not include the bitrate of the
    * retransmission video after packet loss.
    */
   encodedBitrate: number;
@@ -1151,7 +1153,7 @@ export interface LocalVideoStats {
    */
   /**
    * @since 2.9.0
-   * 
+   *
    * The width of the encoding frame (px).
    */
   encodedFrameWidth: number;
@@ -1160,7 +1162,7 @@ export interface LocalVideoStats {
    */
   /**
    * @since 2.9.0
-   * 
+   *
    * The height of the encoding frame (px).
    */
   encodedFrameHeight: number;
@@ -1169,7 +1171,7 @@ export interface LocalVideoStats {
    */
   /**
    * @since 2.9.0
-   * 
+   *
    * The value of the sent frames, represented by an aggregate value.
    */
   encodedFrameCount: number;
@@ -1178,23 +1180,24 @@ export interface LocalVideoStats {
    */
   /**
    * @since 2.9.0
-   * 
+   *
    * The codec type of the local video. See {@link VIDEO_CODEC_TYPE}.
    */
   codecType: number;
-  /** 
-   * The video packet loss rate (%) from the local client to the Agora edge server before applying the anti-packet loss strategies.
+  /** The packet loss rate (%) from the local client to Agora's edge server,
+   * before using the anti-packet-loss method. //FIXME(video?)
    */
   txPacketLossRate: number;
-  /** 
-   * The capture frame rate (fps) of the local video.
+  /** The capture frame rate (fps) of the local video.
+   *
+   * @since v3.2.0
    */
   captureFrameRate: number;
 }
 /** @zh-ch
  * 本地音频统计数据。
  */
-/** 
+/**
  * The statistics of the local audio stream
  */
 export interface LocalAudioStats {
@@ -1202,7 +1205,7 @@ export interface LocalAudioStats {
    * 声道数。
    */
   /**
-   * The number of channels. 
+   * The number of channels.
    */
   numChannels: number;
   /** @zh-ch
@@ -1219,8 +1222,11 @@ export interface LocalAudioStats {
    * The average sending bitrate (Kbps).
    */
   sentBitrate: number;
-  /** 
-   * The audio packet loss rate (%) from the local client to the Agora edge server before applying the anti-packet loss strategies.
+  /**
+   * The audio packet loss rate (%) from the local client to the Agora edge
+   * server before applying the anti-packet loss strategies.
+   *
+   * @since v3.2.0
    */
   txPacketLossRate: number;
 }
@@ -1232,50 +1238,50 @@ export interface VideoEncoderConfiguration {
   /** @zh-cn
    * 视频帧在横轴上的宽(px)。视频编码宽 x 高默认为 640 x 360。
    */
-  /** Width (pixels) of the video. 
-   * 
+  /** Width (pixels) of the video.
+   *
    * The default value is 640(width) x 360(hight).
    */
   width: number;
   /** @zh-cn
    * 视频帧在纵轴上的高(px)。视频编码宽 x 高默认为 640 x 360。
    */
-  /** Height (pixels) of the video. 
+  /** Height (pixels) of the video.
    *
    * The default value is 640(width) x 360(hight).
    */
   height: number;
   /** @zh-cn
    * 视频编码的帧率（fps）。
-   * 
+   *
    * 默认值为 15 ，建议不要超过 30。
    */
   /**
-   * The frame rate (fps) of the video. 
-   * 
+   * The frame rate (fps) of the video.
+   *
    * The default value is 15 fps.
-   * 
+   *
    * **Noete**:
    * We do not recommend setting this to a value greater than 30 fps.
    */
   frameRate: number;
   /** @zh-cn
    * 最低视频编码帧率（fps）。
-   * 
+   *
    * 默认值为 -1。
    */
   /**
-   * The minimum frame rate of the video. 
-   * 
+   * The minimum frame rate of the video.
+   *
    * The default value is -1.
    */
   minFrameRate: number;
 
   /** @zh-cn
    * 视频编码的码率，单位为 Kbps。
-   * 
+   *
    * 你可以根据场景需要，参照下表手动设置你想要的码率。若设置的视频码率超出合理范围，SDK 会自动按照合理区间处理码率。
-   * 
+   *
    * 你也可以选择如下一种模式进行设置：
    * - `STANDARD_BITRATE (0)`：（推荐）标准模式
    *  - 通信场景码率：与基准码率一致
@@ -1283,7 +1289,7 @@ export interface VideoEncoderConfiguration {
    * - `COMPATIBLE_BITRATE (1)`：适配模式
    *  - 通信场景码率：与基准码率一致
    *  - 直播场景码率：与基准码率一致
-   * 
+   *
    *
    * | 分辨率 (宽 x 高) | 帧率 (fps) | 基准码率 (Kbps) |
      | :--------------- | :--------- | :-------------- |
@@ -1321,31 +1327,31 @@ export interface VideoEncoderConfiguration {
      | 3840 × 2160      | 60         | 6500            |
    */
   /** The video encoding bitrate (Kbps).
-   * 
-   * Set your bitrate based on the following table. If you set a bitrate 
-   * beyond the proper range, the SDK automatically sets it to within the 
+   *
+   * Set your bitrate based on the following table. If you set a bitrate
+   * beyond the proper range, the SDK automatically sets it to within the
    * range.
-   * 
+   *
    * You can also choose one of the following bitrate options:
    * - `0`: (Recommended) The standard bitrate.
-   *  - The Communication profile: the encoding bitrate equals the base 
+   *  - The communication(`0`) profile: the encoding bitrate equals the base
    * bitrate.
-   *  - The Live-broadcast profile: the encoding bitrate is twice the base 
+   *  - The `1` (live streaming) profile: the encoding bitrate is twice the base
    * bitrate.
    * - `-1`: The compatible bitrate.
-   *  - The Communication profile: the encoding bitrate equals the base 
+   *  - The communication(`0`) profile: the encoding bitrate equals the base
    * bitrate.
-   *  - The Live-broadcast profile: the encoding bitrate equals the base 
+   *  - The `1` (live streaming) profile: the encoding bitrate equals the base
    * bitrate.
-   * 
-   * The Communication profile prioritizes smoothness, while the 
-   * Live-broadcast profile prioritizes video quality 
-   * (requiring a higher bitrate). We recommend setting the bitrate mode as 
+   *
+   * The communication(`0`) profile prioritizes smoothness, while the
+   * `1` (live streaming) profile prioritizes video quality
+   * (requiring a higher bitrate). We recommend setting the bitrate mode as
    * `0` to address this difference.
    *
    * The following table lists the recommended video encoder configurations.
    *
-   * | Resolution             | Frame Rate (fps) | Base Bitrate (Kbps)   | 
+   * | Resolution             | Frame Rate (fps) | Base Bitrate (Kbps)   |
    * |------------------------|------------------|-----------------------|
    * | 160 * 120              | 15               | 65                    |
    * | 120 * 120              | 15               | 50                    |
@@ -1378,8 +1384,8 @@ export interface VideoEncoderConfiguration {
    * | 2560 * 1440            | 30               | 4850                  |
    * | 2560 * 1440            | 60               | 6500                  |
    * | 3840 * 2160            | 30               | 6500                  |
-   * | 3840 * 2160            | 60               | 6500                  |   
-   * 
+   * | 3840 * 2160            | 60               | 6500                  |
+   *
    */
   bitrate: number;
   /** @zh-cn
@@ -1387,14 +1393,14 @@ export interface VideoEncoderConfiguration {
    * 该参数强制视频编码器输出高质量图片。如果将参数设为高于默认值，在网络状况不佳情况下可能会导致网络丢包，并影响视频播放的流畅度。因此如非对画质有特殊需求，Agora 建议不要修改该参数的值。
    */
   /**
-   * The minimum encoding bitrate (Kbps). 
-   * 
-   * The default value is 1 kbps. 
-   * 
-   * Using a value greater than the default value 
-   * forces the video encoder to output high-quality images but may cause more 
-   * packet loss and hence sacrifice the smoothness of the video transmission. 
-   * That said, unless you have special requirements for image quality, 
+   * The minimum encoding bitrate (Kbps).
+   *
+   * The default value is 1 kbps.
+   *
+   * Using a value greater than the default value
+   * forces the video encoder to output high-quality images but may cause more
+   * packet loss and hence sacrifice the smoothness of the video transmission.
+   * That said, unless you have special requirements for image quality,
    * Agora does not recommend changing this value.
    *
    */
@@ -1408,23 +1414,23 @@ export interface VideoEncoderConfiguration {
    * 带宽受限时。视频编码的降低偏好。
    */
   /**
-   * The video encoding degradation preference under limited bandwidth. 
+   * The video encoding degradation preference under limited bandwidth.
    * See {@link DegradationPreference}.
    */
   degradationPreference: DegradationPreference;
   /** @zh-cn
    * @since v3.0.0
-   * 
+   *
    * 本地视频编码镜像模式，仅影响远端用户所见。详见 {@link VideoMirrorModeType}
-   * 
+   *
    * @note SDK 默认关闭镜像。
    */
   /**
    * @since v3.0.0
-   * 
-   * Sets the mirror mode of the published local video stream. It only affects 
+   *
+   * Sets the mirror mode of the published local video stream. It only affects
    * the video that the remote user sees. See {@link VideoMirrorModeType}
-   * 
+   *
    * @note The SDK disables the mirror mode by default.
    */
   mirrorMode: VideoMirrorModeType;
@@ -1454,7 +1460,7 @@ export enum VideoMirrorModeType {
    * `2`: 关闭镜像模式
    */
   /**
-   * `2`: Disable mirror mode. 
+   * `2`: Disable mirror mode.
    */
   DISABLED = 2
 }
@@ -1465,22 +1471,22 @@ export enum VideoMirrorModeType {
 export enum DegradationPreference {
 
   /** @zh-cn
-   * 0：（默认）降低编码帧率以保证视频质量。 
+   * 0：（默认）降低编码帧率以保证视频质量。
    */
-  /** 0: (Default) Degrade the frame rate in order to maintain the video 
-   * quality. 
+  /** 0: (Default) Degrade the frame rate in order to maintain the video
+   * quality.
    */
   MAINTAIN_QUALITY = 0,
   /** @zh-cn
-   * 1：降低视频质量以保证编码帧率。 
+   * 1：降低视频质量以保证编码帧率。
    */
   /** 1: Degrade the video quality in order to maintain the frame rate. */
   MAINTAIN_FRAMERATE = 1,
   /** @zh-cn
-   * 2：（预留参数，暂不支持）在编码帧率和视频质量之间保持平衡。 
+   * 2：（预留参数，暂不支持）在编码帧率和视频质量之间保持平衡。
    */
-  /** 2: (For future use) Maintain a balance between the frame rate and video 
-   * quality. 
+  /** 2: (For future use) Maintain a balance between the frame rate and video
+   * quality.
    */
   MAINTAIN_BALANCED = 2,
 }
@@ -1490,46 +1496,51 @@ export enum DegradationPreference {
 /** The orientation mode. */
 export enum OrientationMode  {
   /** @zh-cn
-   * 0：（默认）该模式下 SDK 输出的视频方向与采集到的视频方向一致。接收端会根据收到的视频旋转信息对视频进行旋转。该模式适用于接收端可以调整视频方向的场景：
+   * 0：（默认）该模式下 SDK 输出的视频方向与采集到的视频方向一致。
+   * 接收端会根据收到的视频旋转信息对视频进行旋转。该模式适用于接收端可以调整视频方向的场景：
    * - 如果采集的视频是横屏模式，则输出的视频也是横屏模式
    * - 如果采集的视频是竖屏模式，则输出的视频也是竖屏模式
    */
  /**
-  * 0: (Default) The output video always follows the orientation of the 
-  * captured video, because the receiver takes the rotational information 
-  * passed on from the video encoder. 
-  * 
+  * 0: (Default) The output video always follows the orientation of the
+  * captured video, because the receiver takes the rotational information
+  * passed on from the video encoder.
+  *
   * Mainly used between Agora SDK.
-  * - If the captured video is in landscape mode, the output video is in 
+  * - If the captured video is in landscape mode, the output video is in
   * landscape mode.
-  * - If the captured video is in portrait mode, the output video is in 
+  * - If the captured video is in portrait mode, the output video is in
   * portrait mode.
   */
   ORIENTATION_MODE_ADAPTIVE = 0,
   /** @zh-cn
-   * 1：该模式下 SDK 固定输出风景（横屏）模式的视频。如果采集到的视频是竖屏模式，则视频编码器会对其进行裁剪。该模式适用于当接收端无法调整视频方向时，如使用 CDN 推流场景下
+   * 1：该模式下 SDK 固定输出风景（横屏）模式的视频。如果采集到的视频是竖屏模式，
+   * 则视频编码器会对其进行裁剪。该模式适用于当接收端无法调整视频方向时，
+   * 如使用 CDN 推流场景下。
    */
   /**
-   * 1: The output video is always in landscape mode. 
-   * 
-   * If the captured video is 
-   * in portrait mode, the video encoder crops it to fit the output. Applies to 
-   * situations where the receiving end cannot process the rotational 
-   * information. 
-   * 
+   * 1: The output video is always in landscape mode.
+   *
+   * If the captured video is
+   * in portrait mode, the video encoder crops it to fit the output. Applies to
+   * situations where the receiving end cannot process the rotational
+   * information.
+   *
    * For example, CDN live streaming.
    */
   ORIENTATION_MODE_FIXED_LANDSCAPE = 1,
  /** @zh-cn
-  * 2：该模式下 SDK 固定输出人像（竖屏）模式的视频，如果采集到的视频是横屏模式，则视频编码器会对其进行裁剪。该模式适用于当接收端无法调整视频方向时，如使用 CDN 推流场景下
+  * 2：该模式下 SDK 固定输出人像（竖屏）模式的视频，如果采集到的视频是横屏模式，
+  * 则视频编码器会对其进行裁剪。该模式适用于当接收端无法调整视频方向时，
+  * 如使用 CDN 推流场景下。
   */
  /**
-  * 2: The output video is always in portrait mode. 
-  * 
-  * If the captured video is in landscape mode, the video encoder crops it to 
-  * fit the output. Applies to situations where the receiving end cannot process 
-  * the rotational information. 
-  * 
+  * 2: The output video is always in portrait mode.
+  *
+  * If the captured video is in landscape mode, the video encoder crops it to
+  * fit the output. Applies to situations where the receiving end cannot process
+  * the rotational information.
+  *
   * For example, CDN live streaming.
   */
   ORIENTATION_MODE_FIXED_PORTRAIT = 2,
@@ -1594,25 +1605,25 @@ export interface RemoteVideoStats {
   rxStreamType: StreamType;
   /** @zh-cn
    * 远端用户在加入频道后发生视频卡顿的累计时长 (ms)。
-   * 
+   *
    * 通话过程中，视频帧率设置不低于 5 fps 时，连续渲染的两帧视频之间间隔超过 500 ms，则记为一次视频卡顿。
    */
   /**
-   * The total freeze time (ms) of the remote video stream after the 
+   * The total freeze time (ms) of the remote video stream after the
    * remote user joins the channel.
-   * 
-   * In a video session where the frame rate is set to no less than 5 fps, 
-   * video freeze occurs when the time interval between two adjacent renderable 
+   *
+   * In a video session where the frame rate is set to no less than 5 fps,
+   * video freeze occurs when the time interval between two adjacent renderable
    * video frames is more than 500 ms.
    */
   totalFrozenTime: number;
   /** @zh-cn
    * 远端用户在加入频道后发生视频卡顿的累计时长占视频总有效时长的百分比  (%)。
-   * 
+   *
    * 视频有效时长指远端用户加入频道后视频未被停止发送或禁用的时长。
    */
   /**
-   * The total video freeze time as a percentage (%) of the total time when 
+   * The total video freeze time as a percentage (%) of the total time when
    * the video is available.
    */
   frozenRate: number;
@@ -1620,18 +1631,20 @@ export interface RemoteVideoStats {
    * 远端视频在使用抗丢包技术之前的丢包率(%)。
    */
   /**
-   * @since 2.9.0
-   * 
-   * Packet loss rate (%) of the remote video stream after using the 
+   * @since v2.9.0
+   *
+   * Packet loss rate (%) of the remote video stream after using the
    * anti-packet-loss method.
    */
   packetLossRate: number;
   /**
-   * The total time (ms) when the remote user in the Communication profile or the remote
-   * broadcaster in the Live-broadcast profile neither stops sending the video stream nor
+   * The total time (ms) when the remote user in the `0` (communication)
+   * profile or the remote host in the `1` (live streaming) profile neither
+   * stops sending the video stream nor
    * disables the video module after joining the channel.
-
-     @since v3.0.1
+   *
+   * @since v3.2.0
+   *
    */
   totalActiveTime: number;
   /**
@@ -1646,30 +1659,35 @@ export interface RemoteVideoStats {
 export enum CaptureOutPreference {
 
   /** @zh-cn
-   * 0：（默认）自动调整采集参数。SDK 根据实际的采集设备性能及网络情况，选择合适的摄像头输出参数，在设备性能及视频预览质量之间，维持平衡
+   * 0：（默认）自动调整采集参数。SDK 根据实际的采集设备性能及网络情况，
+   * 选择合适的摄像头输出参数，在设备性能及视频预览质量之间，维持平衡
    */
-  /** 0: (Default) self-adapts the camera output parameters to the system 
-   * performance and network conditions to balance CPU consumption and video 
+  /** 0: (Default) self-adapts the camera output parameters to the system
+   * performance and network conditions to balance CPU consumption and video
    * preview quality.
    */
   CAPTURER_OUTPUT_PREFERENCE_AUTO = 0,
   /** @zh-cn
-   * 1：优先保证设备性能。SDK 根据用户在 {@link AgoraRtcEngine.setVideoEncoderConfiguration setVideoEncoderConfiguration} 中设置编码器的分辨率和帧率，选择最接近的摄像头输出参数，从而保证设备性能。在这种情况下，预览质量接近于编码器的输出质量
+   * 1：优先保证设备性能。SDK 根据用户在
+   * {@link AgoraRtcEngine.setVideoEncoderConfiguration setVideoEncoderConfiguration}
+   * 中设置编码器的分辨率和帧率，选择最接近的摄像头输出参数，从而保证设备性能。
+   * 在这种情况下，预览质量接近于编码器的输出质量。
    */
-  /** 1: Prioritizes the system performance. 
-   * 
-   * The SDK chooses the dimension 
-   * and frame rate of the local camera capture closest to those set 
+  /** 1: Prioritizes the system performance.
+   *
+   * The SDK chooses the dimension
+   * and frame rate of the local camera capture closest to those set
    * by the {@link setVideoEncoderConfiguration} method.
    */
   CAPTURER_OUTPUT_PREFERENCE_PERFORMANCE = 1,
   /** @zh-cn
-   * 2：优先保证视频预览质量。SDK 选择较高的摄像头输出参数，从而提高预览视频的质量。在这种情况下，会消耗更多的 CPU 及内存做视频前处理
+   * 2：优先保证视频预览质量。SDK 选择较高的摄像头输出参数，从而提高预览视频的质量。
+   * 在这种情况下，会消耗更多的 CPU 及内存做视频前处理。
    */
-  /** 2: Prioritizes the local preview quality. 
-   * 
-   * The SDK chooses higher camera output parameters to improve the local 
-   * video preview quality. This option requires extra CPU and RAM usage for 
+  /** 2: Prioritizes the local preview quality.
+   *
+   * The SDK chooses higher camera output parameters to improve the local
+   * video preview quality. This option requires extra CPU and RAM usage for
    * video pre-processing.
    */
   CAPTURER_OUTPUT_PREFERENCE_PREVIEW = 2
@@ -1718,7 +1736,7 @@ export interface Rectangle {
  * - Windows 系统中，屏幕位置
  */
 /**
- * The screen symbol: 
+ * The screen symbol:
  * - The screen symbol on the macOS platform, see {@link MacScreenSymbol}
  * - The screen symbol on the Windows platform, see {@link WindowsScreenSymbol}
  */
@@ -1734,7 +1752,7 @@ export type CaptureRect = Rectangle;
  * 屏幕共享的编码参数配置。
  */
 /**
- * The video source encoding parameters. 
+ * The video source encoding parameters.
  */
 export interface CaptureParam {
   /** @zh-cn
@@ -1751,11 +1769,11 @@ export interface CaptureParam {
   /** @zh-cn
    * 共享视频的帧率，单位为 fps；默认值为 5，建议不要超过 15.
    */
-  /** The frame rate (fps) of the shared region. 
-   * 
-   * The default value is 5. 
-   * 
-   * We do not recommend setting this to a value greater than 15. 
+  /** The frame rate (fps) of the shared region.
+   *
+   * The default value is 5.
+   *
+   * We do not recommend setting this to a value greater than 15.
    */
   frameRate: number; // The frame rate (fps) of the shared region. The default value is 5. We do not recommend setting this to a value greater than 15.
   /** @zh-cn
@@ -1763,18 +1781,41 @@ export interface CaptureParam {
    */
   /**
    * The bitrate (Kbps) of the shared region.
-   * 
-   * The default value is 0 (the SDK works out a bitrate according to the 
+   *
+   * The default value is 0 (the SDK works out a bitrate according to the
    * dimensions of the current screen).
    */
   bitrate: number; //  The bitrate (Kbps) of the shared region. The default value is 0 (the SDK works out a bitrate according to the dimensions of the current screen).
-
+  /** Sets whether or not to capture the mouse for screen sharing:
+   * - true: (Default) Capture the mouse.
+   * - false: Do not capture the mouse.
+   *
+   * @since v3.2.0
+   */
   captureMouseCursor: boolean;
-
+  /** Whether to bring the window to the front when calling
+   * {@link startScreenCaptureByWindow} to share the window:
+   * - true: Bring the window to the front.
+   * - false: (Default) Do not bring the window to the front.
+   *
+   * @since v3.2.0
+   */
   windowFocus: boolean;
-
+  /** A list of IDs of windows to be blocked.
+   *
+   * When calling {@link startScreenCaptureByScreen} to start screen
+   * sharing, you can use this parameter to block the specified windows.
+   * When calling {@link updateScreenCaptureParameters} to update the
+   * configuration for screen sharing, you can use this parameter to
+   * dynamically block the specified windows during screen sharing.
+   *
+   * @since v3.2.0
+   */
   excludeWindowList: Array<number>;
-
+  /** The number of windows to be blocked.
+   *
+   * @since v3.2.0
+   */
   excludeWindowCount: number;
 }
 /** @zh-cn
@@ -1795,9 +1836,9 @@ export enum VideoContentHint {
    * 1：内容类型为动画。当共享的内容是视频、电影或视频游戏时，推荐选择该内容类型。
    */
   /**
-   * 1: Motion-intensive content. 
-   * 
-   * Choose this option if you prefer smoothness or when you are sharing a 
+   * 1: Motion-intensive content.
+   *
+   * Choose this option if you prefer smoothness or when you are sharing a
    * video clip, movie, or video game.
    */
   CONTENT_HINT_MOTION = 1,
@@ -1805,9 +1846,9 @@ export enum VideoContentHint {
    * 2：内容类型为细节。当共享的内容是图片或文字时，推荐选择该内容类型。
    */
   /**
-   * 2: Motionless content. 
-   * 
-   * Choose this option if you prefer sharpness or when you are sharing a 
+   * 2: Motionless content.
+   *
+   * Choose this option if you prefer sharpness or when you are sharing a
    * picture, PowerPoint slide, or text.
    */
   CONTENT_HINT_DETAILS = 2
@@ -1818,9 +1859,9 @@ export enum VideoContentHint {
  * 远端视频流传输的统计信息。
  */
 /**
- * @deprecated This callback is deprecated. Use the remoteVideoStats callback 
+ * @deprecated This callback is deprecated. Use the remoteVideoStats callback
  * instead.
- * 
+ *
  * Reports the transport-layer statistics of each remote video stream.
  */
 export interface RemoteVideoTransportStats {
@@ -1829,12 +1870,11 @@ export interface RemoteVideoTransportStats {
    */
   /** User ID of the remote user sending the video packet. */
   uid: number;
-
   /** @zh-cn
    * 视频包从发送端到接收端的延时（毫秒）。
    */
-  /** Network time delay (ms) from the remote user sending the video packet to 
-   * the local user. 
+  /** Network time delay (ms) from the remote user sending the video packet to
+   * the local user.
    */
   delay: number;
   /** @zh-cn
@@ -1855,7 +1895,7 @@ export interface RemoteVideoTransportStats {
 /**
  * @deprecated This callback is deprecated. Use the remoteAudioStats callback
  * instead.
- * 
+ *
  * Reports the transport-layer statistics of each remote audio stream.
  */
 export interface RemoteAudioTransportStats {
@@ -1867,8 +1907,8 @@ export interface RemoteAudioTransportStats {
   /** @zh-cn
    * 音频包从发送端到接收端的延时（毫秒）。
    */
-  /** Network time delay (ms) from the remote user sending the audio packet to 
-   * the local user. 
+  /** Network time delay (ms) from the remote user sending the audio packet to
+   * the local user.
    */
   delay: number;
   /** @zh-cn
@@ -1890,17 +1930,17 @@ export interface RemoteAudioTransportStats {
  */
 export interface RemoteAudioStats {
   /** @zh-cn
-   * 用户 ID，指定是哪个用户/主播的音频流。 
+   * 用户 ID，指定是哪个用户/主播的音频流。
    */
   /** User ID of the remote user sending the audio streams. */
   uid: number;
   /** @zh-cn
-   * 远端用户发送的音频流质量，详见 {@link AgoraNetworkQuality}。 
+   * 远端用户发送的音频流质量，详见 {@link AgoraNetworkQuality}。
    */
   /** Audio quality received by the user. See {@link AgoraNetworkQuality}. */
   quality: number;
   /** @zh-cn
-   * 音频发送端到接收端的网络延迟（毫秒）。 
+   * 音频发送端到接收端的网络延迟（毫秒）。
    */
   /** Network delay (ms) from the sender to the receiver. */
   networkTransportDelay: number;
@@ -1922,48 +1962,53 @@ export interface RemoteAudioStats {
   /** @zh-cn
    * 统计周期内接收到的远端音频采样率（Hz）。
    */
-  /** 
-   * The sample rate (Hz) of the received audio stream in the reported 
+  /**
+   * The sample rate (Hz) of the received audio stream in the reported
    * interval.
    */
   receivedSampleRate: number;
   /** @zh-cn
    * 接收流在统计周期内的平均码率（Kbps）。
    */
-  /** The average bitrate (Kbps) of the received audio stream in the reported 
-   * interval. 
+  /** The average bitrate (Kbps) of the received audio stream in the reported
+   * interval.
    */
   receivedBitrate: number;
   /** @zh-cn
    * 远端用户在加入频道后发生音频卡顿的累计时长 (ms)。
-   * 
+   *
    * 一个统计周期（2 秒）内，音频丢帧率达到 4% 即记为一次音频卡顿。
-   * 
+   *
    * Agora 使用 2 秒为时间切片统计音频卡顿时间，因此音频卡顿时长 = `totalFrozenTime` = 音频卡顿次数 x 2 x 1000 (ms)。
    */
   /**
-   * The total freeze time (ms) of the remote audio stream after the remote 
+   * The total freeze time (ms) of the remote audio stream after the remote
    * user joins the channel.
-   * 
-   * In the reported interval, audio freeze occurs when the audio frame loss 
-   * rate reaches 4%. Agora uses 2 seconds as an audio piece unit to calculate 
-   * the audio freeze time. The total audio freeze time = The audio freeze 
+   *
+   * In the reported interval, audio freeze occurs when the audio frame loss
+   * rate reaches 4%. Agora uses 2 seconds as an audio piece unit to calculate
+   * the audio freeze time. The total audio freeze time = The audio freeze
    * number × 2000 ms.
    */
   totalFrozenTime: number;
   /** @zh-cn
    * 远端用户在加入频道后发生音频卡顿的累计时长占音频总有效时长的百分比 (%)。
-   * 
+   *
    * 音频有效时长是指远端用户加入频道后音频未被停止发送或禁用的时长。
    */
-  /** 
-   * The total audio freeze time as a percentage (%) of the total time 
+  /**
+   * The total audio freeze time as a percentage (%) of the total time
    * when the audio is available.
    */
   frozenRate: number;
-  /** 
-   * The total time (ms) when the remote user in the `COMMUNICATION` profile or the remote host in
-   * the `LIVE_BROADCASTING` profile neither stops sending the audio stream nor disables the audio module after joining the channel.
+  /**
+   * The total time (ms) when the remote user in the `0` (communication)
+   * profile or the remote host in the `1` (live streaming) profile neither
+   * stops sending the audio stream nor
+   * disables the audio module after joining the channel.
+   *
+   * @since v3.2.0
+   *
    */
   totalActiveTime: number;
   /**
@@ -1981,7 +2026,7 @@ export interface RemoteAudioStats {
  */
 /**
  * State of the remote video:
- * 
+ *
  * - 0: The remote video is in the default state.
  * - 1: The first remote video packet is received.
  * - 2: The remote video stream is decoded and plays normally.
@@ -2007,18 +2052,18 @@ export type RemoteVideoState = 0 | 1 | 2 | 3 | 4;
  * - 0: Internal reasons.
  * - 1: Network congestion.
  * - 2: Network recovery.
- * - 3: The local user stops receiving the remote video stream or disables the 
+ * - 3: The local user stops receiving the remote video stream or disables the
  * video module.
- * - 4: The local user resumes receiving the remote video stream or enables the 
+ * - 4: The local user resumes receiving the remote video stream or enables the
  * video module.
- * - 5: The remote user stops sending the video stream or disables the video 
+ * - 5: The remote user stops sending the video stream or disables the video
  * module.
- * - 6: The remote user resumes sending the video stream or enables the video 
+ * - 6: The remote user resumes sending the video stream or enables the video
  * module.
  * - 7: The remote user leaves the channel.
- * - 8: The remote media stream falls back to the audio-only stream due to poor 
+ * - 8: The remote media stream falls back to the audio-only stream due to poor
  * network conditions.
- * - 9: The remote media stream switches back to the video stream after the 
+ * - 9: The remote media stream switches back to the video stream after the
  * network conditions improve.
  */
 export type RemoteVideoStateReason = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -2029,7 +2074,7 @@ export type RemoteVideoStateReason = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
  * - 2: 远端音频流正在解码，正常播放。在原因码 2、4 或 6 的情况下，会报告该状态。
  * - 3: 远端音频流卡顿。在原因码 1 的情况下，会报告该状态。
  * - 4: 远端音频流播放失败。在 原因码 0 的情况下，会报告该状态。
- */ 
+ */
 /**
  * State of the remote audio stream.
  * - 0: The remote audio is in the default state.
@@ -2052,17 +2097,17 @@ export type RemoteAudioState = 0 | 1 | 2 | 3 | 4;
  */
  /**
 * The reason of the remote audio state change.
-* - 0: Internal reasons. 
-* - 1: Network congestion. 
-* - 2: Network recovery. 
-* - 3: The local user stops receiving the remote audio stream or disables the 
-* audio module. 
-* - 4: The local user resumes receiving the remote audio stream or enables the 
-* audio module. 
-* - 5: The remote user stops sending the audio stream or disables the audio 
-* module. 
-* - 6: The remote user resumes sending the audio stream or enables the audio 
-* module. 
+* - 0: Internal reasons.
+* - 1: Network congestion.
+* - 2: Network recovery.
+* - 3: The local user stops receiving the remote audio stream or disables the
+* audio module.
+* - 4: The local user resumes receiving the remote audio stream or enables the
+* audio module.
+* - 5: The remote user stops sending the audio stream or disables the audio
+* module.
+* - 6: The remote user resumes sending the audio stream or enables the audio
+* module.
 * - 7: The remote user leaves the channel.
 */
 export type RemoteAudioStateReason = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -2091,39 +2136,39 @@ export type RemoteAudioStateReason = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 /**
  * Connection states.
  * - 1: The SDK is disconnected from Agora's edge server.
- *  - This is the initial state before calling the 
+ *  - This is the initial state before calling the
  * {@link AgoraRtcEngine.joinChannel} method.
- *  - The SDK also enters this state when the application calls the 
+ *  - The SDK also enters this state when the application calls the
  * {@link AgoraRtcEngine.leaveChannel} method.
- * - 2: The SDK is connecting to Agora's edge server. When the application 
- * calls the {@link AgoraRtcEngine.joinChannel} method, the SDK starts to 
+ * - 2: The SDK is connecting to Agora's edge server. When the application
+ * calls the {@link AgoraRtcEngine.joinChannel} method, the SDK starts to
  * establish a connection to the specified channel.
- *  - When the SDK successfully joins the channel, it triggers the 
+ *  - When the SDK successfully joins the channel, it triggers the
  * connectionStateChanged callback and switches to the 3 state.
- *  - After the SDK joins the channel and when it finishes initializing the 
+ *  - After the SDK joins the channel and when it finishes initializing the
  * media engine, the SDK triggers the joinedChannel callback.
- * - 3: The SDK is connected to Agora's edge server and has joined a channel. 
- * You can now publish or subscribe to a media stream in the channel.If the 
+ * - 3: The SDK is connected to Agora's edge server and has joined a channel.
+ * You can now publish or subscribe to a media stream in the channel.If the
  * connection to the channel is lost because, for example,
- * if the network is down or switched, the SDK automatically tries to reconnect 
+ * if the network is down or switched, the SDK automatically tries to reconnect
  * and triggers:
  *  - The connectionStateChanged callback and switches to the 4 state.
- * - 4: The SDK keeps rejoining the channel after being disconnected from a 
+ * - 4: The SDK keeps rejoining the channel after being disconnected from a
  * joined channel because of network issues.
- *  - If the SDK cannot rejoin the channel within 10 seconds after being 
- * disconnected from Agora's edge server, the SDK triggers the connectionLost 
+ *  - If the SDK cannot rejoin the channel within 10 seconds after being
+ * disconnected from Agora's edge server, the SDK triggers the connectionLost
  * callback, stays in this state, and keeps rejoining the channel.
- *  - If the SDK fails to rejoin the channel 20 minutes after being 
- * disconnected from Agora's edge server, the SDK triggers the 
- * connectionStateChanged callback, switches to the 5 state, and stops 
+ *  - If the SDK fails to rejoin the channel 20 minutes after being
+ * disconnected from Agora's edge server, the SDK triggers the
+ * connectionStateChanged callback, switches to the 5 state, and stops
  * rejoining the channel.
- * - 5: The SDK fails to connect to Agora's edge server or join the channel. 
- * You must call the {@link AgoraRtcEngine.leaveChannel leaveChannel} method 
+ * - 5: The SDK fails to connect to Agora's edge server or join the channel.
+ * You must call the {@link AgoraRtcEngine.leaveChannel leaveChannel} method
  * to leave this state.
- *  - Calls the {@link AgoraRtcEngine.joinChannel joinChannel} method again to 
+ *  - Calls the {@link AgoraRtcEngine.joinChannel joinChannel} method again to
  * rejoin the channel.
- *  - If the SDK is banned from joining the channel by Agora's edge server 
- * (through the RESTful API), the SDK triggers connectionStateChanged 
+ *  - If the SDK is banned from joining the channel by Agora's edge server
+ * (through the RESTful API), the SDK triggers connectionStateChanged
  * callbacks.
  */
 export type ConnectionState =
@@ -2152,14 +2197,14 @@ export type ConnectionState =
    */
   /**
    * Reasons for a connection state change.
-   * 
+   *
    * - 0: The SDK is connecting to Agora's edge server.
    * - 1: The SDK has joined the channel successfully.
-   * - 2: The connection between the SDK and Agora's edge server is 
+   * - 2: The connection between the SDK and Agora's edge server is
    * interrupted.
-   * - 3: The connection between the SDK and Agora's edge server is banned by 
+   * - 3: The connection between the SDK and Agora's edge server is banned by
    * Agora's edge server.
-   * - 4: The SDK fails to join the channel for more than 20 minutes and stops 
+   * - 4: The SDK fails to join the channel for more than 20 minutes and stops
    * reconnecting to the channel.
    * - 5: The SDK has left the channel.
    * - 6: Invalid App ID.
@@ -2199,7 +2244,7 @@ export enum ENCRYPTION_MODE {
        */
       AES_256_XTS = 3,
       /* OpenSSL Encryption Mode End */
-  
+
       /** 4:"sm4-128-ecb": 128-bit SM4 encryption, ECB mode.
        */
       SM4_128_ECB = 4,
@@ -2214,19 +2259,19 @@ export interface EncryptionConfig{
      * Pointer to the encryption password.
      */
     encryptionKey: string;
-    
+
 };
 
 /** @zh-cn
  * @deprecated 该枚举已废弃。
- * 视频属性。 
+ * 视频属性。
  */
 /**
  * @deprecated Video profile.
  */
 export enum VIDEO_PROFILE_TYPE {
   /** @zh-cn
-   * 0：分辨率 160 × 120，帧率 15 fps，码率 65 Kbps。 
+   * 0：分辨率 160 × 120，帧率 15 fps，码率 65 Kbps。
    */
   /** 0: 160 &times; 120, frame rate 15 fps, bitrate 65 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_120P = 0,
@@ -2236,62 +2281,62 @@ export enum VIDEO_PROFILE_TYPE {
   /** 2: 120 &times; 120, frame rate 15 fps, bitrate 50 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_120P_3 = 2,
   /** @zh-cn
-   * 10：分辨率 320 × 180，帧率 15 fps，码率 140 Kbps。 
+   * 10：分辨率 320 × 180，帧率 15 fps，码率 140 Kbps。
    */
   /** 10: 320&times;180, frame rate 15 fps, bitrate 140 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_180P = 10,
   /** @zh-cn
-   * 12：分辨率 180 × 180，帧率 15 fps，码率 100 Kbps。 
+   * 12：分辨率 180 × 180，帧率 15 fps，码率 100 Kbps。
    */
   /** 12: 180 &times; 180, frame rate 15 fps, bitrate 100 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_180P_3 = 12,
   /** @zh-cn
-   * 13：分辨率 240 × 180，帧率 15 fps，码率 120 Kbps。 
+   * 13：分辨率 240 × 180，帧率 15 fps，码率 120 Kbps。
    */
   /** 13: 240 &times; 180, frame rate 15 fps, bitrate 120 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_180P_4 = 13,
   /** @zh-cn
-   * 20：分辨率 320 × 240，帧率 15 fps，码率 200 Kbps。 
+   * 20：分辨率 320 × 240，帧率 15 fps，码率 200 Kbps。
    */
   /** 20: 320 &times; 240, frame rate 15 fps, bitrate 200 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_240P = 20,
   /** @zh-cn
-   * 22：分辨率 240 × 240，帧率 15 fps，码率 140 Kbps。 
+   * 22：分辨率 240 × 240，帧率 15 fps，码率 140 Kbps。
    */
   /** 22: 240 &times; 240, frame rate 15 fps, bitrate 140 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_240P_3 = 22,
   /** @zh-cn
-   * 23：分辨率 424 × 240，帧率 15 fps，码率 220 Kbps。 
+   * 23：分辨率 424 × 240，帧率 15 fps，码率 220 Kbps。
    */
   /** 23: 424 &times; 240, frame rate 15 fps, bitrate 220 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_240P_4 = 23,
   /** @zh-cn
-   * 30：分辨率 640 × 360，帧率 15 fps，码率 400 Kbps。 
+   * 30：分辨率 640 × 360，帧率 15 fps，码率 400 Kbps。
    */
   /** 30: 640 &times; 360, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P = 30,
   /** @zh-cn
-   * 32：分辨率 360 × 360，帧率 15 fps，码率 260 Kbps。 
+   * 32：分辨率 360 × 360，帧率 15 fps，码率 260 Kbps。
    */
   /** 32: 360 &times; 360, frame rate 15 fps, bitrate 260 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P_3 = 32,
   /** @zh-cn
-   * 33：分辨率 640 × 360，帧率 30 fps，码率 600 Kbps。 
+   * 33：分辨率 640 × 360，帧率 30 fps，码率 600 Kbps。
    */
   /** 33: 640 &times; 360, frame rate 30 fps, bitrate 600 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P_4 = 33,
   /** @zh-cn
-   * 35：分辨率 360 × 360，帧率 30 fps，码率 400 Kbps。 
+   * 35：分辨率 360 × 360，帧率 30 fps，码率 400 Kbps。
    */
   /** 35: 360 &times; 360, frame rate 30 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P_6 = 35,
   /** @zh-cn
-   * 36：分辨率 480 × 360，帧率 15 fps，码率 320 Kbps。 
+   * 36：分辨率 480 × 360，帧率 15 fps，码率 320 Kbps。
    */
   /** 36: 480 &times; 360, frame rate 15 fps, bitrate 320 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P_7 = 36,
   /** @zh-cn
-   * 37：分辨率 480 × 360，帧率 30 fps，码率 490 Kbps。 
+   * 37：分辨率 480 × 360，帧率 30 fps，码率 490 Kbps。
    */
   /** 37: 480 &times; 360, frame rate 30 fps, bitrate 490 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_360P_8 = 37,
@@ -2323,103 +2368,103 @@ export enum VIDEO_PROFILE_TYPE {
    */
   VIDEO_PROFILE_LANDSCAPE_360P_11 = 100,
   /** @zh-cn
-   * 40：分辨率 640 × 480，帧率 15 fps，码率 500 Kbps。 
+   * 40：分辨率 640 × 480，帧率 15 fps，码率 500 Kbps。
    */
   /** 40: 640 &times; 480, frame rate 15 fps, bitrate 500 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P = 40,
   /** @zh-cn
-   * 42：分辨率 480 × 480，帧率 15 fps，码率 400 Kbps。 
+   * 42：分辨率 480 × 480，帧率 15 fps，码率 400 Kbps。
    */
   /** 42: 480 &times; 480, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_3 = 42,
   /** @zh-cn
-   * 43：分辨率 640 × 480，帧率 30 fps，码率 750 Kbps。 
+   * 43：分辨率 640 × 480，帧率 30 fps，码率 750 Kbps。
    */
   /** 43: 640 &times; 480, frame rate 30 fps, bitrate 750 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_4 = 43,
   /** @zh-cn
-   * 45：分辨率 480 × 480，帧率 30 fps，码率 600 Kbps。 
+   * 45：分辨率 480 × 480，帧率 30 fps，码率 600 Kbps。
    */
   /** 45: 480 &times; 480, frame rate 30 fps, bitrate 600 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_6 = 45,
   /** @zh-cn
-   * 47：分辨率 848 × 480，帧率 15 fps，码率 610 Kbps。 
+   * 47：分辨率 848 × 480，帧率 15 fps，码率 610 Kbps。
    */
   /** 47: 848 &times; 480, frame rate 15 fps, bitrate 610 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_8 = 47,
   /** @zh-cn
-   * 48：分辨率 848 × 480，帧率 30 fps，码率 930 Kbps。 
+   * 48：分辨率 848 × 480，帧率 30 fps，码率 930 Kbps。
    */
   /** 48: 848 &times; 480, frame rate 30 fps, bitrate 930 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_9 = 48,
   /** @zh-cn
-   * 49：分辨率 640 × 480，帧率 10 fps，码率 400 Kbps。 
+   * 49：分辨率 640 × 480，帧率 10 fps，码率 400 Kbps。
    */
   /** 49: 640 &times; 480, frame rate 10 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_480P_10 = 49,
   /** @zh-cn
-   * 50：分辨率 1280 × 720，帧率 15 fps，码率 1130 Kbps。 
+   * 50：分辨率 1280 × 720，帧率 15 fps，码率 1130 Kbps。
    */
   /** 50: 1280 &times; 720, frame rate 15 fps, bitrate 1130 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_720P = 50,
   /** @zh-cn
-   * 52：分辨率 1280 × 720，帧率 30 fps，码率 1710 Kbps。 
+   * 52：分辨率 1280 × 720，帧率 30 fps，码率 1710 Kbps。
    */
   /** 52: 1280 &times; 720, frame rate 30 fps, bitrate 1710 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_720P_3 = 52,
   /** @zh-cn
-   * 54：分辨率 960 × 720，帧率 15 fps，码率 910 Kbps。 
+   * 54：分辨率 960 × 720，帧率 15 fps，码率 910 Kbps。
    */
   /** 54: 960 &times; 720, frame rate 15 fps, bitrate 910 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_720P_5 = 54,
   /** @zh-cn
-   * 55：分辨率 960 × 720，帧率 30 fps，码率 1380 Kbps。 
+   * 55：分辨率 960 × 720，帧率 30 fps，码率 1380 Kbps。
    */
   /** 55: 960 &times; 720, frame rate 30 fps, bitrate 1380 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_720P_6 = 55,
   /** @zh-cn
-   * 60：分辨率 1920 × 1080，帧率 15 fps，码率 2080 Kbps。 
+   * 60：分辨率 1920 × 1080，帧率 15 fps，码率 2080 Kbps。
    */
   /** 60: 1920 &times; 1080, frame rate 15 fps, bitrate 2080 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_1080P = 60,
   /** @zh-cn
-   * 62：分辨率 1920 × 1080，帧率 30 fps，码率 3150 Kbps。 
+   * 62：分辨率 1920 × 1080，帧率 30 fps，码率 3150 Kbps。
    */
   /** 62: 1920 &times; 1080, frame rate 30 fps, bitrate 3150 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_1080P_3 = 62,
   /** @zh-cn
-   * 64：分辨率 1920 × 1080，帧率 60 fps，码率 4780 Kbps。 
+   * 64：分辨率 1920 × 1080，帧率 60 fps，码率 4780 Kbps。
    */
   /** 64: 1920 &times; 1080, frame rate 60 fps, bitrate 4780 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_1080P_5 = 64,
   /** @zh-cn
-   * 66：分辨率 2560 × 1440，帧率 30 fps，码率 4850 Kbps。 
+   * 66：分辨率 2560 × 1440，帧率 30 fps，码率 4850 Kbps。
    */
   /** 66: 2560 &times; 1440, frame rate 30 fps, bitrate 4850 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_1440P = 66,
   /** @zh-cn
    * 67：分辨率 2560 × 1440，帧率 60 fps，
-   * 码率 7350 Kbps。 
+   * 码率 7350 Kbps。
    */
   /** 67: 2560 &times; 1440, frame rate 60 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_1440P_2 = 67,
   /** @zh-cn
-   * 70：分辨率 3840 × 2160，分辨率 30 fps，码率 8910 Kbps。 
+   * 70：分辨率 3840 × 2160，分辨率 30 fps，码率 8910 Kbps。
    */
   /** 70: 3840 &times; 2160, frame rate 30 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_4K = 70,
   /** @zh-cn
-   * 72：分辨率 3840 × 2160，帧率 60 fps，码率 13500 Kbps。 
+   * 72：分辨率 3840 × 2160，帧率 60 fps，码率 13500 Kbps。
    */
   /** 72: 3840 &times; 2160, frame rate 60 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_LANDSCAPE_4K_3 = 72,
   /** @zh-cn
-   * 1000：分辨率 120 × 160，帧率 15 fps，码率 65 Kbps。 
+   * 1000：分辨率 120 × 160，帧率 15 fps，码率 65 Kbps。
    */
   /** 1000: 120 &times; 160, frame rate 15 fps, bitrate 65 Kbps. */
   VIDEO_PROFILE_PORTRAIT_120P = 1000,
   /** @zh-cn
-   * 1002：分辨率 120 × 120，帧率 15 fps，码率 50 Kbps。 
+   * 1002：分辨率 120 × 120，帧率 15 fps，码率 50 Kbps。
    */
   /** 1002: 120 &times; 120, frame rate 15 fps, bitrate 50 Kbps. */
   VIDEO_PROFILE_PORTRAIT_120P_3 = 1002,
@@ -2496,107 +2541,117 @@ export enum VIDEO_PROFILE_TYPE {
    */
   VIDEO_PROFILE_PORTRAIT_360P_11 = 1100,
   /** @zh-cn
-   * 1040：分辨率 480 × 640，帧率 15 fps，码率 500 Kbps。 
+   * 1040：分辨率 480 × 640，帧率 15 fps，码率 500 Kbps。
    */
   /** 1040: 480 &times; 640, frame rate 15 fps, bitrate 500 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P = 1040,
   /** @zh-cn
-   * 1042：分辨率 480 × 480，帧率 15 fps，码率 400 Kbps。 
+   * 1042：分辨率 480 × 480，帧率 15 fps，码率 400 Kbps。
    */
   /** 1042: 480 &times; 480, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_3 = 1042,
   /** @zh-cn
-   * 1043：分辨率 480 × 640，帧率 30 fps，码率 750 Kbps。 
+   * 1043：分辨率 480 × 640，帧率 30 fps，码率 750 Kbps。
    */
   /** 1043: 480 &times; 640, frame rate 30 fps, bitrate 750 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_4 = 1043,
   /** @zh-cn
-   * 1045：分辨率 480 × 480，帧率 30 fps，码率 600 Kbps。 
+   * 1045：分辨率 480 × 480，帧率 30 fps，码率 600 Kbps。
    */
   /** 1045: 480 &times; 480, frame rate 30 fps, bitrate 600 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_6 = 1045,
   /** @zh-cn
-   * 1047：分辨率 480 × 848，帧率 15 fps，码率 610 Kbps。 
+   * 1047：分辨率 480 × 848，帧率 15 fps，码率 610 Kbps。
    */
   /** 1047: 480 &times; 848, frame rate 15 fps, bitrate 610 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_8 = 1047,
   /** @zh-cn
-   * 1048：分辨率 480 × 848，帧率 30 fps，码率 930 Kbps。 
+   * 1048：分辨率 480 × 848，帧率 30 fps，码率 930 Kbps。
    */
   /** 1048: 480 &times; 848, frame rate 30 fps, bitrate 930 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_9 = 1048,
   /** @zh-cn
-   * 1049：分辨率 480 × 640，帧率 10 fps，码率 400 Kbps。 
+   * 1049：分辨率 480 × 640，帧率 10 fps，码率 400 Kbps。
    */
   /** 1049: 480 &times; 640, frame rate 10 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_PORTRAIT_480P_10 = 1049,
   /** @zh-cn
-   * 1050：分辨率 720 × 1280，帧率 15 fps，码率 1130 Kbps。 
+   * 1050：分辨率 720 × 1280，帧率 15 fps，码率 1130 Kbps。
    */
   /** 1050: 720 &times; 1280, frame rate 15 fps, bitrate 1130 Kbps. */
   VIDEO_PROFILE_PORTRAIT_720P = 1050,
   /** @zh-cn
-   * 1052：分辨率 720 × 1280，帧率 30 fps，码率 1710 Kbps。 
+   * 1052：分辨率 720 × 1280，帧率 30 fps，码率 1710 Kbps。
    */
   /** 1052: 720 &times; 1280, frame rate 30 fps, bitrate 1710 Kbps. */
   VIDEO_PROFILE_PORTRAIT_720P_3 = 1052,
   /** @zh-cn
-   * 1054：分辨率 720 × 960，帧率 15 fps，码率 910 Kbps。 
+   * 1054：分辨率 720 × 960，帧率 15 fps，码率 910 Kbps。
    */
   /** 1054: 720 &times; 960, frame rate 15 fps, bitrate 910 Kbps. */
   VIDEO_PROFILE_PORTRAIT_720P_5 = 1054,
   /** @zh-cn
-   * 1055：分辨率 720 × 960，帧率 30 fps，码率 1380 Kbps。 
+   * 1055：分辨率 720 × 960，帧率 30 fps，码率 1380 Kbps。
    */
   /** 1055: 720 &times; 960, frame rate 30 fps, bitrate 1380 Kbps. */
   VIDEO_PROFILE_PORTRAIT_720P_6 = 1055,
   /** @zh-cn
-   * 1060：分辨率 1080 × 1920，帧率 15 fps，码率 2080 Kbps。 
+   * 1060：分辨率 1080 × 1920，帧率 15 fps，码率 2080 Kbps。
    */
   /** 1060: 1080 &times; 1920, frame rate 15 fps, bitrate 2080 Kbps. */
   VIDEO_PROFILE_PORTRAIT_1080P = 1060,
   /** @zh-cn
-   * 1062：分辨率 1080 × 1920，帧率 30 fps，码率 3150 Kbps。 
+   * 1062：分辨率 1080 × 1920，帧率 30 fps，码率 3150 Kbps。
    */
   /** 1062: 1080 &times; 1920, frame rate 30 fps, bitrate 3150 Kbps. */
   VIDEO_PROFILE_PORTRAIT_1080P_3 = 1062,
   /** @zh-cn
-   * 1064：分辨率 1080 × 1920，帧率 60 fps，码率 4780 Kbps。 
+   * 1064：分辨率 1080 × 1920，帧率 60 fps，码率 4780 Kbps。
    */
   /** 1064: 1080 &times; 1920, frame rate 60 fps, bitrate 4780 Kbps. */
   VIDEO_PROFILE_PORTRAIT_1080P_5 = 1064,
   /** @zh-cn
-   * 1066：分辨率 1440 × 2560，帧率 30 fps，码率 4850 Kbps。 
+   * 1066：分辨率 1440 × 2560，帧率 30 fps，码率 4850 Kbps。
    */
   /** 1066: 1440 &times; 2560, frame rate 30 fps, bitrate 4850 Kbps. */
   VIDEO_PROFILE_PORTRAIT_1440P = 1066,
   /** @zh-cn
-   * 1067：分辨率 1440 × 2560，帧率 60 fps，码率 6500 Kbps。 
+   * 1067：分辨率 1440 × 2560，帧率 60 fps，码率 6500 Kbps。
    */
   /** 1067: 1440 &times; 2560, frame rate 60 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_PORTRAIT_1440P_2 = 1067,
   /** @zh-cn
-   * 1070：分辨率 2160 × 3840，分辨率 30 fps，码率 6500 Kbps。 
+   * 1070：分辨率 2160 × 3840，分辨率 30 fps，码率 6500 Kbps。
    */
   /** 1070: 2160 &times; 3840, frame rate 30 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_PORTRAIT_4K = 1070,
   /** @zh-cn
-   * 1072：分辨率 2160 × 3840，帧率 60 fps，码率 6500 Kbps。 
+   * 1072：分辨率 2160 × 3840，帧率 60 fps，码率 6500 Kbps。
    */
   /** 1072: 2160 &times; 3840, frame rate 60 fps, bitrate 6500 Kbps. */
   VIDEO_PROFILE_PORTRAIT_4K_3 = 1072,
   /** @zh-cn
-   * 默认视频属性：分辨率 640 × 360，帧率 15 fps，码率 400 Kbps。 
+   * 默认视频属性：分辨率 640 × 360，帧率 15 fps，码率 400 Kbps。
    */
   /** Default 640 &times; 360, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_DEFAULT = VIDEO_PROFILE_LANDSCAPE_360P
 }
-
+/** Events during the RTMP or RTMPS streaming.
+ *
+ * @since v3.2.0
+ */
 export enum RTMP_STREAMING_EVENT
 {
+  /** An error occurs when you add a background image or a watermark image to the RTMP or RTMPS stream.
+   *
+   * @since v3.2.0
+   */
   RTMP_STREAMING_EVENT_FAILED_LOAD_IMAGE = 1,
 };
-
+/** The options for SDK preset audio effects.
+ *
+ * @since v3.2.0
+ */
 export enum AUDIO_EFFECT_PRESET
 {
     /** Turn off audio effects and use the original voice.
@@ -2604,142 +2659,170 @@ export enum AUDIO_EFFECT_PRESET
     AUDIO_EFFECT_OFF = 0x00000000,
     /** An audio effect typical of a KTV venue.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_KTV = 0x02010100,
     /** An audio effect typical of a concert hall.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_VOCAL_CONCERT = 0x02010200,
     /** An audio effect typical of a recording studio.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_STUDIO = 0x02010300,
     /** An audio effect typical of a vintage phonograph.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_PHONOGRAPH = 0x02010400,
     /** A virtual stereo effect that renders monophonic audio as stereo audio.
      *
-     * @note Call \ref IRtcEngine::setAudioProfile "setAudioProfile" and set the `profile` parameter to
-     * `AUDIO_PROFILE_MUSIC_STANDARD_STEREO(3)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting this
+     * @note Call {@link setAudioProfile} and set the `profile` parameter to
+     * `3` or `5` before setting this
      * enumerator; otherwise, the enumerator setting does not take effect.
      */
     ROOM_ACOUSTICS_VIRTUAL_STEREO = 0x02010500,
     /** A more spatial audio effect.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_SPACIAL = 0x02010600,
     /** A more ethereal audio effect.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile"
-     * and setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)`
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_ETHEREAL = 0x02010700,
-    /** A 3D voice effect that makes the voice appear to be moving around the user. The default cycle period of the 3D
-     * voice effect is 10 seconds. To change the cycle period, call \ref IRtcEngine::setAudioEffectParameters "setAudioEffectParameters"
+    /** A 3D voice effect that makes the voice appear to be moving around
+     * the user. The default cycle period of the 3D
+     * voice effect is 10 seconds. To change the cycle period,
+     * call {@link setAudioEffectParameters}
      * after this method.
      *
      * @note
-     * - Call \ref IRtcEngine::setAudioProfile "setAudioProfile" and set the `profile` parameter to `AUDIO_PROFILE_MUSIC_STANDARD_STEREO(3)`
-     * or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting this enumerator; otherwise, the enumerator setting does not take effect.
-     * - If the 3D voice effect is enabled, users need to use stereo audio playback devices to hear the anticipated voice effect.
+     * - Call {@link setAudioProfile} and set the `profile` parameter to `3`
+     * or `5` before setting this enumerator; otherwise, the enumerator
+     * setting does not take effect.
+     * - If the 3D voice effect is enabled, users need to use stereo audio
+     * playback devices to hear the anticipated voice effect.
      */
     ROOM_ACOUSTICS_3D_VOICE = 0x02010800,
     /** The voice of an uncle.
      *
      * @note
-     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
-     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * - Agora recommends using this enumerator to process a male-sounding
+     * voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_UNCLE = 0x02020100,
     /** The voice of an old man.
      *
      * @note
-     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
-     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
-     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before setting
-     * this enumerator.
+     * - Agora recommends using this enumerator to process a male-sounding
+     * voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_OLDMAN = 0x02020200,
     /** The voice of a boy.
      *
      * @note
-     * - Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may not hear the anticipated voice effect.
-     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
-     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * - Agora recommends using this enumerator to process a male-sounding
+     * voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_BOY = 0x02020300,
     /** The voice of a young woman.
      *
      * @note
-     * - Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may not hear the anticipated voice effect.
-     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
-     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * - Agora recommends using this enumerator to process a female-sounding
+     * voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_SISTER = 0x02020400,
     /** The voice of a girl.
      *
      * @note
-     * - Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may not hear the anticipated voice effect.
-     * - To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and setting
-     * the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * - Agora recommends using this enumerator to process a female-sounding
+     * voice; otherwise, you may not hear the anticipated voice effect.
+     * - To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_GIRL = 0x02020500,
-    /** The voice of Pig King, a character in Journey to the West who has a voice like a growling bear.
+    /** The voice of Pig King, a character in Journey to the West who has a
+     * voice like a growling bear.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_PIGKING = 0x02020600,
     /** The voice of Hulk.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_HULK = 0x02020700,
     /** An audio effect typical of R&B music.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     STYLE_TRANSFORMATION_RNB = 0x02030100,
     /** An audio effect typical of popular music.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     STYLE_TRANSFORMATION_POPULAR = 0x02030200,
-    /** A pitch correction effect that corrects the user's pitch based on the pitch of the natural C major scale.
-     * To change the basic mode and tonic pitch, call \ref IRtcEngine::setAudioEffectParameters "setAudioEffectParameters" after this method.
+    /** A pitch correction effect that corrects the user's pitch based on
+     * the pitch of the natural C major scale.
+     * To change the basic mode and tonic pitch,
+     * call {@link setAudioEffectParameters} after this method.
      *
-     * @note To achieve better audio effect quality, Agora recommends calling \ref IRtcEngine::setAudioProfile "setAudioProfile" and
-     * setting the `profile` parameter to `AUDIO_PROFILE_MUSIC_HIGH_QUALITY(4)` or `AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO(5)` before
-     * setting this enumerator.
+     * @note To achieve better audio effect quality, Agora recommends
+     * calling {@link setAudioProfile}
+     * and setting the `profile` parameter to `4` or `5`
+     * before setting this enumerator.
      */
     PITCH_CORRECTION = 0x02040100
 };
@@ -2753,17 +2836,20 @@ export enum VOICE_BEAUTIFIER_PRESET
     VOICE_BEAUTIFIER_OFF = 0x00000000,
     /** A more magnetic voice.
      *
-     * @note Agora recommends using this enumerator to process a male-sounding voice; otherwise, you may experience vocal distortion.
+     * @note Agora recommends using this enumerator to process a male-sounding
+     * voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_MAGNETIC = 0x01010100,
     /** A fresher voice.
      *
-     * @note Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may experience vocal distortion.
+     * @note Agora recommends using this enumerator to process a
+     * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_FRESH = 0x01010200,
     /** A more vital voice.
      *
-     * @note Agora recommends using this enumerator to process a female-sounding voice; otherwise, you may experience vocal distortion.
+     * @note Agora recommends using this enumerator to process a
+     * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_VITALITY = 0x01010300,
     /** A more vigorous voice.
@@ -2778,7 +2864,7 @@ export enum VOICE_BEAUTIFIER_PRESET
     /** A falsetto voice.
      */
     TIMBRE_TRANSFORMATION_FALSETTO = 0x01030400,
-    /** A falsetto voice.
+    /** A fuller voice.
      */
     TIMBRE_TRANSFORMATION_FULL = 0x01030500,
     /** A clearer voice.
@@ -2791,11 +2877,46 @@ export enum VOICE_BEAUTIFIER_PRESET
      */
     TIMBRE_TRANSFORMATION_RINGING = 0x01030800
 };
-
+/** The subscribing state.
+ *
+ * @since v3.2.0
+ */
 export type STREAM_SUBSCRIBE_STATE =
+    /**
+     * 0: The initial subscribing state after joining the channel.
+     */
   | 0 //SUB_STATE_IDLE
+    /**
+     * 1: Fails to subscribe to the remote stream. Possible reasons:
+     * - The remote user:
+     *  - Calls {@link muteLocalAudioStream muteLocalAudioStream(true)} or
+     * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
+     * sending local streams.
+     *  - Calls {@link disableAudio} or {@link disableVideo} to disable the
+     * entire audio or video modules.
+     *  - Calls {@link enableLocalAudio enableLocalAudio(false)} or
+     * {@link enableLocalVideo enableLocalVideo(false)} to disable the local
+     * audio sampling or video capturing.
+     *  - The role of the remote user is `2` (audience).
+     * - The local user calls the following methods to stop receiving remote
+     * streams:
+     *  - Calls {@link muteRemoteAudioStream muteRemoteAudioStream(true)},
+     * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)}, or
+     * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
+     * to stop receiving remote audio streams.
+     *  - Calls {@link muteRemoteVideoStream muteRemoteVideoStream(true)},
+     * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)}, or
+     * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
+     * to stop receiving remote video streams.
+     */
   | 1 //SUB_STATE_NO_SUBSCRIBED
+    /**
+     * 2: Subscribing.
+     */
   | 2 //SUB_STATE_SUBSCRIBING
+    /**
+     * 3: Subscribes to and receives the remote stream successfully.
+     */
   | 3 //SUB_STATE_SUBSCRIBED
 
 /** @zh-cn
@@ -2807,25 +2928,25 @@ export type STREAM_SUBSCRIBE_STATE =
 export interface ChannelMediaInfo {
   /** @zh-cn
    * 频道名。
-   * 
+   *
    * 默认值为 NULL，表示 SDK 填充当前的频道名。
    */
   /**
-   * The channel name. 
-   * 
-   * The default value is NULL, which means that 
+   * The channel name.
+   *
+   * The default value is NULL, which means that
    * the SDK applies the current channel name.
    */
   channel: string;
   /** @zh-cn
    * 能加入频道的 Token。
-   * 
+   *
    * 默认值为 NULL，表示 SDK 填充当前使用的 Token。
    */
   /**
-   * The token that enables the user to join the channel. 
-   * 
-   * The default value is NULL, which means that the SDK applies the current 
+   * The token that enables the user to join the channel.
+   *
+   * The default value is NULL, which means that the SDK applies the current
    * token.
    */
   token: string;
@@ -2848,19 +2969,19 @@ export interface ChannelMediaOptions {
    * 设置加入频道时是否自动订阅音频流：
    * - true: （默认）订阅
    * - false: 不订阅
-   * 
+   *
    * 该成员功能与 {@link muteAllRemoteAudioStreams} 相同。加入频道后，你可以通过
    *  `muteAllRemoteAudioStreams` 方法重新设置是否订阅频道内的远端音频流。
    */
   /**
-   * Determines whether to subscribe to audio streams when the user joins the 
+   * Determines whether to subscribe to audio streams when the user joins the
    * channel:
    * - true: (Default) Subscribe.
    * - false: Do not subscribe.
-   * 
-   * This member serves a similar function to the 
-   * {@link AgoraRtcChannel.muteAllRemoteAudioStreams} method. After joining 
-   * the channel, you can call the `muteAllRemoteAudioStreams` method to set 
+   *
+   * This member serves a similar function to the
+   * {@link AgoraRtcChannel.muteAllRemoteAudioStreams} method. After joining
+   * the channel, you can call the `muteAllRemoteAudioStreams` method to set
    * whether to subscribe to audio streams in the channel.
    */
   autoSubscribeAudio: boolean;
@@ -2868,19 +2989,19 @@ export interface ChannelMediaOptions {
    * 设置加入频道是是否自动订阅视频流：
    * - true: （默认）订阅
    * - false: 不订阅
-   * 
+   *
    * 该成员功能与 {@link muteAllRemoteVideoStreams} 相同。加入频道后，你可以通过
    *  `muteAllRemoteVideoStreams` 方法重新设置是否订阅频道内的远端视频流。
    */
   /**
-   * Determines whether to subscribe to video streams when the user joins the 
+   * Determines whether to subscribe to video streams when the user joins the
    * channel:
    * - true: (Default) Subscribe.
    * - false: Do not subscribe.
-   * 
-   * This member serves a similar function to the 
-   * {@link AgoraRtcChannel.muteAllRemoteVideoStreams} method. After joining 
-   * the channel, you can call the `muteAllRemoteVideoStreams` method to set 
+   *
+   * This member serves a similar function to the
+   * {@link AgoraRtcChannel.muteAllRemoteVideoStreams} method. After joining
+   * the channel, you can call the `muteAllRemoteVideoStreams` method to set
    * whether to subscribe to video streams in the channel.
    */
   autoSubscribeVideo: boolean;
@@ -2898,10 +3019,10 @@ export interface WatermarkOptions {
    * - false：预览时水印本地不可见
    */
   /**
-   * Sets whether or not the watermark image is visible in the local video 
+   * Sets whether or not the watermark image is visible in the local video
    * preview:
    * - true: (Default) The watermark image is visible in preview.
-   * - false: The watermark image is not visible in preview. 
+   * - false: The watermark image is not visible in preview.
    */
   visibleInPreview: boolean,
   /** @zh-cn
@@ -2924,65 +3045,64 @@ export interface WatermarkOptions {
  */
 /**
  * The configuration of the media stream relay.
- * 
- * **Warning**:
- * - 如果你想将流转发到多个目标频道，可以定义多个 {@link ChannelMediaInfo} 类（最多
+ *
+ * @warning 如果你想将流转发到多个目标频道，可以定义多个 {@link ChannelMediaInfo} 类（最多
  * 四个）。
- * 
+ *
  */
 /**
  * The configuration of the media stream relay.
  * **Warning**:
- * - If you want to relay the media stream to multiple channels, define as 
+ * - If you want to relay the media stream to multiple channels, define as
  * many {@link ChannelMediaInfo} interface (at most four).
- * 
+ *
  */
 
 export interface ChannelMediaRelayConfiguration {
   /** @zh-cn
    * 源频道信息，详见 {@link ChannelMediaInfo}。
-   * 
+   *
    * 包含如下属性：
-   * 
+   *
    * - **Note**：
    *  - 如未启用 App Certificate，你无需使用 Token。请直接将以下属性设为默认值。
    *  - 如启用 App Certificate，你必须使用 Token。
-   * 
+   *
    * - `channel`：源频道名。默认值为 NULL，表示 SDK 传入当前的频道名。
    * - `token`：能加入源频道的 Token。由 `srcInfo` 中设置的 `channel` 和 `uid` 生成。
    * 默认值为 NULL，表示 SDK 传入 APP ID。
    * - `uid`：
    *  - 标识源频道中想要转发流的主播 UID。 默认值为 0， 表示 SDK 为你随机分配一个 UID。
    *  - 请确保设 `uid` 为 `0`。
-   * 
+   *
    */
   /**
    * The information of the source channel. See {@link ChannelMediaInfo}
-   * 
+   *
    * It contains the following properties:
-   * 
+   *
    * - **Note**:
-   *  - If you have not enabled the App Certificate, Token is unnecessary here 
+   *  - If you have not enabled the App Certificate, Token is unnecessary here
    * and set the following properties as the default value.
-   *  - If you have enabled the App Certificate, you must use Token. 
-   * 
-   * - `channel`: The name of the source channel. The default value is NULL, 
+   *  - If you have enabled the App Certificate, you must use Token.
+   *
+   * - `channel`: The name of the source channel. The default value is NULL,
    * which means that the SDK passes in the name of the current channel.
-   * - `token`: Token for joining the source channel. It is generated with 
-   * `channel` and `uid` you set in `srcInfo`. The default value is NULL, 
+   * - `token`: Token for joining the source channel. It is generated with
+   * `channel` and `uid` you set in `srcInfo`. The default value is NULL,
    * which means that the SDK passes in the APP ID.
-   * - `uid`: 
-   *  - ID of the broadcaster whose media stream you want to relay. The 
-   * default value is 0, which means that the SDK randomly generates a UID. 
+   * - `uid`:
+   *  - ID of the broadcaster whose media stream you want to relay. The
+   * default value is 0, which means that the SDK randomly generates a UID.
    *  - You must set it as 0.
-   * 
+   *
    */
   srcInfo: ChannelMediaInfo;
   /** @zh-cn
    * 目标频道信息，详见 {@link ChannelMediaInfo}。
-   * 
+   *
    * 包含如下属性：
-   * 
+   *
    * - `channel`：目标频道名。
    * - `token`：能加入目标频道的 Token。由 `destInfos` 中设置的 `channel` 和 `uid`
    * 生成。
@@ -2994,28 +3114,28 @@ export interface ChannelMediaRelayConfiguration {
    */
   /**
    * The information of the destination channel. See {@link ChannelMediaInfo}
-   * 
+   *
    * It contains the following properties:
-   * 
-   * - `channel`: The name of the destination channel. 
-   * - `token`:Token for joining the destination channel. 
-   * It is generated with `channel` and `uid` you set in `destInfos`. 
-   *  - If you have not enabled the App Certificate, Token is unnecessary here 
-   * and set it as the default value NULL, which means that the SDK passes in 
+   *
+   * - `channel`: The name of the destination channel.
+   * - `token`:Token for joining the destination channel.
+   * It is generated with `channel` and `uid` you set in `destInfos`.
+   *  - If you have not enabled the App Certificate, Token is unnecessary here
+   * and set it as the default value NULL, which means that the SDK passes in
    * the APP ID.
-   *  - If you have enabled the App Certificate, you must use Token. 
-   * - `uid`: ID of the broadcaster in the destination channel. 
-   * The value ranges from 0 to 2<sup>32</sup>-1. To avoid UID conflicts, 
-   * this `uid` must be different from any other UIDs in the destination 
-   * channel. The default value is 0, which means the SDK randomly generates 
+   *  - If you have enabled the App Certificate, you must use Token.
+   * - `uid`: ID of the broadcaster in the destination channel.
+   * The value ranges from 0 to 2<sup>32</sup>-1. To avoid UID conflicts,
+   * this `uid` must be different from any other UIDs in the destination
+   * channel. The default value is 0, which means the SDK randomly generates
    * a UID.
-   * 
+   *
    */
   destInfos: [ChannelMediaInfo];
 }
 /** @zh-cn
  * 跨频道媒体流转发事件码
- * 
+ *
  * - 0 网络中断导致用户与服务器连接断开
  * - 1 用户与服务器建立连接
  * - 2 用户已加入源频道
@@ -3040,7 +3160,7 @@ export interface ChannelMediaRelayConfiguration {
  * - 6: The server receives the audio stream from the source channel.
  * - 7: The destination channel is updated.
  * - 8: The destination channel update fails due to internal reasons.
- * - 9: The destination channel does not change, which means that the 
+ * - 9: The destination channel does not change, which means that the
  * destination channel fails to be updated.
  * - 10: The destination channel name is NULL.
  * - 11: The video profile is sent to the server.
@@ -3069,9 +3189,9 @@ export type ChannelMediaRelayEvent =
  * The state code.
  * - 0: The SDK is initializing.
  * - 1: The SDK tries to relay the media stream to the destination channel.
- * - 2: The SDK successfully relays the media stream to the destination 
+ * - 2: The SDK successfully relays the media stream to the destination
  * channel.
- * - 3: A failure occurs. See the error code in 
+ * - 3: A failure occurs. See the error code in
  * {@link ChannelMediaRelayError}.
  */
 export type ChannelMediaRelayState =
@@ -3099,15 +3219,15 @@ export type ChannelMediaRelayState =
  * The error code.
  * - 0: The state is normal.
  * - 1: An error occurs in the server response.
- * - 2: No server response. You can call the {@link leaveChannel} method to 
+ * - 2: No server response. You can call the {@link leaveChannel} method to
  * leave the channel.
- * - 3: The SDK fails to access the service, probably due to limited resources 
+ * - 3: The SDK fails to access the service, probably due to limited resources
  * of the server.
  * - 4: Fails to send the relay request.
  * - 5: Fails to accept the relay request.
  * - 6: The server fails to receive the media stream.
  * - 7: The server fails to send the media stream.
- * - 8: The SDK disconnects from the server due to poor network connections. 
+ * - 8: The SDK disconnects from the server due to poor network connections.
  * You can call the {@link leaveChannel} method to leave the channel.
  * - 9: An internal error occurs in the server.
  * - 10: The token of the source channel has expired.
@@ -3126,23 +3246,69 @@ export type ChannelMediaRelayError =
   | 9 // 9: RELAY_ERROR_INTERNAL_ERROR
   | 10 // 10: RELAY_ERROR_SRC_TOKEN_EXPIRED
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
-
+/**
+ * Regions for connection.
+ *
+ * @since v3.2.0
+ */
 export type AREA_CODE =
+    /**
+     * Mainland China.
+     */
   | 1 //AREA_CODE_CN = ,
+    /**
+     * North America.
+     */
   | 2 //AREA_CODE_NA = ,
+    /**
+     * Europe.
+     */
   | 4 //AREA_CODE_EUR = ,
+     /**
+      * Asia, excluding Mainland China.
+      */
   | 8 //AREA_CODE_AS = ,
+     /**
+      * Japan.
+      */
   | 16//AREA_CODE_JAPAN = ,
+     /**
+      * India.
+      */
   | 32 //AREA_CODE_INDIA = ,
-  | (0xFFFFFFFF); //AREA_CODE_GLOBAL = 
-
+     /**
+      * (Default) Global.
+      */
+  | (0xFFFFFFFF); //AREA_CODE_GLOBAL =
+/** The publishing state.
+ *
+ * @since v3.2.0
+ */
 export type STREAM_PUBLISH_STATE =
+     /** 0: The initial publishing state after joining the channel.
+      */
     | 0 //PUB_STATE_IDLE
+     /** 1: Fails to publish the local stream. Possible reasons:
+      * - The local user calls
+      * {@link muteLocalAudioStream muteLocalAudioStream(true)} or
+      * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
+      * sending local streams.
+      * - The local user calls {@link disableAudio} or {@link disableVideo} to
+      * disable the entire audio or video module.
+      * - The local user calls {@link enableLocalAudio enableLocalAudio(false)}
+      *  or {@link enableLocalVideo enableLocalVideo(false)} to disable the
+      * local audio sampling or video capturing.
+      * - The role of the local user is `2` (audience).
+      */
     | 1 //PUB_STATE_NO_PUBLISHED
+      /** 2: Publishing.
+       */
     | 2 //PUB_STATE_PUBLISHING
+      /** 3: Publishes successfully.
+       */
     | 3 //PUB_STATE_PUBLISHED
 
-export type AUDIO_ROUTE_TYPE = 
+export type AUDIO_ROUTE_TYPE =
     | -1 //AUDIO_ROUTE_DEFAULT
     | 0  //AUDIO_ROUTE_HEADSET
     | 1  //AUDIO_ROUTE_EARPIECE
