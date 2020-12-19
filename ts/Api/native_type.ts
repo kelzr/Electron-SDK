@@ -419,7 +419,7 @@ export interface TranscodingConfig {
   };
   background: {
     /** @zh-cn
-     * //TODO
+     * 直播视频上图片的 HTTP/HTTPS 地址。字符长度不得超过 1024 字节。
      */
     /**
      * HTTP/HTTPS URL address of the image on the broadcasting video.
@@ -428,26 +428,26 @@ export interface TranscodingConfig {
      */
     url: string;
     /** @zh-cn
-     * //TODO
+     * 水印或背景图片在视频帧左上角的横轴坐标。
      */
     /** Horizontal position of the image from the upper left of the
      * broadcasting video.
      */
     x: number;
     /** @zh-cn
-     * //TODO
+     * 水印或背景图片在视频帧左上角的纵轴坐标。
      */
     /** Vertical position of the image from the upper left of the broadcasting
      * video.
      */
     y: number;
     /** @zh-cn
-     * //TODO
+     * 水印或背景图片在视频帧上的宽度。
      */
     /** Width of the image on the broadcasting video. */
     width: number;
     /** @zh-cn
-     * //TODO
+     * 水印或背景图片在视频帧上的高度。
      */
     /** Height of the image on the broadcasting video. */
     height: number;
@@ -601,78 +601,135 @@ export interface UserInfo {
  */
 /** Sets the local voice changer option. */
 export enum VoiceChangerPreset {
+  /** @zh-cn
+   * 原声，即关闭语音变声。
+   */
   /**
    * The original voice (no local voice change).
    */
   VOICE_CHANGER_OFF = 0x00000000, //Turn off the voice changer
+  /** @zh-cn
+   * 变声：老男人。
+   */
   /**
    * The voice of an old man.
    */
   VOICE_CHANGER_OLDMAN = 0x00000001,
+  /** @zh-cn
+   * 变声：小男孩。
+   */
   /**
    * The voice of a little boy.
    */
   VOICE_CHANGER_BABYBOY = 0x00000002,
+  /** @zh-cn
+   * 变声：小女孩。
+   */
   /**
    * The voice of a little girl.
    */
   VOICE_CHANGER_BABYGIRL = 0x00000003,
+  /** @zh-cn
+   * 变声：猪八戒。
+   */
   /**
    * The voice of Zhu Bajie, a character in Journey to the West who has a voice like that of a growling bear.
    */
   VOICE_CHANGER_ZHUBAJIE = 0x00000004,
+  /** @zh-cn
+   * 变声：空灵。
+   */
   /**
    * The ethereal voice.
    */
   VOICE_CHANGER_ETHEREAL = 0x00000005,
+  /** @zh-cn
+   * 变声：绿巨人。
+   */
   /**
    * The voice of Hulk.
    */
   VOICE_CHANGER_HULK = 0x00000006,
+  /** @zh-cn
+   * 美音：浑厚。
+   */
   /**
    * A more vigorous voice.
    */
   VOICE_BEAUTY_VIGOROUS = 0x00100001,//7,
+  /** @zh-cn
+   * 美音：低沉。
+   */
   /**
    * A deeper voice.
    */
   VOICE_BEAUTY_DEEP = 0x00100002,
+  /** @zh-cn
+   * 美音：圆润。
+   */
   /**
    * A mellower voice.
    */
   VOICE_BEAUTY_MELLOW = 0x00100003,
+  /** @zh-cn
+   * 美音：假音。
+   */
   /**
    * Falsetto.
    */
   VOICE_BEAUTY_FALSETTO = 0x00100004,
+  /** @zh-cn
+   * 美音：饱满。
+   */
   /**
    * A fuller voice.
    */
   VOICE_BEAUTY_FULL = 0x00100005,
+  /** @zh-cn
+   * 美音：清澈。
+   */
   /**
    * A clearer voice.
    */
   VOICE_BEAUTY_CLEAR = 0x00100006,
+  /** @zh-cn
+   * 美音：高亢。
+   */
   /**
    * A more resounding voice.
    */
   VOICE_BEAUTY_RESOUNDING = 0x00100007,
+  /** @zh-cn
+   * 美音：嘹亮。
+   */
   /**
    * A more ringing voice.
    */
   VOICE_BEAUTY_RINGING = 0x00100008,
+  /** @zh-cn
+   * 美音：空旷。
+   */
   /**
    * A more spatially resonant voice.
    */
   VOICE_BEAUTY_SPACIAL = 0x00100009,
+  /** @zh-cn
+   * 语聊美声：磁性（男）。此枚举为男声定制化效果，不适用于女声。若女声使用此音效设置，则音频可能会产生失真。
+   */
   /**
    * (For male only) A more magnetic voice. Do not use it when the speaker is a female; otherwise, voice distortion occurs.
    */
   GENERAL_BEAUTY_VOICE_MALE_MAGNETIC = 0x00200001,
+  /** @zh-cn
+   * 语聊美声：清新（女）。此枚举为女声定制化效果，不适用于男声。若男声使用此音效设置，则音频可能会产生失真。
+   */
   /**
    * (For female only) A fresher voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
    */
   GENERAL_BEAUTY_VOICE_FEMALE_FRESH = 0x00200002,
+  /** @zh-cn
+   * 语聊美声：活力（女）。此枚举为女声定制化效果，不适用于男声。若男声使用此音效设置，则音频可能会产生失真。
+   */
   /**
    * 	(For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
    */
@@ -686,70 +743,122 @@ export enum VoiceChangerPreset {
  * Sets the local voice changer option.
  */
 export enum AudioReverbPreset {
+  /** @zh-cn
+   * 原声，即关闭本地语音混响。
+   */
   /**
    * Turn off local voice reverberation, that is, to use the original voice.
    */
   AUDIO_REVERB_OFF = 0x00000000, // Turn off audio reverb
+  /** @zh-cn
+   * KTV（增强版）。
+   */
   /**
    * The reverberation style typical of a KTV venue (enhanced).
    */
   AUDIO_REVERB_FX_KTV = 0x00100001,
+  /** @zh-cn
+   * 演唱会（增强版）。
+   */
   /**
    * The reverberation style typical of a concert hall (enhanced).
    */
   AUDIO_REVERB_FX_VOCAL_CONCERT = 0x00100002,
+  /** @zh-cn
+   * 大叔。
+   */
   /**
    * The reverberation style typical of an uncle's voice.
    */
   AUDIO_REVERB_FX_UNCLE = 0x00100003,
+  /** @zh-cn
+   * 小姐姐。
+   */
   /**
    * The reverberation style typical of a little sister's voice.
    */
   AUDIO_REVERB_FX_SISTER = 0x00100004,
+  /** @zh-cn
+   * 录音棚（增强版）。
+   */
   /**
    * The reverberation style typical of a recording studio (enhanced).
    */
   AUDIO_REVERB_FX_STUDIO = 0x00100005,
+  /** @zh-cn
+   * 流行（增强版）。
+   */
   /**
    * The reverberation style typical of popular music (enhanced).
    */
   AUDIO_REVERB_FX_POPULAR = 0x00100006,
+  /** @zh-cn
+   * R&B（增强版）。
+   */
   /**
    * The reverberation style typical of R&B music (enhanced).
    */
   AUDIO_REVERB_FX_RNB = 0x00100007,
+  /** @zh-cn
+   * 留声机。
+   */
   /**
    * The reverberation style typical of the vintage phonograph.
    */
   AUDIO_REVERB_FX_PHONOGRAPH = 0x00100008,
+  /** @zh-cn
+   * 流行。
+   */
   /**
    * The reverberation style typical of popular music.
    */
   AUDIO_REVERB_POPULAR = 0x00000001,
+  /** @zh-cn
+   * R&B。
+   */
   /**
    * The reverberation style typical of R&B music.
    */
   AUDIO_REVERB_RNB = 0x00000002,
+  /** @zh-cn
+   * 摇滚。
+   */
   /**
    * The reverberation style typical of rock music.
    */
   AUDIO_REVERB_ROCK = 0x00000003,
+  /** @zh-cn
+   * 嘻哈。
+   */
   /**
    * The reverberation style typical of hip-hop music.
    */
    AUDIO_REVERB_HIPHOP = 0x00000004,
+  /** @zh-cn
+   * 演唱会。
+   */
   /**
    * The reverberation style typical of a concert hall.
    */
   AUDIO_REVERB_VOCAL_CONCERT = 0x00000005,
+  /** @zh-cn
+   * KTV。
+   */
   /**
    * The reverberation style typical of a KTV venue.
    */
   AUDIO_REVERB_KTV = 0x00000006,
+  /** @zh-cn
+   * 录音棚。
+   */
   /**
    * The reverberation style typical of a recording studio.
    */
   AUDIO_REVERB_STUDIO = 0x00000007,
+  /** @zh-cn
+   * 虚拟立体声。虚拟立体声是指将单声道的音轨渲染出立体声的效果，使频道内所有用户听到有空间感的声音 效果。
+   * 为达到更好的虚拟立体声效果，Agora 推荐在调用该方法前将 `setAudioProfile` 的 `profile` 参数设置为 `5` 。
+   */
   /**
    * The reverberation of the virtual stereo. The virtual stereo is an effect that renders the monophonic
    * audio as the stereo audio, so that all users in the channel can hear the stereo voice effect.
@@ -1184,10 +1293,18 @@ export interface LocalVideoStats {
    * The codec type of the local video. See {@link VIDEO_CODEC_TYPE}.
    */
   codecType: number;
+  /** @zh-cn
+   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的丢包率(%)。
+   */
   /** The packet loss rate (%) from the local client to Agora's edge server,
    * before using the anti-packet-loss method. //FIXME(video?)
    */
   txPacketLossRate: number;
+  /** @zh-cn
+   * 本地视频采集帧率 (fps)。
+   * 
+   * @since v3.2.0
+   */
   /** The capture frame rate (fps) of the local video.
    *
    * @since v3.2.0
@@ -1222,6 +1339,11 @@ export interface LocalAudioStats {
    * The average sending bitrate (Kbps).
    */
   sentBitrate: number;
+  /** @zh-cn
+   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的音频丢包率(%)。
+   * 
+   * @since v3.2.0
+   */
   /**
    * The audio packet loss rate (%) from the local client to the Agora edge
    * server before applying the anti-packet loss strategies.
@@ -1637,6 +1759,11 @@ export interface RemoteVideoStats {
    * anti-packet-loss method.
    */
   packetLossRate: number;
+  /** @zh-cn
+   * 视频有效时长（毫秒），即远端用户/主播加入频道后，既没有停止发送视频流，也没有禁用视频模块的通话时长。
+   * 
+   * @since v3.2.0
+   */
   /**
    * The total time (ms) when the remote user in the `0` (communication)
    * profile or the remote host in the `1` (live streaming) profile neither
@@ -1647,6 +1774,9 @@ export interface RemoteVideoStats {
    *
    */
   totalActiveTime: number;
+  /** @zh-cn
+   * 远端视频流的累计发布时长（毫秒）。
+   */
   /**
    * The total publish duration (ms) of the remote video stream.
    */
@@ -1793,6 +1923,13 @@ export interface CaptureParam {
    * @since v3.2.0
    */
   captureMouseCursor: boolean;
+  /** @zh-cn
+   * 调用 {@link startScreenCaptureByWindow} 方法共享窗口时，是否将该窗口前置。
+   * - true: 前置窗口。
+   * - false:（默认）不前置窗口。
+   * 
+   * @since v3.2.0
+   */
   /** Whether to bring the window to the front when calling
    * {@link startScreenCaptureByWindow} to share the window:
    * - true: Bring the window to the front.
@@ -1801,6 +1938,15 @@ export interface CaptureParam {
    * @since v3.2.0
    */
   windowFocus: boolean;
+  /** @zh-cn
+   * 待屏蔽窗口的 ID 列表。
+   * 
+   * 调用 {@link startScreenCaptureByScreen} 开启屏幕共享时，你可以通过该参数屏蔽指定的窗口。 
+   * 开启屏幕共享后，你可以在调用 {@link updateScreenCaptureParameters} 更新屏幕共享的配置参数时，
+   * 通过该参数动态屏蔽指定的窗口。
+   * 
+   * @since v3.2.0
+   */
   /** A list of IDs of windows to be blocked.
    *
    * When calling {@link startScreenCaptureByScreen} to start screen
@@ -2001,6 +2147,11 @@ export interface RemoteAudioStats {
    * when the audio is available.
    */
   frozenRate: number;
+  /** @zh-cn
+   * 音频有效时长（毫秒），即远端用户/主播加入频道后，既没有停止发送音频流，也没有禁用音频模块的通话时长。
+   * 
+   * @since v3.2.0
+   */
   /**
    * The total time (ms) when the remote user in the `0` (communication)
    * profile or the remote host in the `1` (live streaming) profile neither
@@ -2011,6 +2162,9 @@ export interface RemoteAudioStats {
    *
    */
   totalActiveTime: number;
+  /** @zh-cn
+   * 远端音频流的累计发布时长（毫秒）。
+   */
   /**
    * The total publish duration (ms) of the remote audio stream.
    */
@@ -2642,21 +2796,37 @@ export enum VIDEO_PROFILE_TYPE {
  */
 export enum RTMP_STREAMING_EVENT
 {
+  /** @zh-cn
+   * RTMP/RTMPS 推流时，添加背景图或水印出错。
+   */
   /** An error occurs when you add a background image or a watermark image to the RTMP or RTMPS stream.
    *
    * @since v3.2.0
    */
   RTMP_STREAMING_EVENT_FAILED_LOAD_IMAGE = 1,
 };
+/** @zh-cn
+ * 预设的音效选项。
+ * 
+ * @since v3.2.0
+ */
 /** The options for SDK preset audio effects.
  *
  * @since v3.2.0
  */
 export enum AUDIO_EFFECT_PRESET
-{
+{   
+    /** @zh-cn
+     * 原声，即关闭人声音效。
+     */
     /** Turn off audio effects and use the original voice.
      */
     AUDIO_EFFECT_OFF = 0x00000000,
+    /** @zh-cn
+     * KTV。
+     * 
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** An audio effect typical of a KTV venue.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2665,6 +2835,9 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_KTV = 0x02010100,
+    /** @zh-cn
+     * 
+     */
     /** An audio effect typical of a concert hall.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2826,20 +2999,28 @@ export enum AUDIO_EFFECT_PRESET
      */
     PITCH_CORRECTION = 0x02040100
 };
-
 /** The options for SDK preset voice beautifier effects.
  */
 export enum VOICE_BEAUTIFIER_PRESET
-{
+{   
+    /** @zh-cn
+     * 
+     */
     /** Turn off voice beautifier effects and use the original voice.
      */
     VOICE_BEAUTIFIER_OFF = 0x00000000,
+    /** @zh-cn
+     * 
+     */
     /** A more magnetic voice.
      *
      * @note Agora recommends using this enumerator to process a male-sounding
      * voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_MAGNETIC = 0x01010100,
+    /** @zh-cn
+     * 
+     */
     /** A fresher voice.
      *
      * @note Agora recommends using this enumerator to process a
@@ -2882,6 +3063,38 @@ export enum VOICE_BEAUTIFIER_PRESET
  * @since v3.2.0
  */
 export type STREAM_SUBSCRIBE_STATE =
+    /** @zh-cn
+     * 0：加入频道后的初始订阅状态。
+     */
+  | 0 //SUB_STATE_IDLE
+    /**
+     * 1：订阅失败。可能是因为：
+     * - 远端用户：
+     *  - 调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或
+     * {@link muteLocalVideoStream muteLocalVideoStream(true)} 停止发送本地媒体流。
+     *  - 调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
+     *  - 调用 {@link enableLocalAudio enableLocalAudio(false)} 或
+     * {@link enableLocalVideo enableLocalVideo(false)} 关闭本地音频或视频采集。
+     *  - 用户角色为观众。
+     * - 本地用户调用以下方法停止接收远端媒体流：
+     *  - 调用 {@link muteRemoteAudioStream muteRemoteAudioStream(true)}、
+     * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)} 或
+     * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
+     * 停止接收远端音频流。
+     *  - 调用 {@link muteRemoteVideoStream muteRemoteVideoStream(true)}、
+     * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)} 或
+     * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
+     * 停止接收远端音频流。
+     */
+  | 1 //SUB_STATE_NO_SUBSCRIBED
+  /**
+   * 2：正在订阅。
+   */
+  | 2 //SUB_STATE_SUBSCRIBING
+  /**
+   * 3：收到了远端流，订阅成功。
+   */
+  | 3 //SUB_STATE_SUBSCRIBED
     /**
      * 0: The initial subscribing state after joining the channel.
      */
@@ -3246,36 +3459,60 @@ export type ChannelMediaRelayError =
   | 9 // 9: RELAY_ERROR_INTERNAL_ERROR
   | 10 // 10: RELAY_ERROR_SRC_TOKEN_EXPIRED
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
+/** @zh-cn
+ * 访问区域。
+ */  
 /**
  * Regions for connection.
  *
  * @since v3.2.0
  */
 export type AREA_CODE =
+    /** @zh-cn
+     * 中国大陆。
+     */  
     /**
      * Mainland China.
      */
   | 1 //AREA_CODE_CN = ,
+    /** @zh-cn
+     * 北美区域。
+     */  
     /**
      * North America.
      */
   | 2 //AREA_CODE_NA = ,
+    /** @zh-cn
+     * 欧洲区域。
+     */
     /**
      * Europe.
      */
   | 4 //AREA_CODE_EUR = ,
-     /**
+    /** @zh-cn
+     * 除中国大陆以外的亚洲区域。
+     */ 
+    /**
       * Asia, excluding Mainland China.
       */
   | 8 //AREA_CODE_AS = ,
-     /**
+    /** @zh-cn
+     * 日本区域。
+     */
+    /**
       * Japan.
       */
   | 16//AREA_CODE_JAPAN = ,
+     /** @zh-cn
+      * 印度区域。
+      */
      /**
       * India.
       */
   | 32 //AREA_CODE_INDIA = ,
+     /**
+     *（默认）全球。
+     */
      /**
       * (Default) Global.
       */
@@ -3285,9 +3522,26 @@ export type AREA_CODE =
  * @since v3.2.0
  */
 export type STREAM_PUBLISH_STATE =
+     /** @zh-cn
+     * 0: 加入频道后的初始发布状态。
+     */
+     0 //PUB_STATE_IDLE
+     /** 1: 发布失败。可能是因为：
+     * - 本地用户调用 {@link muteLocalAudioStream(true)} 或 {@link muteLocalVideoStream(true)} 停止发送本地媒体流。
+     * - 本地用户调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
+     * - 本地用户调用 {@link enableLocalAudio(false)} 或 {@link enableLocalVideo(false)} 关闭本地音频或视频采集。
+     * - 本地用户角色为观众。
+     */
+     1 //PUB_STATE_NO_PUBLISHED 
+     /** 2: 正在发布。
+     */
+     2 //PUB_STATE_PUBLISHING
+    /** 3: 发布成功。
+     */
+     3 //PUB_STATE_PUBLISHED
      /** 0: The initial publishing state after joining the channel.
       */
-    | 0 //PUB_STATE_IDLE
+     0 //PUB_STATE_IDLE
      /** 1: Fails to publish the local stream. Possible reasons:
       * - The local user calls
       * {@link muteLocalAudioStream muteLocalAudioStream(true)} or
@@ -4912,18 +5166,30 @@ export interface NodeRtcEngine {
    * @ignore
    */
   sendCustomReportMessage(id: string, category: string, event: string, label: string, value: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   enableEncryption(enabled: boolean, config: EncryptionConfig): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setAudioEffectPreset(preset: AUDIO_EFFECT_PRESET): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setVoiceBeautifierPreset(preset: VOICE_BEAUTIFIER_PRESET): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -5256,6 +5522,9 @@ export interface NodeRtcChannel {
    * @ignore
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */

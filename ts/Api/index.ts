@@ -1057,6 +1057,8 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 初始化一个 `AgoraRtcEngine` 实例。
    * @param {string} appid Agora 为 App 开发者签发的 App ID，每个项目都应该有一个独一无二的 App ID
+   * @param areaCode 服务器的访问区域。该功能为高级设置，适用于有访问安全限制的场景。支持的区域详见 {@link AREA_CODE}
+   * 指定访问区域后，Agora SDK 会连接指定区域内的 Agora 服务器。注解：仅支持指定单个访问区域。
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -2406,11 +2408,12 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 开启或关闭本地美颜功能，并设置美颜效果选项（仅适用于 Windows 平台）。
+   * 开启或关闭本地美颜功能，并设置美颜效果选项。
    *
-   * @since v3.0.
+   * @since v3.0.0 (适用于 Windows 平台)
+   * @since v3.2.0 (适用于 macOS 平台)
    *
-   * @note 请不要在 macOS 平台上调用该方法，否则会报错误码 `-4`。
+   * @note 调用 {@link enableVideo} 之后再调用该方法。
    *
    * @param {boolean} enable 是否开启美颜功能：
    * - `true`：开启
@@ -2425,7 +2428,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @param {number} options.smoothnessLevel 平滑度，可用来实现祛痘、磨皮等视觉效果。取值范围为 [0.0, 1.0]，其中 0.0 表示原始平滑等级，默认值为 0.5。
    * @param {number} options.rednessLevel 红润度，可用来实现红润肤色等视觉效果。取值范围为 [0.0, 1.0]，其中 0.0 表示原始红润度，默认值为 0.1。
    *
-   * @returns {number}
+   * @return {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
    */
@@ -2613,7 +2616,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - `3`：Music standard stereo：指定 48 kHz采样率，音乐编码，双声道，编码码率最大值为 56 Kbps
    * - `4`：Music high quality：指定 48 kHz 采样率，音乐编码，单声道，编码码率最大值为 128 Kbps
    * - `5`：Music high quality stereo：指定 48 kHz 采样率，音乐编码，双声道，编码码率最大值为 192 Kbps
-   *
+   * - `6`：IOT。
    * @param scenario 设置音频应用场景：
    * - `0`：默认的音频应用场景
    * - `1`：Chatroom entertainment：娱乐应用，需要频繁上下麦的场景
@@ -2621,7 +2624,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - `3`：Game streaming：游戏直播应用，需要外放游戏音效也直播出去的场景
    * - `4`：Showroom：秀场应用，音质优先和更好的专业外设支持
    * - `5`：Chatroom gaming：游戏开黑
-   *
+   * - `8`：Meeting：会议场景，适用于人声为主的多人会议。@since v3.2.0 
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -2715,6 +2718,8 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
+   * @deprecated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
+   * 
    * 启用内置加密，并设置数据加密密码。
    *
    * 如需启用加密，请在 {@link joinChannel} 前调用该方法，并设置加密的密码。
@@ -2755,6 +2760,8 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 设置内置的加密方案。
+   * 
+   * @depercated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
    *
    * Agora Native SDK 支持内置加密功能，默认使用 AES-128-XTS 加密方式。如需使用其他加密方式，可以调用该 API 设置。
    *
@@ -3682,9 +3689,11 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * 设置本地语音变声。
+   * 
+   * @deprecated 该方法自 v3.2.0 已废弃，请改用 {@link setAudioEffectPreset} 或 {@link setVoiceBeautifierPreset}。
    *
    * @note 该方法不能与 {@link setLocalVoiceReverbPreset} 方法同时使用，否则先调用的方法会不生效。
-   * @param {VoiceChangerPreset} preset 设置本地语音的变声效果选项
+   * @param {VoiceChangerPreset} preset 设置本地语音的变声效果选项。
    *
    * @return
    * - 0：方法调用成功
@@ -3704,6 +3713,8 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
+   * @deprecated 该方法从 v3.2.0 起废弃，请改用 {@link setAudioEffectPreset} 或 {@link setVoiceBeautifierPreset}。
+   * 
    * 设置预设的本地语音混响效果选项。
    *
    * @note
@@ -6102,7 +6113,22 @@ class AgoraRtcEngine extends EventEmitter {
   setAudioMixingPosition(position: number): number {
     return this.rtcEngine.setAudioMixingPosition(position);
   }
-
+  /** @zh-cn
+   * 调整本地播放的音乐文件的音调。
+   * 
+   * @since v3.2.0
+   * 
+   * 本地人声和播放的音乐文件混音时，调用该方法可以仅调节音乐文件的音调。
+   * 
+   * @note 调用该方法前，请确保你已调用 {@link startAudioMixing}。
+   * 
+   * @param pitch 按半音音阶调整本地播放的音乐文件的音调，默认值为 0，即不调整音调。
+   * 取值范围为 [-12,12]， 每相邻两个值的音高距离相差半音。取值的绝对值越大，音调升高或降低得越多。
+   * 
+   * @return
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /** Sets the pitch of the local music file.
    *
    * @since v3.2.0
@@ -7439,6 +7465,29 @@ class AgoraRtcEngine extends EventEmitter {
   sendCustomReportMessage(id: string, category: string, event: string, label: string, value: number): number {
     return this.rtcEngine.sendCustomReportMessage(id, category, event, label, value);
   }
+  /** @zh-cn
+   * 开启或关闭内置加密。
+   * 
+   * @since v3.2.0
+   * 
+   * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
+   * 
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   * 
+   * **Note**:
+   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
+   * - Agora 支持 4 种加密模式。除 SM4_128_ECB 模式外，
+   * 其他加密模式都需要在集成 Android 或 iOS SDK 时，额外添加加密库文件。//TODO(英文还未确定)
+   * 
+   * @param enabled 是否开启内置加密：
+   * - true: 开启
+   * - false: 关闭
+   * @param config 配置内置加密模式和密钥。
+   * 
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Enables/Disables the built-in encryption.
    *
    * @since v3.2.0
@@ -7469,6 +7518,36 @@ class AgoraRtcEngine extends EventEmitter {
   enableEncryption(enabled: boolean, config: EncryptionConfig): number {
     return this.rtcEngine.enableEncryption(enabled, config);
   }
+  /** @zh-cn
+   * 设置 SDK 预设的人声音效。
+   * 
+   * @since v3.2.0
+   * 
+   * 调用该方法可以为本地发流用户设置 SDK 预设的人声音效，且不会改变原声的性别特征。设置音效后，频道内所有用户都能听到该效果。
+   * 根据不同的场景，你可以为用户设置不同的音效。
+   * 
+   * 为获取更好的人声效果，Agora 推荐你在调用该方法前将 {@link setAudioProfile} 的 `scenario` 设为 `3`。
+   * 
+   * **Note**:
+   * - 该方法在加入频道前后都能调用。
+   * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
+   * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
+   * - 如果调用该方法并设置除 `ROOM_ACOUSTICS_3D_VOICE` 或 `PITCH_CORRECTION` 外的枚举，请勿再
+   * 调用 {@link setAudioEffectParameters}，否则该方法设置的效果会被覆盖。
+   * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
+   *  - {@link setVoiceBeautifierPreset}
+   *  - {@link setLocalVoiceReverbPreset}
+   *  - {@link setLocalVoiceChanger}
+   *  - {@link setLocalVoicePitch}
+   *  - {@link setLocalVoiceEqualization}
+   *  - {@link setLocalVoiceReverb}
+   * 
+   * @param preset 预设的音效选项。
+   * 
+   * @returns
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /** Sets an SDK preset audio effect.
    *
    * @since v3.2.0
@@ -7514,6 +7593,35 @@ class AgoraRtcEngine extends EventEmitter {
   setAudioEffectPreset(preset: AUDIO_EFFECT_PRESET): number {
     return this.rtcEngine.setAudioEffectPreset(preset);
   }
+  /** @zh-cn
+   * 设置 SDK 预设的美声效果。
+   * 
+   * @since v3.2.0
+   * 
+   * 调用该方法可以为本地发流用户设置 SDK 预设的人声美化效果。设置美声效果后，频道内所有用户都能听到该效果。
+   * 根据不同的场景，你可以为用户设置不同的美声效果.
+   * 
+   * 为获取更好的人声效果，Agora 推荐你在调用该方法前将 `setAudioProfile` 的 `scenario` 设为 `3`，并将 `profile` 设为 `4` 或 `5`。
+   *
+   * @note 
+   * - 该方法在加入频道前后都能调用。
+   * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
+   * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
+   * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
+   *  - {@link setAudioEffectPreset}
+   *  - {@link setVoiceBeautifierPreset}
+   *  - {@link setLocalVoiceReverbPreset}
+   *  - {@link setLocalVoiceChanger}
+   *  - {@link setLocalVoicePitch}
+   *  - {@link setLocalVoiceEqualization}
+   *  - {@link setLocalVoiceReverb}
+   * 
+   * @param preset 预设的美声效果选项。
+   * 
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
 
   /** Sets an SDK preset voice beautifier effect.
    *
@@ -7557,6 +7665,70 @@ class AgoraRtcEngine extends EventEmitter {
   setVoiceBeautifierPreset(preset: VOICE_BEAUTIFIER_PRESET): number {
     return this.rtcEngine.setVoiceBeautifierPreset(preset);
   }
+  /** @zh-cn
+   * 设置 SDK 预设人声音效的参数。
+   * 
+   * @since v3.2.0
+   * 
+   * 调用该方法可以对本地发流用户进行如下设置：
+   * - 3D 人声音效：设置 3D 人声音效的环绕周期。
+   * - 电音音效：设置电音音效的基础调式和主音音高。为方便用户自行调节电音音效，Agora 推荐你将基础调式和主音音高配置选项与应用的 UI 元素绑定。
+   * 
+   * 设置后，频道内所有用户都能听到该效果。
+   * 
+   * 该方法可以单独使用，也可以搭配 {@link setAudioEffectPreset} 使用。搭配使用时， 
+   * 需要先调用 {@link setAudioEffectPreset} 并使用 `ROOM_ACOUSTICS_3D_VOICE` 或 `PITCH_CORRECTION` 枚举，再调用该方法使用相同的枚举。
+   * 否则，该方法设置的效果会覆盖 `setAudioEffectPreset` 设置的效果。
+   * 
+   * @note
+   * - 该方法在加入频道前后都能调用。
+   * - 为获取更好的人声效果，Agora 推荐你在调用该方法前将 {@link setAudioProfile} 的 `scenario` 设为 `3`。
+   * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
+   * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
+   * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
+   *  - {@link setAudioEffectPreset}
+   *  - {@link setVoiceBeautifierPreset}
+   *  - {@link setLocalVoiceReverbPreset}
+   *  - {@link setLocalVoiceChanger}
+   *  - {@link setLocalVoicePitch}
+   *  - {@link setLocalVoiceEqualization}
+   *  - {@link setLocalVoiceReverb}
+   * 
+   * @param preset SDK 预设的音效：
+   * - 3D 人声音效: `ROOM_ACOUSTICS_3D_VOICE`.
+   *  - 你需要在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置 为 `3` 或 `5`，否则该枚举设置无效。
+   *  - 启用 3D 人声后，用户需要使用支持双声道的音频播放设备才能听到预期效果。
+   * - 电音音效：PITCH_CORRECTION。为获取更好的人声效果，
+   * Agora 建议你在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置为 `4` 或 `5`。
+   * 
+   * @param param1
+   * - 如果 `preset` 设为 `ROOM_ACOUSTICS_3D_VOICE`，则 `param1` 表示 3D 人声音效的环绕周期。
+   * 取值范围为 [1,60]，单位为秒。默认值为 10，表示人声会 10 秒环绕 360 度。
+   * - 如果 `preset` 设为 `PITCH_CORRECTION`，则 `param1` 表示电音音效的基础调式。可设为如下值：
+   *  - `1`: (默认）自然大调。
+   *  - `2`: 自然小调。
+   *  - `3`: 和风小调。
+   * 
+   * @param param2
+   * - 如果 `preset` 设为 `ROOM_ACOUSTICS_3D_VOICE`，你需要将 `param2` 设置为 0。
+   * - 如果 `preset` 设为 `PITCH_CORRECTION`，则 `param2` 表示电音音效的主音音高。可设为如下值：
+   *  - `1`: A
+   *  - `2`: A#
+   *  - `3`: B
+   *  - `4`: (Default) C
+   *  - `5`: C#
+   *  - `6`: D
+   *  - `7`: D#
+   *  - `8`: E
+   *  - `9`: F
+   *  - `10`: F#
+   *  - `11`: G
+   *  - `12`: G#
+   * 
+   * @return 
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
 
   /** Sets parameters for SDK preset audio effects.
    *
@@ -8688,8 +8860,10 @@ on(
   on(evt: 'requestChannelKey', cb: () => void): this;
   /** @zh-cn
    * 已发送本地音频首帧回调。
+   * 
+   * @deprecated 该回调自 v3.2.0 已废弃，请改用 `firstLocalAudioFramePublished`。
    *
-   * @param cb.elapsed 从本地用户调用 {@link joinChannel} 方法直至该回调被触发的延迟（毫秒）
+   * @param cb.elapsed 从本地用户调用 {@link joinChannel} 方法直至该回调被触发的延迟（毫秒）。
    */
   /** Occurs when the engine sends the first local audio frame.
    *
@@ -9292,7 +9466,7 @@ on(
    *
    * @param cb.localVideoState 当前的本地视频状态码：
    *   - `0`：本地视频默认初始状态
-   *   - `1`：本地视频采集设备启动成功
+   *   - `1`：本地视频采集设备启动成功。调用 {@link startScreenCaptureByWindow} 方法共享窗口且共享窗口为最大化时，也会报告该状态。
    *   - `2`：本地视频首帧编码成功
    *   - `3`：本地视频启动失败
    *
@@ -9303,6 +9477,14 @@ on(
    *   - `3`：本地视频采集设备正在使用中
    *   - `4`：本地视频采集失败，建议检查采集设备是否正常工作
    *   - `5`：本地视频编码失败
+   *   - `11`：调用 {@link startScreenCaptureByWindow} 方法共享窗口时，共享窗口处于最小化的状态。
+   *   - `12`：该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。 
+   * 退出全屏模式后，远端用户将无法看到共享的窗口。为避免远端用户看到黑屏，Agora 建议你立即结束本次共享。
+   * 
+   * 报告该错误码的常见场景：
+   *  - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
+   *  - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
+   *  - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。 
    */
   /**
    * Occurs when the local video state changes.
@@ -9491,6 +9673,18 @@ on(
   on(evt: 'sendMetadataSuccess', cb: (
     metadata: Metadata
     ) => void): this;
+ /** @zh-cn
+  * 已发布本地音频首帧回调。
+  * 
+  * @since v3.2.0
+  * 
+  * SDK 会在以下三种时机触发该回调：
+  * - 开启本地音频的情况下，调用 {@link joinChannel} 成功加入频道后。
+  * - 用 {@link muteLocalAudioStream(true)}，再调用 {@link muteLocalAudioStream(false)} 后。
+  * - 调用 {@link disableAudio}，再调用 {@link enableAudio} 后。
+  * 
+  * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
+  */
  /** Occurs when the first audio frame is published.
   *
   * @since v3.2.0
@@ -9510,6 +9704,19 @@ on(
   on(evt: 'firstLocalAudioFramePublished', cb: (
     elapsed: number
   )=>void): this;
+  /** @zh-cn
+   * 已发布本地视频首帧回调。
+   * 
+   * @since v3.2.0
+   * 
+   * SDK 会在以下三种时机触发该回调：
+   * - 开启本地视频的情况下，调用 {@link joinChannel} 成功加入频道后。
+   * - 调用 {@link muteLocalVideoStream muteLocalVideoStream(true)}, 再调用
+   * {@link muteLocalVideoStream muteLocalVideoStream(false)} 后。
+   * - 调用 {@link disableVideo}，再调用 {@link enableVideo} 后。
+   * 
+   * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
+   */
   /** Occurs when the first video frame is published.
    *
    * @since v3.2.0
@@ -9529,7 +9736,15 @@ on(
   on(evt: 'firstLocalVideoFramePublished', cb: (
     elapsed: number
   )=>void): this;
- /** Reports events during the RTMP or RTMPS streaming.
+  /** @zh-cn
+   * RTMP/RTMPS 推流事件回调。
+   * 
+   * @since v3.2.0
+   * 
+   * @param cb.url RTMP/RTMPS 推流 URL。 
+   * @param cb.eventCode RTMP/RTMPS 推流事件码。
+   */
+  /** Reports events during the RTMP or RTMPS streaming.
   *
   * @since v3.2.0
   *
@@ -10210,6 +10425,8 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.renewToken(newtoken);
   }
   /** @zh-cn
+   * @deprecated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
+   * 
    * 启用内置加密，并设置数据加密密码。
    *
    * 如需启用加密，请在 {@link joinChannel} 前调用该方法，并设置加密的密码。
@@ -10537,7 +10754,7 @@ class AgoraRtcChannel extends EventEmitter
    * @param {boolean} mute
    * - true：停止接收指定用户的视频流
    * - false：继续接收指定用户的视频流（默认）
-   * @returns {number}
+   * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
    */
@@ -12236,6 +12453,16 @@ declare interface AgoraRtcChannel {
     state: ConnectionState,
     reason: ConnectionChangeReason
   ) => void): this;
+  /** @zh-cn
+   * 音频发布状态改变回调。
+   * 
+   * @since v3.2.0
+   * 
+   * @param channel 频道名。
+   * @param oldState 之前的发布状态。
+   * @param newState 当前的发布状态。
+   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the audio publishing state changes.
    *
    * @since v3.2.0
@@ -12254,6 +12481,16 @@ declare interface AgoraRtcChannel {
     newState: STREAM_PUBLISH_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 视频发布状态改变回调。
+   * 
+   * @since v3.2.0
+   * 
+   * @param channel 频道名。
+   * @param oldState 之前的发布状态。
+   * @param newState 当前的发布状态。
+   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the video publishing state changes.
    *
    * @since v3.2.0
@@ -12261,10 +12498,10 @@ declare interface AgoraRtcChannel {
    * This callback indicates the publishing state change of the local video
    * stream.
    *
-   * @param channel The channel name.
-   * @param oldState The previous publishing state.
-   * @param newState The current publishing state.
-   * @param elapseSinceLastState The time elapsed (ms) from the previous state
+   * @param cb.channel The channel name.
+   * @param cb.oldState The previous publishing state.
+   * @param cb.newState The current publishing state.
+   * @param cb.elapseSinceLastState The time elapsed (ms) from the previous state
    * to the current state.
    */
   on(evt: 'videoPublishStateChanged', cb: (
@@ -12272,6 +12509,17 @@ declare interface AgoraRtcChannel {
     newState: STREAM_PUBLISH_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 音频订阅状态发生改变回调。
+   * 
+   * @since v3.2.0
+   * 
+   * @param channel 频道名。
+   * @param uid 远端用户的 ID。
+   * @param oldState 之前的订阅状态。
+   * @param newState 当前的订阅状态。
+   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the audio subscribing state changes.
    *
    * @since v3.2.0
@@ -12292,7 +12540,19 @@ declare interface AgoraRtcChannel {
     newState: STREAM_SUBSCRIBE_STATE,
     elapseSinceLastState: number
   )=> void): this;
-  /** Occurs when the audio subscribing state changes.
+  /** @zh-cn
+   * 视频订阅状态发生改变回调。
+   * 
+   * @since v3.2.0
+   * 
+   * @param channel 频道名。
+   * @param uid 远端用户的 ID。
+   * @param oldState 之前的订阅状态。
+   * @param newState 当前的订阅状态。
+   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   * 
+   */
+  /** Occurs when the audio subscribing state changes. //TODO (typo)
    *
    * @since v3.2.0
    *
