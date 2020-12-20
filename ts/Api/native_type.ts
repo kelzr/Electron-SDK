@@ -19,6 +19,8 @@ export interface RendererOptions
  * - 4：勉强能沟通但不顺畅
  * - 5：网络质量非常差，基本不能沟通
  * - 6：网络连接已断开，完全无法沟通
+ * - 7：暂时无法检测网络质量
+ * - 8：网络质量检测已开始还没完成
  */
 /**
  * Network quality types:
@@ -1964,6 +1966,8 @@ export interface CaptureParam {
    * 是否采集鼠标用于屏幕共享：
    * - true:（默认）采集鼠标
    * - false: 不采集鼠标
+   *
+   * @since v3.2.0
    */
   /** Sets whether or not to capture the mouse for screen sharing:
    * - true: (Default) Capture the mouse.
@@ -2008,7 +2012,9 @@ export interface CaptureParam {
    */
   excludeWindowList: Array<number>;
   /** @zh-cn
-   * /待屏蔽窗口的数量。
+   * 待屏蔽窗口的数量。
+   *
+   * @since v3.2.0
    */
   /** The number of windows to be blocked.
    *
@@ -3307,7 +3313,8 @@ export enum VOICE_BEAUTIFIER_PRESET
  * @note Takes effect only when the user role is audience.
  */
 export enum AUDIENCE_LATENCY_LEVEL_TYPE
-{   /** @zh-cn
+{
+    /** @zh-cn
      * 1: 低延时。
      */
     /** 1: Low latency. */
@@ -4035,6 +4042,9 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setClientRoleWithOptions(role: ClientRoleType, options: ClientRoleOptions): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4549,10 +4559,16 @@ export interface NodeRtcEngine {
    * @ignore
    */
   startAudioRecording(filePath: string, sampleRate: number, quality: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   stopAudioRecording(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -4977,6 +4993,9 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setAudioMixingPitch(pitch: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */

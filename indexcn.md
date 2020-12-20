@@ -457,7 +457,7 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `-1020`   | 音频设备模块：播放设备故障。                                 |
 | `-1021`   | 音频设备模块：录音设备故障。                                 |
 | `-1025`   | 通话或直播被系统声音打断，比如电话、闹钟等。                 |
-| `-1029`   | 在通话过程中，Audio Session 的 category 必须设置成 AVAudioSessionCategoryPlayAndRecord，RtcEngine 会监控这个属性值。当这个值被修改成其他值的时候会触发这个告警，并强制设置回 AVAudioSessionCategoryPlayAndRecord。|
+| `-1029`   | 在通话过程中，Audio Session 的 category 必须设置成 AVAudioSessionCategoryPlayAndRecord，`AgoraRtcEngine` 会监控这个属性值。当这个值被修改成其他值的时候会触发这个告警，并强制设置回 AVAudioSessionCategoryPlayAndRecord。|
 | `-1031`   | 音频设备模块：录到的声音太低。                               |
 | `-1032`   | 音频设备模块：播放的声音太低。                               |
 | `-1040`   | 音频设备模块：音频驱动异常。<br/>解决方案：禁用并重新启用音频设备，或者重启机器，或者更新声卡驱动 |
@@ -486,7 +486,7 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `-4`      | RTC 引擎当前状态不支持此项操作。                             |
 | `-5`      | 调用被拒绝。 |
 | `-6`      | 传入的缓冲区大小不足以存放返回的数据。                       |
-| `-7`      | SDK 尚未初始化就调用其 API。<br/>请确认在调用 API 之前已创建 AgoraRtcEngine 对象并完成初始化。 |
+| `-7`      | SDK 尚未初始化就调用其 API。<br/>请确认在调用 API 之前已创建 `AgoraRtcEngine` 对象并完成初始化。 |
 | `-9`      | 没有操作权限。<br/>请检查用户是否授予音视频设备使用权限。 |
 | `-10`     | API 调用超时。<br/>有些 API 调用需要 SDK 返回结果，如果 SDK 处理事件过长，超过 10 秒没有返回，会出现此错误。 |
 | `-11`     | 请求被取消。<br/>仅供 SDK 内部使用，不通过 API 或者回调事件返回给 App。 |

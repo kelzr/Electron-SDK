@@ -1735,12 +1735,31 @@ class AgoraRtcEngine extends EventEmitter {
   setClientRole(role: ClientRoleType): number {
     return this.rtcEngine.setClientRole(role);
   }
-  /** @zh-cn
-   * //TODO
-   * @param role
-   * @param options
+  /** 设置直播场景下的用户角色和观众端延时级别。
+   *
+   * @since v3.2.0
+   *
+   * 在加入频道前和加入频道后均可调用该方法设置用户角色。
+   *
+   * 如果你在加入频道后调用该方法成功切换用户角色，SDK 会触发以下回调：
+   * - 本地触发 `clientRoleChanged` 回调。
+   * - 远端触发 `userJoined` 或 `userOffline` 回调。
+   *
+   * @note
+   * - 该方法仅在频道场景为直播时生效。
+   * - 该方法与 {@link setClientRole} 的区别在于，该方法还支持设置用户级别。
+   *  - 用户角色确定用户在 SDK 层的权限，包含是否可以发送流、是否可以接收流、是否可以推流到 CDN 等。
+   *  - 用户级别需要与角色结合使用，确定用户在其权限范围内，可以操作和享受到的服务级别。
+   * 例如对于观众，选择接收低延时还是超低延时的视频流。不同的级别会影响计费。
+   *
+   * @param role 直播场景中的用户角色。
+   * @param options 用户具体设置，包含用户级别。
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
    */
-  /** Sets the role of a user in interactive live streaming.
+  /** @zh-cn
+   * Sets the role of a user in interactive live streaming.
    *
    * @since v3.2.0
    *
@@ -2665,7 +2684,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - `3`：Game streaming：游戏直播应用，需要外放游戏音效也直播出去的场景
    * - `4`：Showroom：秀场应用，音质优先和更好的专业外设支持
    * - `5`：Chatroom gaming：游戏开黑
-   * - `8`：Meeting：会议场景，适用于人声为主的多人会议。@since v3.2.0
+   * - `8`：Meeting：会议场景，适用于人声为主的多人会议。
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -3365,13 +3384,27 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置 SDK 输出的日志文件大小（KB）。
+   * 设置 Agora SDK 输出的单个日志文件大小。
    *
-   * Agora SDK 设有 2 个日志文件，每个文件默认大小为 512 KB。如果你将 `size` 设置为 1024 KB，SDK 会最多输出 2 M 的日志文件。如果日志文件超出设置值，新的日志会覆盖之前的日志。
-   * @param {number} size 指定 SDK 输出日志文件的内存大小（KB）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * 默认情况下，SDK 会生成 `agorasdk.log`、`agorasdk_1.log`、`agorasdk_2.log`、
+   * `agorasdk_3.log`、`agorasdk_4.log` 这 5 个日志文件。
+   * 每个文件的默认大小为 1024 KB。日志文件为 UTF-8 编码。最新的日志永远写在
+   * `agorasdk.log` 中。`agorasdk.log` 写满后，SDK 会从 1-4 中删除修改时间最早的一个文件，
+   * 然后将 `agorasdk.log` 重命名为该文件，并建立新的 `agorasdk.log` 写入最新的日志。
+   *
+   * @note 如果想要设置日志文件的大小，则需要在 {@link setLogFile} 前调用本方法，否则日志会被清空。
+   *
+   * 相关 API：
+   * - {@link setLogFile}
+   * - {@link setLogFilter}
+   *
+   * @param size 单个日志文件的大小，单位为 KB。默认值为 1024 KB。
+   * 如果你将 `size` 设为 1024 KB，SDK 会最多输出 5 MB 的日志文件。如果你将 `size` 设为
+   * 小于 1024 KB，单个日志文件最大仍为 1024 KB。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Sets the log file size (KB).
@@ -4163,7 +4196,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
-   *  - 错误码 `2`，`3`，`5`
+   */
   /**
    * Switches to a different channel.
    *
@@ -4503,7 +4536,7 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设备音频录制设备
+   * 设置音频录制设备
    * @param {string} deviceId 设备 ID
    * @returns {number}
    * - 0：方法调用成功
@@ -7317,10 +7350,10 @@ class AgoraRtcEngine extends EventEmitter {
   complain(callId: string, desc: string): number {
     return this.rtcEngine.complain(callId, desc);
   }
-  //TODO(input)
-  setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number {
-    return this.rtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
-  }
+  // //TODO(input)
+  // setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number {
+  //   return this.rtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
+  // }
 
   // ===========================================================================
   // replacement for setParameters call
@@ -7744,7 +7777,8 @@ class AgoraRtcEngine extends EventEmitter {
   setMaxMetadataSize(size: number): number {
     return this.rtcEngine.setMaxMetadataSize(size);
   }
-  /** 声网提供自定义数据上报和分析服务。
+  /** @zh-cn
+   * 声网提供自定义数据上报和分析服务。
    *
    * @since v3.2.0
    *
@@ -8446,8 +8480,6 @@ on(
   cb: (stats: RemoteAudioTransportStats) => void
 ): this;
   /** @zh-cn
-   *
-   * 该回调没有实现。
    *
    * 音频设备状态已改变回调。
    *
@@ -10015,7 +10047,8 @@ on(
   *
   * SDK 会在以下三种时机触发该回调：
   * - 开启本地音频的情况下，调用 {@link joinChannel} 成功加入频道后。
-  * - 用 {@link muteLocalAudioStream(true)}，再调用 {@link muteLocalAudioStream(false)} 后。
+  * - 用 {@link muteLocalAudioStream muteLocalAudioStream(true)}，
+  * 再调用 {@link muteLocalAudioStream muteLocalAudioStream(false)} 后。
   * - 调用 {@link disableAudio}，再调用 {@link enableAudio} 后。
   *
   * @param cb.elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
@@ -10180,6 +10213,17 @@ on(
     newState: STREAM_SUBSCRIBE_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 视频订阅状态发生改变回调。
+   *
+   * @since v3.2.0
+   *
+   * @param cb.channel 频道名。
+   * @param cb.uid 远端用户的 ID。
+   * @param cb.oldState 之前的订阅状态。
+   * @param cb.newState 当前的订阅状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the audio subscribing state changes.
    *
    * @since v3.2.0
@@ -10737,7 +10781,30 @@ class AgoraRtcChannel extends EventEmitter
   setClientRole(role: ClientRoleType): number {
     return this.rtcChannel.setClientRole(role);
   }
-
+  /** @zh-cn
+   * 设置直播场景下的用户角色和观众端延时级别。
+   *
+   * @since v3.2.0
+   *
+   * 在加入频道前和加入频道后均可调用该方法设置用户角色。
+   *
+   * 如果你在加入频道后调用该方法成功切换用户角色，SDK 会触发以下回调：
+   * - 本地触发 `clientRoleChanged` 回调。
+   * - 远端触发 `userJoined` 或 `userOffline` 回调。
+   *
+   * @note
+   * - 该方法仅在频道场景为直播时生效。
+   * - 该方法与 {@link setClientRole} 的区别在于，该方法还支持设置用户级别。
+   *  - 用户角色确定用户在 SDK 层的权限，包含是否可以发送流、是否可以接收流、是否可以推流到 CDN 等。
+   *  - 用户级别需要与角色结合使用，确定用户在其权限范围内，可以操作和享受到的服务级别。
+   * 例如对于观众，选择接收低延时还是超低延时的视频流。不同的级别会影响计费。
+   *
+   * @param role 直播场景中的用户角色。
+   * @param options 用户具体设置，包含用户级别。
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /** Sets the role of a user in interactive live streaming.
    *
    * @since v3.2.0
