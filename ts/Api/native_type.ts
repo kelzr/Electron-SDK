@@ -31,6 +31,8 @@ export interface RendererOptions
  * - 4: Users cannot communicate smoothly.
  * - 5: The network is so bad that users can barely communicate.
  * - 6: The network is down and users cannot communicate at all.
+ * - 7: Users cannot detect the network quality.
+ * - 8: Detecting the network quality.
  */
 export type AgoraNetworkQuality =
   | 0 // unknown
@@ -352,7 +354,8 @@ export interface TranscodingConfig {
    * - 5: Five-channel stereo.
    */
   audioChannels: number;
-  /** Bitrate of the CDN live audio output stream. The default value is 48 Kbps, and the highest value is 128.
+  /** Bitrate of the CDN live audio output stream. The default value is 48
+   * Kbps, and the highest value is 128.
    */
   audioBitrate: number;
   /** @zh-cn
@@ -417,39 +420,61 @@ export interface TranscodingConfig {
     /** Height of the image on the broadcasting video. */
     height: number;
   };
+  /** @zh-cn
+   * //TODO
+   */
+  /**
+   * @since v3.2.0
+   *
+   * The background image added to the CDN live publishing stream.
+   *
+   * Once a background image is added, the audience of the CDN live publishing
+   * stream can see the background image.
+   */
   background: {
     /** @zh-cn
      * 直播视频上图片的 HTTP/HTTPS 地址。字符长度不得超过 1024 字节。
      */
     /**
-     * HTTP/HTTPS URL address of the image on the broadcasting video.
-     *
-     * The maximum length of this parameter is 1024 bytes.
+     * The HTTP or HTTPS address of the image. The length must not
+     * exceed 1,024 bytes.
      */
     url: string;
     /** @zh-cn
      * 水印或背景图片在视频帧左上角的横轴坐标。
      */
-    /** Horizontal position of the image from the upper left of the
-     * broadcasting video.
+    /**
+     * The x coordinate of the image on the output video. With the
+     * top-left corner
+     * of the output video as the origin, the x coordinate is the horizontal
+     * displacement
+     * of the top-left corner of the image relative to the origin.
      */
     x: number;
     /** @zh-cn
      * 水印或背景图片在视频帧左上角的纵轴坐标。
      */
-    /** Vertical position of the image from the upper left of the broadcasting
-     * video.
+    /**
+     * The y coordinate of the image on the output video. With the top-left
+     * corner
+     * of the output video as the origin, the y coordinate is the vertical
+     * displacement
+     * of the top-left corner of the image relative to the origin.
      */
     y: number;
     /** @zh-cn
      * 水印或背景图片在视频帧上的宽度。
      */
-    /** Width of the image on the broadcasting video. */
+    /**
+     * The width (pixel) of the image.
+     */
     width: number;
     /** @zh-cn
      * 水印或背景图片在视频帧上的高度。
      */
-    /** Height of the image on the broadcasting video. */
+    /**
+     * The height (pixel) of the image.
+     */
     height: number;
   };
   /** @zh-cn
@@ -597,9 +622,14 @@ export interface UserInfo {
 }
 /** @zh-cn
  * 本地语音的变声效果选项。
- *
+ * 
+ * @deprecated 自 v3.2.0 废弃。
  */
-/** Sets the local voice changer option. */
+/**
+ * @deprecated Deprecated from v3.2.0.
+ *
+ * Local voice changer options.
+ */
 export enum VoiceChangerPreset {
   /** @zh-cn
    * 原声，即关闭语音变声。
@@ -737,10 +767,13 @@ export enum VoiceChangerPreset {
 
 }
 /** @zh-cn
- * 预设的本地语音混响效果选项：
+ * 预设的本地语音混响效果选项。
+ * 
+ * @deprecated 自 v3.2.0 废弃。
  */
-/**
- * Sets the local voice changer option.
+/** @deprecated Deprecated from v3.2.0.
+ *
+ *  Local voice reverberation presets.
  */
 export enum AudioReverbPreset {
   /** @zh-cn
@@ -1295,9 +1328,13 @@ export interface LocalVideoStats {
   codecType: number;
   /** @zh-cn
    * 使用抗丢包技术前，客户端到 Agora 边缘服务器的丢包率(%)。
+   * 
+   * @since v3.2.0
    */
-  /** The packet loss rate (%) from the local client to Agora's edge server,
-   * before using the anti-packet-loss method. //FIXME(video?)
+  /** The video packet loss rate (%) from the local client to the Agora edge
+   * server before applying the anti-packet loss strategies.
+   *
+   * @since v3.2.0
    */
   txPacketLossRate: number;
   /** @zh-cn
@@ -1779,6 +1816,8 @@ export interface RemoteVideoStats {
    */
   /**
    * The total publish duration (ms) of the remote video stream.
+   *
+   * @since v3.2.0
    */
   publishDuration: number;
 }
@@ -2167,6 +2206,8 @@ export interface RemoteAudioStats {
    */
   /**
    * The total publish duration (ms) of the remote audio stream.
+   *
+   * @since v3.2.0
    */
   publishDuration: number;
 }
@@ -2385,32 +2426,36 @@ export type ConnectionChangeReason =
   | 11 // 11: SDK reconnects for setting proxy server
   | 12 // 12: Network status change for renew token
   | 13; // 13: Client IP Address changed
-
+/** Encryption mode.
+ */
 export enum ENCRYPTION_MODE {
-      /* OpenSSL Encryption Mode Start */
-      /** 1:"aes-128-xts": (Default) 128-bit AES encryption, XTS mode.
+      /** 1: (Default) 128-bit AES encryption, XTS mode.
        */
       AES_128_XTS = 1,
-      /** 2:"aes-128-ecb": 128-bit AES encryption, ECB mode.
+      /** 2: 128-bit AES encryption, ECB mode.
        */
       AES_128_ECB = 2,
-      /** 3:"aes-256-xts": 256-bit AES encryption, XTS mode.
+      /** 3: 256-bit AES encryption, XTS mode.
        */
       AES_256_XTS = 3,
-      /* OpenSSL Encryption Mode End */
-
-      /** 4:"sm4-128-ecb": 128-bit SM4 encryption, ECB mode.
-       */
+     /** 4: 128-bit SM4 encryption, ECB mode.
+      */
       SM4_128_ECB = 4,
 };
-
+/**
+ * Configurations of built-in encryption schemas.
+ */
 export interface EncryptionConfig{
-    /**
-     * Encryption mode.  The Agora SDK supports built-in encryption, which is set to the "aes-128-xts" mode by default. See ENCRYPTION_MODE.
-     */
+   /**
+    * Encryption mode. The default encryption mode is `AES_128_XTS`.
+    */
     encryptionMode: ENCRYPTION_MODE;
     /**
-     * Pointer to the encryption password.
+     * Encryption key in string type.
+     *
+     * @note If you do not set an encryption key or set it as NULL, you
+     * cannot use the built-in encryption, and the SDK returns the error code
+     * `-2`.
      */
     encryptionKey: string;
 
@@ -2973,18 +3018,16 @@ export enum AUDIO_EFFECT_PRESET
     VOICE_CHANGER_EFFECT_HULK = 0x02020700,
     /** An audio effect typical of R&B music.
      *
-     * @note To achieve better audio effect quality, Agora recommends
-     * calling {@link setAudioProfile}
-     * and setting the `profile` parameter to `4` or `5`
-     * before setting this enumerator.
+     * @note Call {@link setAudioProfile} and set the `profile` parameter
+     * to `4` or `5` before setting this enumerator; otherwise, the enumerator
+     * setting does not take effect.
      */
     STYLE_TRANSFORMATION_RNB = 0x02030100,
     /** An audio effect typical of popular music.
      *
-     * @note To achieve better audio effect quality, Agora recommends
-     * calling {@link setAudioProfile}
-     * and setting the `profile` parameter to `4` or `5`
-     * before setting this enumerator.
+     * @note Call {@link setAudioProfile} and set the `profile` parameter
+     * to `4` or `5` before setting this enumerator; otherwise, the enumerator
+     * setting does not take effect.
      */
     STYLE_TRANSFORMATION_POPULAR = 0x02030200,
     /** A pitch correction effect that corrects the user's pitch based on
@@ -3057,6 +3100,17 @@ export enum VOICE_BEAUTIFIER_PRESET
     /** A more ringing voice.
      */
     TIMBRE_TRANSFORMATION_RINGING = 0x01030800
+};
+/** The latency level of an audience member in a live interactive streaming.
+ *
+ * @note Takes effect only when the user role is `CLIENT_ROLE_BROADCASTER`.
+ */
+export enum AUDIENCE_LATENCY_LEVEL_TYPE
+{
+    /** 1: Low latency. */
+    AUDIENCE_LATENCY_LEVEL_LOW_LATENCY = 1,
+    /** 2: (Default) Ultra low latency. */
+    AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY = 2,
 };
 /** The subscribing state.
  *
@@ -3224,6 +3278,8 @@ export interface ChannelMediaOptions {
  */
 /**
  * The watermark's options.
+ *
+ * @since v3.0.0
  */
 export interface WatermarkOptions {
   /** @zh-cn
@@ -3561,37 +3617,93 @@ export type STREAM_PUBLISH_STATE =
       /** 3: Publishes successfully.
        */
     | 3 //PUB_STATE_PUBLISHED
-
+/**
+ * Audio output routing.
+ */
 export type AUDIO_ROUTE_TYPE =
+    /**
+     * -1: Default.
+     */
     | -1 //AUDIO_ROUTE_DEFAULT
+    /**
+     * 0: Headset.
+     */
     | 0  //AUDIO_ROUTE_HEADSET
+    /**
+     * 1: Earpiece.
+     */
     | 1  //AUDIO_ROUTE_EARPIECE
+    /**
+     * 2: Headset with no microphone.
+     */
     | 2  //AUDIO_ROUTE_HEADSET_NO_MIC
+    /**
+     * 3: Speakerphone.
+     */
     | 3  //AUDIO_ROUTE_SPEAKERPHONE
+    /**
+     * 4: Loudspeaker.
+     */
     | 4  //AUDIO_ROUTE_LOUDSPEAKER
+    /**
+     * 5: Bluetooth headset.
+     */
     | 5  //AUDIO_ROUTE_BLUETOOTH
+    /**
+     * 6: USB peripheral (macOS only).
+     *
+     * @since v3.2.0
+     */
     | 6  //AUDIO_ROUTE_USB
+    /**
+     * 7: HDMI peripheral (macOS only).
+     *
+     * @since v3.2.0
+     */
     | 7  //AUDIO_ROUTE_HDMI
+    /**
+     * 8: DisplayPort peripheral (macOS only).
+     *
+     * @since v3.2.0
+     */
     | 8  //AUDIO_ROUTE_DISPLAYPORT
+    /**
+     * 9: Apple AirPlay (macOS only).
+     *
+     * @since v3.2.0
+     */
     | 9  //AUDIO_ROUTE_AIRPLAY
-
+/**
+ * The media metadata.
+ */
 export interface Metadata {
-    /** The User ID.
-    - For the receiver: the ID of the user who sent the metadata.
-    - For the sender: ignore it.
-    */
+    /** ID of the user who sends the metadata.
+     *
+     * @note When sending the metadata, ignore this parameter. When receiving
+     * the metadata, use this parameter to determine who sends the metadata.
+     */
     uid: number;
-    /** Buffer size of the sent or received Metadata.
-      */
+    /**
+     * The size of the metadata.
+     */
     size: number;
-    /** Buffer address of the sent or received Metadata.
+    /**
+     * The buffer of the metadata.
      */
     buffer: string;
-    /** Time statmp of the frame following the metadata.
+    /** The timestamp (ms) that the metadata sends.
      */
     timeStampMs: number;
   }
-
+/** @zh-cn
+ * //TODO
+ * 
+ */
+/** The detailed options of a user.
+ */
+export interface ClientRoleOptions {
+  audienceLatencyLevel: AUDIENCE_LATENCY_LEVEL_TYPE;
+};
 /** @zh-cn
  * @ignore
  */
@@ -3757,6 +3869,10 @@ export interface NodeRtcEngine {
   /** @zh-cn
    * @ignore
    */
+  /**
+   * @ignore
+   */
+  setClientRoleWithOptions(role: ClientRoleType, options: ClientRoleOptions): number;
   /**
    * @ignore
    */
@@ -5276,6 +5392,17 @@ export interface NodeRtcChannel {
   setClientRole(
     clientRole: ClientRoleType
   ): number;
+  /** @zh-cn
+   * @ignore
+   */
+  /**
+   * @ignore
+   */
+  setClientRoleWithOptions(
+    role: ClientRoleType, 
+    options: ClientRoleOptions
+  ): number;
+
   /** @zh-cn
    * @ignore
    */

@@ -139,11 +139,12 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 | Method                                                       | Description                                       |
 | ------------------------------------------------------------ | ------------------------------------------------- |
-| {@link AgoraRtcEngine.setLocalVoiceChanger setLocalVoiceChanger} | Sets the local voice changer option.              |
-| {@link AgoraRtcEngine.setLocalVoiceReverbPreset setLocalVoiceReverbPreset} | Sets the preset local voice reverberation effect. |
 | {@link AgoraRtcEngine.setLocalVoicePitch setLocalVoicePitch} | Changes the voice pitch of the local speaker.     |
-| {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | Sets the local voice equalization effect.         |
-| {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | Sets the local voice reverberation.               |
+| {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | Sets the local video equalization effect.   |
+| {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | Sets the local voice reverberation.  |
+| {@link AgoraRtcEngine.setVoiceBeautifierPreset setVoiceBeautifierPreset} | Sets an SDK preset voice beautifier effect.|
+| {@link AgoraRtcEngine.setAudioEffectPreset setAudioEffectPreset} | Sets an SDK preset audio effect.   |
+| {@link AgoraRtcEngine.setAudioEffectParameters setAudioEffectParameters} | Sets parameters for SDK preset audio effects.  |
 
 ### Sound position indication
 
@@ -152,7 +153,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.enableSoundPositionIndication enableSoundPositionIndication} | Enables/Disables stereo panning for remote users.  |
 | {@link AgoraRtcEngine.setRemoteVoicePosition setRemoteVoicePosition} | Sets the sound position and gain of a remote user. |
 
-### CDN publisher 
+### CDN publisher
 
 > This group of methods apply to Live Broadcast only.
 
@@ -208,6 +209,15 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.startLastmileProbeTest startLastmileProbeTest} | Starts the last-mile network probe test.      |
 | {@link AgoraRtcEngine.stopLastmileProbeTest stopLastmileProbeTest} | Stops the last-mile network probe test.       |
 
+### Media Metadata
+
+| Method | Description  |
+|----------|-----------|
+|{@link AgoraRtcEngine.registerMediaMetadataObserver registerMediaMetadataObserver} | Registers a media metadata observer.         |
+|{@link AgoraRtcEngine.unregisterMediaMetadataObserver unregisterMediaMetadataObserver} | Unrgisters a media metadata observer.       |
+|{@link AgoraRtcEngine.setMaxMetadataSize setMaxMetadataSize}| Sets the maximum size of the media metadata.       |
+|{@link AgoraRtcEngine.sendMetadata sendMetadata}|  Sends the media metadata.      |
+
 ### Watermark
 
 > This group of methods apply to Live Broadcast only.
@@ -221,8 +231,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 | Method                                                       | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| {@link AgoraRtcEngine.setEncryptionSecret setEncryptionSecret} | Enables built-in encryption with an encryption password before joining a channel. |
-| {@link AgoraRtcEngine.setEncryptionMode setEncryptionMode}|Sets the built-in encryption mode.|
+| {@link AgoraRtcEngine.enableEncryption enableEncryption} | Enables/Disables the built-in encryption. |
 
 ### Audio recorder
 
@@ -302,13 +311,13 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 | Method                                                       | Description                             |
 | ------------------------------------------------------------ | --------------------------------------- |
-| {@link AgoraRtcEngine.setLocalVideoMirrorMode setLocalVideoMirrorMode} | Sets the local video mirror mode.       |
 | {@link AgoraRtcEngine.setCameraCapturerConfiguration setCameraCapturerConfiguration} | Sets the camera capturer configuration. |
 
 ### Miscellaneous methods
 
 | Method                                                   | Description      |
 | ------------------------------------------------------------ | ------------------ |
+| {@link AgoraRtcEngine.sendCustomReportMessage sendCustomReportMessage}  | Reports and analyzes customized messages.   |
 | {@link AgoraRtcEngine.getCallId getCallId}                   | Gets the current call ID. |
 | {@link AgoraRtcEngine.rate rate}                             | Allows the user to rate the call and is called after the call ends. |
 | {@link AgoraRtcEngine.complain complain}                     | Allows a user to complain about the call quality after a call ends. |
@@ -337,6 +346,9 @@ Agora Electron SDK provides the methods for the second instance `videoSource` to
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin}       | Allows `videoSource` to join a channel.     |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave}     | Allows `videoSource` to leave a channel.    |
 | {@link AgoraRtcEngine.videoSourceRenewToken videoSourceRenewToken} | Renews the Token when using the video source.                 |
+| {@link AgoraRtcEngine.videoSourceEnableAudio videoSourceEnableAudio} | Enables the audio module.       |
+| {@link AgoraRtcEngine.videoSourceEnableLoopbackRecording videoSourceEnableLoopbackRecording} | Enables loopback audio capturing.                |
+| {@link AgoraRtcEngine.videoSourceEnableEncryption videoSourceEnableEncryption} |Enables/Disables the built-in encryption.                 |
 | {@link AgoraRtcEngine.getScreenDisplaysInfo getScreenDisplaysInfo} |   Gets the display ID.      |
 | {@link AgoraRtcEngine.getScreenWindowsInfo getScreenWindowsInfo}       |     Gets the window ID.      |
 | {@link AgoraRtcEngine.videoSourceStartScreenCaptureByScreen videoSourceStartScreenCaptureByScreen}     |  Shares the whole or part of a screen by specifying the screen rect when using the video source.   |
@@ -354,7 +366,7 @@ Agora Electron SDK provides the methods for the second instance `videoSource` to
 
 ## AgoraRtcEngine.on
 
-Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above: 
+Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above:
 
 | Event                            | Description                                                  |
 | -------------------------------- | ------------------------------------------------------------ |
@@ -386,7 +398,8 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 | `networkQuality`                   | Reports the network quality of each user.                    |
 | `lastmileQuality`                  | Reports the last-mile network quality of the local user before the user joins a channel. |
 | `lastmileProbeResult`              | Reports the last-mile network probe result.                  |
-| `firstLocalAudioFrame`             | Occurs when the first local audio frame is sent.             |
+| `firstLocalAudioFramePublished`             | Occurs when the first audio frame is published. |
+| `firstLocalVideoFramePublished`| Occurs when the first video frame is published.   |
 | `firstLocalVideoFrame`             | Occurs when the first local video frame is rendered.             |
 | `videoSizeChanged`                 | Occurs when the video size or rotation information of a specified remote user changes. |
 | `removeStream`                     | Occurs when the remote user leaves the channel.              |
@@ -395,11 +408,18 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 | `videoStopped`                     | Occurs when the video stops playing.                         |
 | `streamMessage`                    | Occurs when the local user receives a remote data stream within five seconds. |
 | `streamMessageError`               | Occurs when the local user fails to receive the remote data stream. |
+| `rtmpStreamingStateChanged`| Occurs when the state of the RTMP or RTMPS streaming changes.  |
+| `transcodingUpdated`| Occurs when the publisher's transcoding is updated.   |
+| `rtmpStreamingEvent`|  Reports events during the RTMP or RTMPS streaming.  |
 | `audioDeviceVolumeChanged`         | Occurs when the volume of the playback, microphone, or application changes. |
-|`localAudioStateChanged`|Occurs when the local audio state changes.|
-|`remoteAudioStateChanged`|Occurs when the remote audio state changes.|
-|`localVideoStateChanged`| Occurs when the local video state changes.|
+| `localAudioStateChanged`|Occurs when the local audio state changes.|
+| `remoteAudioStateChanged`|Occurs when the remote audio state changes.|
+| `localVideoStateChanged`| Occurs when the local video state changes.|
 | `remoteVideoStateChanged`          | Occurs when the remote video stream state changes.           |
+| `audioPublishStateChanged`| Occurs when the audio publishing state changes.  |
+| `videoPublishStateChanged`| Occurs when the video publishing state changes.   |
+| `audioSubscribeStateChanged`| Occurs when the audio subscribing state changes.   |
+| `videoSubscribeStateChanged`| Occurs when the audio subscribing state changes.  |
 | `cameraFocusAreaChanged`           | Occurs when the camera focus area changes.                   |
 | `cameraExposureAreaChanged`        | Occurs when the camera exposure area changes.                |
 | `transcodingUpdated`               | Occurs when the publisher's transcoding settings are updated. |
@@ -408,6 +428,8 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 |`channelMediaRelayEvent`| Reports events during the media stream relay.|
 | `localPublishFallbackToAudioOnly`  | Occurs:<br><li>When the published media stream falls back to an audio-only stream due to poor network conditions.</li><br><li>When the published media stream switches back to the video after the network conditions improve.</li> |
 | `remoteSubscribeFallbackToAudioOnly` | Occurs:<br/><li>When the remote media stream falls back to audio-only due to poor network conditions.</li><br><li>When the remote media stream switches back to the video after the network conditions improve.</li> |
+| `receiveMetadata`|  Occurs when the receiver rceives the media metadata.            |
+| `sendMetadataSuccess`|   Occurs when the sender sends the media metadata successfully.          |
 | `videoSourceJoinedSuccess`         | Occurs when a user joins a channel. (The second instance)    |
 | `videoSourceRequestNewToken`       | Occurs when the token expires. (The second instance)         |
 | `videoSourceLeaveChannel`          | Occurs when a user leaves a channel. (The second instance)   |
@@ -415,7 +437,7 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 
 <a name = "warn"></a>
 
-## Warning Codes
+## Warning codes
 
 Warning codes occur when the SDK encounters an error that might be recovered automatically. These are only notifications, and can generally be ignored.
 
@@ -441,22 +463,24 @@ Warning codes occur when the SDK encounters an error that might be recovered aut
 | `-1019`   | Audio Device Module: No valid audio data is collected.                |
 | `-1020`   | Audio Device Module: The playback device fails.                         |
 | `-1021`   | Audio Device Module: The recording device fails.              |
+| `-1029`   |During a call, the audio session category should be set to AVAudioSessionCategoryPlayAndRecord, and AgoraRtcEngine monitors this value. If the audio session category is set to other values, this warning code is triggered and AgoraRtcEngine will forcefully set it back to AVAudioSessionCategoryPlayAndRecord.|
 | `-1025`   | The audio recording or playback is interrupted by system events (such as a phone call). |
 | `-1031`   | Audio Device Module: The recorded audio voice is too low.               |
 | `-1032`   | Audio Device Module: The playback audio voice is too low.           |
 | `-1040`   | Audio device module: An exception occurs with the audio drive. <br/>Solutions:<li>Disable or re-enable the audio device.</li><li>Re-enable your device.</li><li>Update the sound card drive.</li> |
+| `-1042`   |Audio device module: The audio capturing device is different from the audio playback device, which may cause echoes problem. Agora recommends using the same audio device to capture and playback audio.|
 | `-1051`   | Audio Device Module: Howling is detected.            |
 | `-1052`   | Audio Device Module: The device is in the glitch state.                 |
-| `-1053`   | Audio Device Module: The underlying audio settings have changed.      |
+| `-1053`   | Audio Device Module: A residual echo is detected. This may be caused by the delayed scheduling of system threads or a signal overflow.   |
 | `-1323`   | Audio device module: No available playback device. Solution: Plug in the audio device. |
 | `-1324`   | Audio device module: The capture device is released improperly. <br>Solutions:<li>Disable or re-enable the audio device.</li><li>Re-enable your device.</li><li>Update the sound card drive.</li> |
 | `-1610`   | Super-resolution warning: The original video dimensions of the remote user exceed 640 × 480. |
-| `-1611`   | Super-resolution warning: Another user is using super resolution.               |
+| `-1611`   | Super-resolution warning: Another user is using super resolution.  |
 | `-1612`   | The device is not supported.                        |
 
 <a name = "error"></a>
 
-## Error Codes
+## Error codes
 
 Error codes occur when the SDK encounters an error that cannot be recovered automatically without any application intervention. For example, the SDK returns an error if it fails to turn on the camera, and reminds the user not to use the camera.
 
@@ -485,6 +509,7 @@ Error codes occur when the SDK encounters an error that cannot be recovered auto
 | `-22`     | The application uses too much of the system resources and the SDK fails to allocate the resources. |
 | `-101`    | The specified App ID is invalid.<br/>Please try to rejoin the channel with a valid App ID. |
 | `-102`    | The specified channel name is invalid. <br/>Please try to rejoin the channel with a valid channel name.  |
+| `-103` |  AgoraRtcEngine fails to get server resources in the specified region. Try another region when initializing AgoraRtcEngine.   |
 | `-109`    | **DEPRECATED** Please use `9` in `ConnectionChangeReason` instead.<br/>The token expired due to one of the following reasons:<br/><li>Authorized Timestamp expired: The timestamp is represented by the number of seconds elapsed since 1/1/1970. The user can use the Token to access the Agora service within 24 hours after the Token is generated. If the user does not access the Agora service after 24 hours, this Token is no longer valid.</li><li>Call Expiration Timestamp expired: The timestamp is the exact time when a user can no longer use the Agora service (for example, when a user is forced to leave an ongoing call). When a value is set for the Call Expiration Timestamp, it does not mean that the token will expire, but that the user will be banned from the channel.</li> |
 | `-110`    | **DEPRECATED** Please use `8` in `ConnectionChangeReason` instead.<br/>The token is invalid due to one of the following reasons:<br/><li>The App Certificate for the project is enabled in Console, but the user is still using the App ID. Once the App Certificate is enabled, the user must use a token.</li><li>The uid is mandatory, and users must set the same uid as the one set in the `joinChannel` method. </li> |
 | `-113`    | The user is not in the channel when calling the `sendStreamMessage` method. |

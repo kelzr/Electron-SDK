@@ -296,6 +296,7 @@ namespace agora {
                 PROPERTY_METHOD_DEFINE(setAudioEffectPreset);
                 PROPERTY_METHOD_DEFINE(setVoiceBeautifierPreset);
                 PROPERTY_METHOD_DEFINE(setAudioEffectParameters);
+                PROPERTY_METHOD_DEFINE(setClientRoleWithOptions);
 
             EN_PROPERTY_DEFINE()
             module->Set(context, Nan::New<v8::String>("NodeRtcEngine").ToLocalChecked(), tpl->GetFunction(context).ToLocalChecked());
@@ -569,7 +570,6 @@ namespace agora {
 
                 LiveTranscoding transcoding;
                 nodestring extrainfo;
-                nodestring wmurl;
                 int videoCodecProfile, audioSampleRateType;
                 Local<Object> obj;
                 key = "arg 0 is not a object";
@@ -639,29 +639,6 @@ namespace agora {
                 if (!wmValue->IsNullOrUndefined()) {
                     Local<Object> objWm;
                     napi_get_value_object_(isolate, wmValue, objWm);
-                    status = napi_get_object_property_nodestring_(isolate, objWm, "url", wmurl);
-                    CHECK_NAPI_STATUS(pEngine, status);
-                    wkImage.url = wmurl;
-
-                    status = napi_get_object_property_int32_(isolate, objWm, "x", wkImage.x);
-                    CHECK_NAPI_STATUS(pEngine, status);
-
-                    status = napi_get_object_property_int32_(isolate, objWm, "y", wkImage.y);
-                    CHECK_NAPI_STATUS(pEngine, status);
-
-                    status = napi_get_object_property_int32_(isolate, objWm, "width", wkImage.width);
-                    CHECK_NAPI_STATUS(pEngine, status);
-                    
-                    status = napi_get_object_property_int32_(isolate, objWm, "height", wkImage.height);
-                    CHECK_NAPI_STATUS(pEngine, status);
-                    transcoding.watermark = &wkImage;
-                }
-
-                Local<Name> keyNameBackground = Nan::New<String>("backgroundImage").ToLocalChecked();
-                Local<Value> bgValue = obj->Get(isolate->GetCurrentContext(), keyNameBackground).ToLocalChecked();
-                if (!bgValue->IsNullOrUndefined()) {
-                    Local<Object> objWm;
-                    napi_get_value_object_(isolate, bgValue, objWm);
                     
                     key = "url";
                     status = napi_get_object_property_nodestring_(isolate, objWm, key, wmurl);
@@ -4410,7 +4387,6 @@ namespace agora {
                 if (pEngine->m_avPluginManager.get())
                 {
                     pMediaEngine->registerVideoFrameObserver(pEngine->m_avPluginManager.get());
-                    pMediaEngine->registerAudioFrameObserver(pEngine->m_avPluginManager.get());
                     result = 0;
                 }
             } while (false);
@@ -4430,7 +4406,6 @@ namespace agora {
                 agora::media::IMediaEngine* pMediaEngine = nullptr;
                 pEngine->getRtcEngine()->queryInterface(agora::AGORA_IID_MEDIA_ENGINE, (void**)&pMediaEngine);
                 pMediaEngine->registerVideoFrameObserver(NULL);
-                pMediaEngine->registerAudioFrameObserver(NULL);
                 result = 0;
             } while (false);
             napi_set_int_result(args, result);
@@ -5709,6 +5684,53 @@ namespace agora {
             LOG_LEAVE;
         }
 
+        NAPI_API_DEFINE(NodeRtcEngine, setClientRoleWithOptions)
+        {
+            LOG_ENTER;
+            napi_status status = napi_ok;
+            int result = -1;
+            do {
+                Isolate *isolate = args.GetIsolate();
+                NodeRtcEngine *pEngine = nullptr;
+                napi_get_native_this(args, pEngine);
+                CHECK_NATIVE_THIS(pEngine);
+                unsigned int role;
+                status = napi_get_value_uint32_(args[0], role);
+                CHECK_NAPI_STATUS(pEngine, status);
+                
+                ClientRoleOptions opts;
+
+                if(args[1]->IsObject()) {
+                    Local<Object> obj;
+                    status = napi_get_value_object_(isolate, args[1], obj);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    int audienceLatencyLevel = (int)AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
+
+                    status = napi_get_object_property_int32_(isolate, obj, "audienceLatencyLevel", audienceLatencyLevel);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    switch(audienceLatencyLevel) {
+                        case 1:
+                            opts.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_LOW_LATENCY;
+                            break;
+                        case 2:
+                            opts.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
+                            break;
+                        default:
+                            status = napi_invalid_arg;
+                            break;
+                    }
+                    CHECK_NAPI_STATUS(pEngine, status);
+                }
+                result = pEngine->m_engine->setClientRole((CLIENT_ROLE_TYPE)role, opts);
+            } while (false);
+            napi_set_int_result(args, result);
+            LOG_LEAVE;
+        }
+
+        
+
         /**
          * NodeRtcChannel
          */
@@ -5764,6 +5786,7 @@ namespace agora {
                 PROPERTY_METHOD_DEFINE(registerMediaMetadataObserver);
                 PROPERTY_METHOD_DEFINE(unRegisterMediaMetadataObserver);
                 PROPERTY_METHOD_DEFINE(enableEncryption);
+                PROPERTY_METHOD_DEFINE(setClientRoleWithOptions);
 
             EN_PROPERTY_DEFINE()
             
@@ -6842,6 +6865,54 @@ namespace agora {
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
+        }
+
+        NAPI_API_DEFINE(NodeRtcChannel, setClientRoleWithOptions)
+        {
+            LOG_ENTER;
+            int result = -1;
+            do {
+                NodeRtcChannel *pChannel = nullptr;
+                napi_status status = napi_ok;
+                napi_get_native_channel(args, pChannel);
+                CHECK_NATIVE_CHANNEL(pChannel);
+
+                Isolate *isolate = args.GetIsolate();
+                unsigned int role;
+                status = napi_get_value_uint32_(args[0], role);
+                CHECK_NAPI_STATUS(pChannel, status);
+
+                ClientRoleOptions opts;
+
+                if (args[1]->IsObject()) {
+                    Local<Object> obj;
+                    status = napi_get_value_object_(isolate, args[1], obj);
+                    CHECK_NAPI_STATUS(pChannel, status);
+
+                    int audienceLatencyLevel = (int)AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
+
+                    status = napi_get_object_property_int32_(isolate, obj, "audienceLatencyLevel", audienceLatencyLevel);
+                    CHECK_NAPI_STATUS(pChannel, status);
+
+                    switch(audienceLatencyLevel) {
+                        case 1:
+                            opts.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_LOW_LATENCY;
+                            break;
+                        case 2:
+                            opts.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
+                            break;
+                        default:
+                            status = napi_invalid_arg;
+                            break;
+                    }
+                    CHECK_NAPI_STATUS(pChannel, status);
+
+                }
+                result = pChannel->m_channel->setClientRole((CLIENT_ROLE_TYPE)role, opts);
+            } while (false);
+            napi_set_int_result(args, result);
+            LOG_LEAVE;
+
         }
     }
 }
