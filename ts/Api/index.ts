@@ -1735,7 +1735,11 @@ class AgoraRtcEngine extends EventEmitter {
   setClientRole(role: ClientRoleType): number {
     return this.rtcEngine.setClientRole(role);
   }
-
+  /** @zh-cn
+   * //TODO
+   * @param role
+   * @param options
+   */
   /** Sets the role of a user in interactive live streaming.
    *
    * @since v3.2.0
@@ -4684,15 +4688,20 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 开启声卡采集。
    *
-   * 一旦开启声卡采集，SDK 会采集本地所有的声音。
+   * 启用声卡采集功能后，声卡播放的声音会被合到本地音频流中，从而可以发送到远端。
+   *
+   * @note 该方法在加入频道前后都能调用。
    *
    * @param {boolean} enable 是否开启声卡采集：
    * - true：开启声卡采集
-   * - false：关闭声卡采集
+   * - false：（默认）关闭声卡采集
    *
    * @param {string|null} deviceName 声卡的设备名。
    * - 默认设为 null，即使用当前声卡采集。
-   * - 如果用户使用虚拟声卡，如 “Soundflower”，可以将虚拟声卡名称 "Soundflower" 作为参数，SDK 会找到对应的虚拟声卡设备，并开始采集。
+   * - 如果用户使用虚拟声卡，如 Soundflower，可以将虚拟声卡名称 `"soundflower"`
+   * 作为参数传入，SDK 会找到对应的虚拟声卡设备，并开始采集。**Note**: macOS 系统默认声卡
+   * 不支持采集功能，如需开启此功能需要 App 自己启用一个虚拟声卡，并将该虚拟声卡的名字
+   * 作为 `deviceName` 传入 SDK。 Agora 测试并推荐 soundflower 作为虚拟声卡。
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -5514,6 +5523,27 @@ class AgoraRtcEngine extends EventEmitter {
   }) {
     return this.rtcEngine.videoSourceUpdateScreenCaptureRegion(rect);
   }
+  /** @zh-cn
+   * 开启声卡采集。
+   *
+   * 启用声卡采集功能后，声卡播放的声音会被合到本地音频流中，从而可以发送到远端。
+   *
+   * @note 该方法在加入频道前后都能调用。
+   *
+   * @param {boolean} enable 是否开启声卡采集：
+   * - true：开启声卡采集
+   * - false：（默认）关闭声卡采集
+   *
+   * @param {string|null} deviceName 声卡的设备名。
+   * - 默认设为 null，即使用当前声卡采集。
+   * - 如果用户使用虚拟声卡，如 Soundflower，可以将虚拟声卡名称 `"soundflower"`
+   * 作为参数传入，SDK 会找到对应的虚拟声卡设备，并开始采集。**Note**: macOS 系统默认声卡
+   * 不支持采集功能，如需开启此功能需要 App 自己启用一个虚拟声卡，并将该虚拟声卡的名字
+   * 作为 `deviceName` 传入 SDK。 Agora 测试并推荐 soundflower 作为虚拟声卡。
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /** Enables loopback audio capturing.
    *
    * If you enable loopback audio capturing, the output of the sound card is
@@ -5538,6 +5568,22 @@ class AgoraRtcEngine extends EventEmitter {
   videoSourceEnableLoopbackRecording(enabled: boolean, deviceName: string | null = null) : number {
     return this.rtcEngine.videoSourceEnableLoopbackRecording(enabled, deviceName)
   }
+  /** @zh-cn
+   * 启用音频模块（默认为开启状态）。
+   *
+   * @note
+   * - 该方法设置的是内部引擎为开启状态，在频道内和频道外均可调用，且在 {@link leaveChannel} 后仍然有效。
+   * - 该方法重置整个引擎，响应速度较慢，因此 Agora 建议使用如下方法来控制音频模块：
+   *
+   *   - {@link enableLocalAudio}：是否启动麦克风采集并创建本地音频流
+   *   - {@link muteLocalAudioStream}：是否发布本地音频流
+   *   - {@link muteRemoteAudioStream}：是否接收并播放远端音频流
+   *   - {@link muteAllRemoteAudioStreams}：是否接收并播放所有远端音频流
+   *
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /**
    * Enables the audio module.
    *
@@ -5565,6 +5611,29 @@ class AgoraRtcEngine extends EventEmitter {
   videoSourceEnableAudio() : number {
     return this.rtcEngine.videoSourceEnableAudio()
   }
+  /** @zh-cn
+   * 开启或关闭内置加密。
+   *
+   * @since v3.2.0
+   *
+   * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
+   *
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   *
+   * **Note**:
+   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
+   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
+   * 重新加载外部加密库。
+   *
+   * @param enabled 是否开启内置加密：
+   * - true: 开启
+   * - false: 关闭
+   * @param config 配置内置加密模式和密钥。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Enables/Disables the built-in encryption.
    *
    * @since v3.2.0
@@ -5595,9 +5664,27 @@ class AgoraRtcEngine extends EventEmitter {
   videoSourceEnableEncryption(enabled: boolean, encryptionConfig: EncryptionConfig): number {
     return this.rtcEngine.videoSourceEnableEncryption(enabled, encryptionConfig);
   }
-
-  /**
-   * @deprecated This method is deprecated from v3.2.0. Use the
+  /** @zh-cn
+   * 设置内置的加密方案。
+   *
+   * @deprecated 该方法自 v3.2.0 废弃，请改用 {@link videoSourceEnableEncryption}。
+   *
+   * Agora Native SDK 支持内置加密功能，默认使用 AES-128-XTS 加密方式。如需使用其他加密方式，可以调用该 API 设置。
+   *
+   * 同一频道内的所有用户必须设置相同的加密方式和密码才能进行通话。关于这几种加密方式的区别，请参考 AES 加密算法的相关资料。
+   *
+   * @note 调用本方法前，请先调用 {@link setEncryptionSecret} 方法启用内置加密功能。
+   *
+   * @param mode 加密方式。目前支持以下几种：
+   * - "aes-128-xts"：128 位 AES 加密，XTS 模式
+   * - "aes-128-ecb"：128 位 AES 加密，ECB 模式
+   * - "aes-256-xts"：256 位 AES 加密，XTS 模式
+   * - ""：设置为空字符串时，默认使用加密方式 aes-128-xts
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
+  /* @deprecated This method is deprecated from v3.2.0. Use the
    * {@link videoSourceEnableEncryption} method instead.
    *
    * Sets the built-in encryption mode.
@@ -5615,6 +5702,21 @@ class AgoraRtcEngine extends EventEmitter {
   videoSourceSetEncryptionMode(mode: string): number {
     return this.rtcEngine.videoSourceSetEncryptionMode(mode);
   }
+  /** @zh-cn
+   * @deprecated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
+   *
+   * 启用内置加密，并设置数据加密密码。
+   *
+   * 如需启用加密，请在 {@link joinChannel} 前调用该方法，并设置加密的密码。
+   * 同一频道内的所有用户应设置相同的密码。当用户离开频道时，该频道的密码会自动清除。如果未指定密码或将密码设置为空，则无法激活加密功能。
+   *
+   * @note 为保证最佳传输效果，请确保加密后的数据大小不超过原始数据大小 + 16 字节。16 字节是 AES 通用加密模式下最大填充块大小。
+   *
+   * @param {string} secret 加密密码
+   * @returns {number}
+   * - 0：方法调用成功
+   * - < 0：方法调用失败
+   */
   /** Enables built-in encryption with an encryption password before users
    * join a channel.
    *
@@ -6215,7 +6317,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note 调用该方法前，请确保你已调用 {@link startAudioMixing}。
    *
    * @param pitch 按半音音阶调整本地播放的音乐文件的音调，默认值为 0，即不调整音调。
-   * 取值范围为 [-12,12]， 每相邻两个值的音高距离相差半音。取值的绝对值越大，音调升高或降低得越多。
+   * 取值范围为 [-12,12]，每相邻两个值的音高距离相差半音。取值的绝对值越大，音调升高或降低得越多。
    *
    * @return
    * - 0：方法调用成功
@@ -7529,7 +7631,10 @@ class AgoraRtcEngine extends EventEmitter {
   setPluginParameter(pluginId: string, param: string): number {
     return this.rtcEngine.setPluginParameter(pluginId, param);
   }
-
+  /** @zh-cn
+   * @ignore
+   * 私有接口。
+   */
   /**
    * @ignore
    * @param pluginId
@@ -7538,6 +7643,13 @@ class AgoraRtcEngine extends EventEmitter {
   getPluginParameter(pluginId: string, paramKey: string): string {
     return this.rtcEngine.getPluginParameter(pluginId, paramKey);
   }
+  /** @zh-cn
+   * 取消注册媒体附属信息观测器。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Unregisters a media metadata observer.
    *
    * @return
@@ -7547,6 +7659,13 @@ class AgoraRtcEngine extends EventEmitter {
   unRegisterMediaMetadataObserver(): number {
     return this.rtcEngine.unRegisterMediaMetadataObserver();
   }
+  /** @zh-cn
+   * 注册媒体附属信息观测器。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Registers a media metadata observer.
    *
    * @return
@@ -7567,6 +7686,20 @@ class AgoraRtcEngine extends EventEmitter {
     });
     return this.rtcEngine.registerMediaMetadataObserver();
   }
+  /** @zh-cn
+   * 发送媒体附属信息。
+   *
+   * 调用 {@link registerMediaMetadataObserver} 后，你可以调用本方法来发送媒体附属信息。
+   *
+   * 如果发送成功，发送方会收到 `sendMetadataSuccess` 回调，接收方会收到 `receiveMetadata`
+   * 回调。
+   *
+   * @param metadata 媒体附属信息。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Sends the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
@@ -7585,6 +7718,18 @@ class AgoraRtcEngine extends EventEmitter {
   sendMetadata(metadata: Metadata): number {
     return this.rtcEngine.sendMetadata(metadata);
   }
+  /** @zh-cn
+   * 设置媒体附属信息的最大大小。
+   *
+   * 调用 {@link registerMediaMetadataObserver} 后，你可以调用本方法来设置媒体附属信息
+   * 的最大大小。
+   *
+   * @param size 媒体附属信息的最大大小。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Sets the maximum size of the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
@@ -7599,6 +7744,14 @@ class AgoraRtcEngine extends EventEmitter {
   setMaxMetadataSize(size: number): number {
     return this.rtcEngine.setMaxMetadataSize(size);
   }
+  /** 声网提供自定义数据上报和分析服务。
+   *
+   * @since v3.2.0
+   *
+   * 该服务当前处于免费内测期。内测期提供的能力为 6 秒内最多上报 10 条数据，每条自定义数据
+   * 不能超过 256 字节，每个字符串不能超过 100 字节。如需试用该服务，请
+   * 联系 sales@agora.io 开通并商定自定义数据格式。
+   */
   /** Agora supports reporting and analyzing customized messages.
    *
    * @since v3.2.0
@@ -7625,8 +7778,8 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * **Note**:
    * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
-   * - Agora 支持 4 种加密模式。除 SM4_128_ECB 模式外，
-   * 其他加密模式都需要在集成 Android 或 iOS SDK 时，额外添加加密库文件。//TODO(英文还未确定)
+   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
+   * 重新加载外部加密库。
    *
    * @param enabled 是否开启内置加密：
    * - true: 开启
@@ -7758,7 +7911,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
    * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
    *  - {@link setAudioEffectPreset}
-   *  - {@link setVoiceBeautifierPreset}
+   *  - {@link setAudioEffectParameters}
    *  - {@link setLocalVoiceReverbPreset}
    *  - {@link setLocalVoiceChanger}
    *  - {@link setLocalVoicePitch}
@@ -7835,13 +7988,13 @@ class AgoraRtcEngine extends EventEmitter {
    * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
    * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
    * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
-   *  - {@link setAudioEffectPreset}
-   *  - {@link setVoiceBeautifierPreset}
-   *  - {@link setLocalVoiceReverbPreset}
-   *  - {@link setLocalVoiceChanger}
-   *  - {@link setLocalVoicePitch}
-   *  - {@link setLocalVoiceEqualization}
-   *  - {@link setLocalVoiceReverb}
+   *   - {@link setAudioEffectPreset}
+   *   - {@link setVoiceBeautifierPreset}
+   *   - {@link setLocalVoiceReverbPreset}
+   *   - {@link setLocalVoiceChanger}
+   *   - {@link setLocalVoicePitch}
+   *   - {@link setLocalVoiceEqualization}
+   *   - {@link setLocalVoiceReverb}
    *
    * @param preset SDK 预设的音效：
    * - 3D 人声音效: `ROOM_ACOUSTICS_3D_VOICE`.
@@ -7854,7 +8007,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - 如果 `preset` 设为 `ROOM_ACOUSTICS_3D_VOICE`，则 `param1` 表示 3D 人声音效的环绕周期。
    * 取值范围为 [1,60]，单位为秒。默认值为 10，表示人声会 10 秒环绕 360 度。
    * - 如果 `preset` 设为 `PITCH_CORRECTION`，则 `param1` 表示电音音效的基础调式。可设为如下值：
-   *  - `1`: (默认）自然大调。
+   *  - `1`:（默认）自然大调。
    *  - `2`: 自然小调。
    *  - `3`: 和风小调。
    *
@@ -7864,7 +8017,7 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `1`: A
    *  - `2`: A#
    *  - `3`: B
-   *  - `4`: (Default) C
+   *  - `4`:（默认）C
    *  - `5`: C#
    *  - `6`: D
    *  - `7`: D#
@@ -8070,7 +8223,7 @@ on(
   //   uid: number, quality: AgoraNetworkQuality, delay: number, lost: number
   // ) => void): this;
   /** @zh-cn
-   * //TODO
+   * @deprecated 本回调为废弃回调。Agora 推荐你使用 `groupAudioVolumeIndication` 回调。
    */
   /**
    * @deprecated Deprecated. Use the `groupAudioVolumeIndication` callback
@@ -9633,11 +9786,10 @@ on(
    *   - `11`：调用 {@link startScreenCaptureByWindow} 方法共享窗口时，共享窗口处于最小化的状态。
    *   - `12`：该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。
    * 退出全屏模式后，远端用户将无法看到共享的窗口。为避免远端用户看到黑屏，Agora 建议你立即结束本次共享。
-   *
    * 报告该错误码的常见场景：
-   *  - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
-   *  - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
-   *  - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。
+   *     - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
+   *     - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
+   *     - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。
    */
   /**
    * Occurs when the local video state changes.
@@ -9818,6 +9970,14 @@ on(
   on(evt: 'channelMediaRelayEvent', cb: (
     event: ChannelMediaRelayEvent
   ) => void): this;
+  /** @zh-cn
+   * 媒体附属信息接收成功回调。
+   *
+   * 发送方调用 {@link sendMetadata} 方法发送媒体附属信息后，当接收方接收到该媒体附属信息
+   * 时，SDK 触发本回调向接收方报告媒体附属信息。
+   *
+   * @param cb.metadata 媒体附属信息。
+   */
   /** Receives the media metadata.
    *
    * After the sender sends the media metadata by calling the
@@ -9829,6 +9989,14 @@ on(
   on(evt: 'receiveMetadata', cb: (
     metadata: Metadata
     ) => void): this;
+  /** @zh-cn
+   * 媒体附属信息发送成功回调。
+   *
+   * 发送方调用 {@link sendMetadata} 方法成功发送媒体附属信息后，SDK 触发本回调向发送方
+   * 报告媒体附属信息。
+   *
+   * @param cb.metadata 媒体附属信息。
+   */
   /** Sends the media metadata successfully.
    *
    * After the sender sends the media metadata successfully by calling the
@@ -9850,7 +10018,7 @@ on(
   * - 用 {@link muteLocalAudioStream(true)}，再调用 {@link muteLocalAudioStream(false)} 后。
   * - 调用 {@link disableAudio}，再调用 {@link enableAudio} 后。
   *
-  * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
+  * @param cb.elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
   */
  /** Occurs when the first audio frame is published.
   *
@@ -9882,7 +10050,7 @@ on(
    * {@link muteLocalVideoStream muteLocalVideoStream(false)} 后。
    * - 调用 {@link disableVideo}，再调用 {@link enableVideo} 后。
    *
-   * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
+   * @param cb.elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
    */
   /** Occurs when the first video frame is published.
    *
@@ -9922,6 +10090,16 @@ on(
     url: string,
     eventCode: RTMP_STREAMING_EVENT
   )=>void): this;
+  /** @zh-cn
+   * 音频发布状态改变回调。
+   *
+   * @since v3.2.0
+   *
+   * @param cb.channel 频道名。
+   * @param cb.oldState 之前的发布状态。
+   * @param cb.newState 当前的发布状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the audio publishing state changes.
    *
    * @since v3.2.0
@@ -9941,6 +10119,16 @@ on(
     newState: STREAM_PUBLISH_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 视频发布状态改变回调。
+   *
+   * @since v3.2.0
+   *
+   * @param cb.channel 频道名。
+   * @param cb.oldState 之前的发布状态。
+   * @param cb.newState 当前的发布状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the video publishing state changes.
    *
    * @since v3.2.0
@@ -9960,6 +10148,17 @@ on(
     newState: STREAM_PUBLISH_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 音频订阅状态发生改变回调。
+   *
+   * @since v3.2.0
+   *
+   * @param cb.channel 频道名。
+   * @param cb.uid 远端用户的 ID。
+   * @param cb.oldState 之前的订阅状态。
+   * @param cb.newState 当前的订阅状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   */
   /** Occurs when the audio subscribing state changes.
    *
    * @since v3.2.0
@@ -10671,6 +10870,7 @@ class AgoraRtcChannel extends EventEmitter
   /** @zh-cn
    * 设置内置的加密方案。
    *
+   * @deprecated 该方法自 v3.2.0 废弃，请改用 {@link enableEncryption}。
    * Agora Native SDK 支持内置加密功能，默认使用 AES-128-XTS 加密方式。如需使用其他加密方式，可以调用该 API 设置。
    *
    * 同一频道内的所有用户必须设置相同的加密方式和密码才能进行通话。关于这几种加密方式的区别，请参考 AES 加密算法的相关资料。
@@ -11770,6 +11970,13 @@ class AgoraRtcChannel extends EventEmitter
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number {
     return this.rtcChannel.adjustUserPlaybackSignalVolume(uid, volume);
   }
+  /** @zh-cn
+   * 取消注册媒体附属信息观测器。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Unregisters a media metadata observer.
    *
    * @return
@@ -11779,6 +11986,13 @@ class AgoraRtcChannel extends EventEmitter
   unRegisterMediaMetadataObserver(): number {
     return this.rtcChannel.unRegisterMediaMetadataObserver();
   }
+  /** @zh-cn
+   * 注册媒体附属信息观测器。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Registers a media metadata observer.
    *
    * @return
@@ -11799,6 +12013,20 @@ class AgoraRtcChannel extends EventEmitter
     });
     return this.rtcChannel.registerMediaMetadataObserver();
   }
+  /** @zh-cn
+   * 发送媒体附属信息。
+   *
+   * 调用 {@link registerMediaMetadataObserver} 后，你可以调用本方法来发送媒体附属信息。
+   *
+   * 如果发送成功，发送方会收到 `sendMetadataSuccess` 回调，接收方会收到 `receiveMetadata`
+   * 回调。
+   *
+   * @param metadata 媒体附属信息。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Sends the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
@@ -11817,6 +12045,18 @@ class AgoraRtcChannel extends EventEmitter
   sendMetadata(metadata: Metadata): number {
     return this.rtcChannel.sendMetadata(metadata);
   }
+  /** @zh-cn
+   * 设置媒体附属信息的最大大小。
+   *
+   * 调用 {@link registerMediaMetadataObserver} 后，你可以调用本方法来设置媒体附属信息
+   * 的最大大小。
+   *
+   * @param size 媒体附属信息的最大大小。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Sets the maximum size of the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
@@ -11831,6 +12071,29 @@ class AgoraRtcChannel extends EventEmitter
   setMaxMetadataSize(size: number): number {
     return this.rtcChannel.setMaxMetadataSize(size);
   }
+  /** @zh-cn
+   * 开启或关闭内置加密。
+   *
+   * @since v3.2.0
+   *
+   * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
+   *
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   *
+   * **Note**:
+   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
+   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
+   * 重新加载外部加密库。
+   *
+   * @param enabled 是否开启内置加密：
+   * - true: 开启
+   * - false: 关闭
+   * @param config 配置内置加密模式和密钥。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Enables/Disables the built-in encryption.
    *
    * @since v3.2.0
@@ -12694,10 +12957,10 @@ declare interface AgoraRtcChannel {
    *
    * @since v3.2.0
    *
-   * @param channel 频道名。
-   * @param oldState 之前的发布状态。
-   * @param newState 当前的发布状态。
-   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   * @param cb.channel 频道名。
+   * @param cb.oldState 之前的发布状态。
+   * @param cb.newState 当前的发布状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
    */
   /** Occurs when the audio publishing state changes.
    *
@@ -12722,10 +12985,10 @@ declare interface AgoraRtcChannel {
    *
    * @since v3.2.0
    *
-   * @param channel 频道名。
-   * @param oldState 之前的发布状态。
-   * @param newState 当前的发布状态。
-   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   * @param cb.channel 频道名。
+   * @param cb.oldState 之前的发布状态。
+   * @param cb.newState 当前的发布状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
    */
   /** Occurs when the video publishing state changes.
    *
@@ -12750,11 +13013,11 @@ declare interface AgoraRtcChannel {
    *
    * @since v3.2.0
    *
-   * @param channel 频道名。
-   * @param uid 远端用户的 ID。
-   * @param oldState 之前的订阅状态。
-   * @param newState 当前的订阅状态。
-   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   * @param cb.channel 频道名。
+   * @param cb.uid 远端用户的 ID。
+   * @param cb.oldState 之前的订阅状态。
+   * @param cb.newState 当前的订阅状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
    */
   /** Occurs when the audio subscribing state changes.
    *
@@ -12781,11 +13044,11 @@ declare interface AgoraRtcChannel {
    *
    * @since v3.2.0
    *
-   * @param channel 频道名。
-   * @param uid 远端用户的 ID。
-   * @param oldState 之前的订阅状态。
-   * @param newState 当前的订阅状态。
-   * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
+   * @param cb.channel 频道名。
+   * @param cb.uid 远端用户的 ID。
+   * @param cb.oldState 之前的订阅状态。
+   * @param cb.newState 当前的订阅状态。
+   * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
    *
    */
   /** Occurs when the audio subscribing state changes. //TODO (typo)

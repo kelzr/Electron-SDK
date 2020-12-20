@@ -376,7 +376,9 @@ export interface TranscodingConfig {
    */
   transcodingExtraInfo: string;
   /** @zh-cn
-   * 直播视频上的水印图片
+   * 直播视频上的水印图片。
+   *
+   * 添加后，所有旁路直播的观众都可以看到水印。
    *
    */
   /** The watermark image added to the CDN live publishing stream. */
@@ -421,7 +423,9 @@ export interface TranscodingConfig {
     height: number;
   };
   /** @zh-cn
-   * //TODO
+   * 直播视频上的背景图片。
+   *
+   * 添加后，所有旁路直播的观众都可以看到背景图片。
    */
   /**
    * @since v3.2.0
@@ -463,14 +467,14 @@ export interface TranscodingConfig {
      */
     y: number;
     /** @zh-cn
-     * 水印或背景图片在视频帧上的宽度。
+     * 水印或背景图片在视频帧上的宽度 (px)。
      */
     /**
      * The width (pixel) of the image.
      */
     width: number;
     /** @zh-cn
-     * 水印或背景图片在视频帧上的高度。
+     * 水印或背景图片在视频帧上的高度 (px)。
      */
     /**
      * The height (pixel) of the image.
@@ -1327,7 +1331,7 @@ export interface LocalVideoStats {
    */
   codecType: number;
   /** @zh-cn
-   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的丢包率(%)。
+   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的视频丢包率 (%)。
    *
    * @since v3.2.0
    */
@@ -1377,7 +1381,7 @@ export interface LocalAudioStats {
    */
   sentBitrate: number;
   /** @zh-cn
-   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的音频丢包率(%)。
+   * 使用抗丢包技术前，客户端到 Agora 边缘服务器的音频丢包率 (%)。
    *
    * @since v3.2.0
    */
@@ -1813,6 +1817,8 @@ export interface RemoteVideoStats {
   totalActiveTime: number;
   /** @zh-cn
    * 远端视频流的累计发布时长（毫秒）。
+   *
+   * @since v3.2.0
    */
   /**
    * The total publish duration (ms) of the remote video stream.
@@ -1934,7 +1940,6 @@ export interface CaptureParam {
    */
   /** Height (pixels) of the video. */
   height: number; // Height (pixels) of the video
-
   /** @zh-cn
    * 共享视频的帧率，单位为 fps；默认值为 5，建议不要超过 15.
    */
@@ -1955,6 +1960,11 @@ export interface CaptureParam {
    * dimensions of the current screen).
    */
   bitrate: number; //  The bitrate (Kbps) of the shared region. The default value is 0 (the SDK works out a bitrate according to the dimensions of the current screen).
+  /** @zh-cn
+   * 是否采集鼠标用于屏幕共享：
+   * - true:（默认）采集鼠标
+   * - false: 不采集鼠标
+   */
   /** Sets whether or not to capture the mouse for screen sharing:
    * - true: (Default) Capture the mouse.
    * - false: Do not capture the mouse.
@@ -1997,6 +2007,9 @@ export interface CaptureParam {
    * @since v3.2.0
    */
   excludeWindowList: Array<number>;
+  /** @zh-cn
+   * /待屏蔽窗口的数量。
+   */
   /** The number of windows to be blocked.
    *
    * @since v3.2.0
@@ -2203,6 +2216,8 @@ export interface RemoteAudioStats {
   totalActiveTime: number;
   /** @zh-cn
    * 远端音频流的累计发布时长（毫秒）。
+   *
+   * @since v3.2.0
    */
   /**
    * The total publish duration (ms) of the remote audio stream.
@@ -2426,30 +2441,56 @@ export type ConnectionChangeReason =
   | 11 // 11: SDK reconnects for setting proxy server
   | 12 // 12: Network status change for renew token
   | 13; // 13: Client IP Address changed
+/** @zh-cn
+ * 内置加密模式。
+ */
 /** Encryption mode.
  */
 export enum ENCRYPTION_MODE {
+     /** @zh-cn
+      * 1:（默认）128 位 AES 加密，XTS 模式。
+      */
       /** 1: (Default) 128-bit AES encryption, XTS mode.
        */
       AES_128_XTS = 1,
+     /** @zh-cn
+      * 2: 128 位 AES 加密，ECB 模式。
+      */
       /** 2: 128-bit AES encryption, ECB mode.
        */
       AES_128_ECB = 2,
+     /** @zh-cn
+      * 3: 256 位 AES 加密，XTS 模式。
+      */
       /** 3: 256-bit AES encryption, XTS mode.
        */
       AES_256_XTS = 3,
+     /** @zh-cn
+      * 4: 128 位 SM4 加密，ECB 模式。
+      */
      /** 4: 128-bit SM4 encryption, ECB mode.
       */
       SM4_128_ECB = 4,
 };
+/** @zh-cn
+ * 配置内置加密模式和密钥。
+ */
 /**
  * Configurations of built-in encryption schemas.
  */
 export interface EncryptionConfig{
+  /** @zh-cn
+   * 内置加密模式，默认为 `AES_128_XTS` 加密模式
+   */
    /**
     * Encryption mode. The default encryption mode is `AES_128_XTS`.
     */
     encryptionMode: ENCRYPTION_MODE;
+    /** @zh-cn
+     * 内置加密密钥，字符串类型。
+     *
+     * @note 如果未指定该参数或将该参数设置为空，则无法启用内置加密，且 SDK 会返回错误码 `-2`。
+     */
     /**
      * Encryption key in string type.
      *
@@ -2832,6 +2873,11 @@ export enum VIDEO_PROFILE_TYPE {
   /** Default 640 &times; 360, frame rate 15 fps, bitrate 400 Kbps. */
   VIDEO_PROFILE_DEFAULT = VIDEO_PROFILE_LANDSCAPE_360P
 }
+/** @zh-cn
+ * RTMP/RTMPS 推流时发生的事件。
+ *
+ * @since v3.2.0
+ */
 /** Events during the RTMP or RTMPS streaming.
  *
  * @since v3.2.0
@@ -2840,6 +2886,8 @@ export enum RTMP_STREAMING_EVENT
 {
   /** @zh-cn
    * RTMP/RTMPS 推流时，添加背景图或水印出错。
+   *
+   * @since v3.2.0
    */
   /** An error occurs when you add a background image or a watermark image to the RTMP or RTMPS stream.
    *
@@ -2867,7 +2915,9 @@ export enum AUDIO_EFFECT_PRESET
     /** @zh-cn
      * KTV。
      *
-     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置为 `4` 或 `5`。
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     *
      */
     /** An audio effect typical of a KTV venue.
      *
@@ -2878,7 +2928,10 @@ export enum AUDIO_EFFECT_PRESET
      */
     ROOM_ACOUSTICS_KTV = 0x02010100,
     /** @zh-cn
+     * 演唱会。
      *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
      */
     /** An audio effect typical of a concert hall.
      *
@@ -2888,6 +2941,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_VOCAL_CONCERT = 0x02010200,
+    /** @zh-cn
+     * 录音棚。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** An audio effect typical of a recording studio.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2896,6 +2955,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_STUDIO = 0x02010300,
+    /** @zh-cn
+     * 留声机。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** An audio effect typical of a vintage phonograph.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2904,6 +2969,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_PHONOGRAPH = 0x02010400,
+    /** @zh-cn
+     * 虚拟立体声，即 SDK 将单声道的音频渲染出双声道的音效。
+     *
+     * @note 你需要在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置 `3` 或 `5`，否则该枚举设置无效。
+     */
     /** A virtual stereo effect that renders monophonic audio as stereo audio.
      *
      * @note Call {@link setAudioProfile} and set the `profile` parameter to
@@ -2911,6 +2982,12 @@ export enum AUDIO_EFFECT_PRESET
      * enumerator; otherwise, the enumerator setting does not take effect.
      */
     ROOM_ACOUSTICS_VIRTUAL_STEREO = 0x02010500,
+    /** @zh-cn
+     * 空旷。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** A more spatial audio effect.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2919,6 +2996,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_SPACIAL = 0x02010600,
+    /** @zh-cn
+     * 空灵。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** A more ethereal audio effect.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -2927,6 +3010,15 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     ROOM_ACOUSTICS_ETHEREAL = 0x02010700,
+    /** @zh-cn
+     * 3D 人声，即 SDK 将音频渲染出在用户周围环绕的效果，环绕周期为 10 秒。设置该音效后，你还可以
+     * 调用 {@link setAudioEffectParameters} 修改环绕周期。
+     *
+     * **Note**:
+     * - 你需要在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置
+     * 为 `3` 或 `5`，否则该枚举设置无效。
+     * - 启用 3D 人声后，用户需要使用支持双声道的音频播放设备才能听到预期效果。
+     */
     /** A 3D voice effect that makes the voice appear to be moving around
      * the user. The default cycle period of the 3D
      * voice effect is 10 seconds. To change the cycle period,
@@ -2941,6 +3033,14 @@ export enum AUDIO_EFFECT_PRESET
      * playback devices to hear the anticipated voice effect.
      */
     ROOM_ACOUSTICS_3D_VOICE = 0x02010800,
+    /** @zh-cn
+     * 大叔。
+     *
+     * **Note**:
+     * - 建议用于处理男声，否则无法达到预期效果。
+     * - 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of an uncle.
      *
      * @note
@@ -2952,6 +3052,14 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_UNCLE = 0x02020100,
+    /** @zh-cn
+     * 老年男性。
+     *
+     * **Note**:
+     * - 建议用于处理男声，否则无法达到预期效果。
+     * - 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of an old man.
      *
      * @note
@@ -2963,6 +3071,14 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_OLDMAN = 0x02020200,
+    /** @zh-cn
+     * 男孩。
+     *
+     * **Note**:
+     * - 建议用于处理男声，否则无法达到预期效果。
+     * - 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of a boy.
      *
      * @note
@@ -2974,6 +3090,14 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_BOY = 0x02020300,
+    /** @zh-cn
+     * 少女。
+     *
+     * **Note**:
+     * - 建议用于处理女声，否则无法达到预期效果。
+     * - 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of a young woman.
      *
      * @note
@@ -2985,6 +3109,14 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_SISTER = 0x02020400,
+    /** @zh-cn
+     * 女孩。
+     *
+     * **Note**:
+     * - 建议用于处理女声，否则无法达到预期效果。
+     * - 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of a girl.
      *
      * @note
@@ -2996,6 +3128,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_GIRL = 0x02020500,
+    /** @zh-cn
+     * 猪八戒。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of Pig King, a character in Journey to the West who has a
      * voice like a growling bear.
      *
@@ -3005,6 +3143,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_PIGKING = 0x02020600,
+    /** @zh-cn
+     * 绿巨人。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** The voice of Hulk.
      *
      * @note To achieve better audio effect quality, Agora recommends
@@ -3013,6 +3157,12 @@ export enum AUDIO_EFFECT_PRESET
      * before setting this enumerator.
      */
     VOICE_CHANGER_EFFECT_HULK = 0x02020700,
+    /** @zh-cn
+     * R&B。
+     *
+     * @note 你需要在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置 `4` 或 `5`，否则该枚举设置无效。
+     */
     /** An audio effect typical of R&B music.
      *
      * @note Call {@link setAudioProfile} and set the `profile` parameter
@@ -3020,6 +3170,12 @@ export enum AUDIO_EFFECT_PRESET
      * setting does not take effect.
      */
     STYLE_TRANSFORMATION_RNB = 0x02030100,
+    /** @zh-cn
+     * 流行。
+     *
+     * @note 你需要在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置 `4` 或 `5`，否则该枚举设置无效。
+     */
     /** An audio effect typical of popular music.
      *
      * @note Call {@link setAudioProfile} and set the `profile` parameter
@@ -3027,6 +3183,13 @@ export enum AUDIO_EFFECT_PRESET
      * setting does not take effect.
      */
     STYLE_TRANSFORMATION_POPULAR = 0x02030200,
+    /** @zh-cn
+     * 电音，即 SDK 以主音音高为 C 的自然大调为基础修正音频的实际音高。设置该音效后，你还可以
+     * 调用 {@link setAudioEffectParameters} 调整修音的基础调式和主音音高。
+     *
+     * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile}
+     * 的 `profile` 参数设置为 `4` 或 `5`。
+     */
     /** A pitch correction effect that corrects the user's pitch based on
      * the pitch of the natural C major scale.
      * To change the basic mode and tonic pitch,
@@ -3039,18 +3202,25 @@ export enum AUDIO_EFFECT_PRESET
      */
     PITCH_CORRECTION = 0x02040100
 };
+/** @zh-cn
+ * 预设的美声效果选项。
+ *
+ * @since v3.2.0
+ */
 /** The options for SDK preset voice beautifier effects.
  */
 export enum VOICE_BEAUTIFIER_PRESET
 {
     /** @zh-cn
-     *
+     * 原声，即关闭美声效果。
      */
     /** Turn off voice beautifier effects and use the original voice.
      */
     VOICE_BEAUTIFIER_OFF = 0x00000000,
     /** @zh-cn
+     * 磁性（男）。
      *
+     * @note 该设置仅对男声有效。**请勿**用于设置女声，否则音频会失真。
      */
     /** A more magnetic voice.
      *
@@ -3059,7 +3229,9 @@ export enum VOICE_BEAUTIFIER_PRESET
      */
     CHAT_BEAUTIFIER_MAGNETIC = 0x01010100,
     /** @zh-cn
+     * 清新（女）。
      *
+     * @note 该设置仅对女声有效。**请勿**用于设置男声，否则音频会失真。
      */
     /** A fresher voice.
      *
@@ -3067,53 +3239,90 @@ export enum VOICE_BEAUTIFIER_PRESET
      * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_FRESH = 0x01010200,
+    /** @zh-cn
+     * 活力（女）。
+     *
+     * @note 该设置仅对女声有效。**请勿**用于设置男声，否则音频会失真。
+     */
     /** A more vital voice.
      *
      * @note Agora recommends using this enumerator to process a
      * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_VITALITY = 0x01010300,
+    /** @zh-cn
+     * 浑厚。
+     */
     /** A more vigorous voice.
      */
     TIMBRE_TRANSFORMATION_VIGOROUS = 0x01030100,
+    /** @zh-cn
+     * 低沉。
+     */
     /** A deeper voice.
      */
     TIMBRE_TRANSFORMATION_DEEP = 0x01030200,
+    /** @zh-cn
+     * 圆润。
+     */
     /** A mellower voice.
      */
     TIMBRE_TRANSFORMATION_MELLOW = 0x01030300,
+    /** @zh-cn
+     * 假音。
+     */
     /** A falsetto voice.
      */
     TIMBRE_TRANSFORMATION_FALSETTO = 0x01030400,
+    /** @zh-cn
+     * 饱满。
+     */
     /** A fuller voice.
      */
     TIMBRE_TRANSFORMATION_FULL = 0x01030500,
+    /** @zh-cn
+     * 清澈。
+     */
     /** A clearer voice.
      */
     TIMBRE_TRANSFORMATION_CLEAR = 0x01030600,
+    /** @zh-cn
+     * 高亢。
+     */
     /** A more resounding voice.
      */
     TIMBRE_TRANSFORMATION_RESOUNDING = 0x01030700,
+    /** @zh-cn
+     * 嘹亮。
+     */
     /** A more ringing voice.
      */
     TIMBRE_TRANSFORMATION_RINGING = 0x01030800
 };
+/** @zh-cn
+ * 直播频道中观众端（用户角色为观众的客户端）的延时级别。仅在用户角色设为 audience 时才生效。
+ */
 /** The latency level of an audience member in interactive live streaming.
  *
  * @note Takes effect only when the user role is audience.
  */
 export enum AUDIENCE_LATENCY_LEVEL_TYPE
-{
+{   /** @zh-cn
+     * 1: 低延时。
+     */
     /** 1: Low latency. */
     AUDIENCE_LATENCY_LEVEL_LOW_LATENCY = 1,
+    /** @zh-cn
+     * 2:（默认）超低延时。
+     */
     /** 2: (Default) Ultra low latency. */
     AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY = 2,
 };
 /** @zh-cn
- * //TODO
- * 
+ * 订阅状态。
+ *
  * @since v3.2.0
- * 
+ *
  * - 0: 加入频道后的初始订阅状态。
  * - 1: 订阅失败。可能是因为：
  *   - 远端用户：
@@ -3501,9 +3710,9 @@ export type ChannelMediaRelayError =
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
 /** @zh-cn
  * 访问区域。
- * 
+ *
  * @since v3.2.0
- * 
+ *
  * - 1: 中国大陆。
  * - 2: 北美区域。
  * - 4: 欧洲区域。
@@ -3535,15 +3744,15 @@ export type AREA_CODE =
   | (0xFFFFFFFF); //AREA_CODE_GLOBAL =
 /** @zh-cn
  *
- * //TODO
+ * 发布状态。
  *
  * @since v3.2.0
  * - 0: 加入频道后的初始发布状态。
  * - 1: 发布失败。可能是因为：
- *   - 本地用户调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或 
+ *   - 本地用户调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或
  * {@link muteLocalVideoStream muteLocalVideoStream(true)} 停止发送本地媒体流。
  *   - 本地用户调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
- *   - 本地用户调用 {@link enableLocalAudio enableLocalAudio(false)} 或 
+ *   - 本地用户调用 {@link enableLocalAudio enableLocalAudio(false)} 或
  * {@link enableLocalVideo (false)} 关闭本地音频或视频采集。
  *   - 本地用户角色为观众。
  * - 2: 正在发布。
@@ -3573,6 +3782,9 @@ export type STREAM_PUBLISH_STATE =
     | 1 //PUB_STATE_NO_PUBLISHED
     | 2 //PUB_STATE_PUBLISHING
     | 3 //PUB_STATE_PUBLISHED
+/** @zh-cn
+ * //TOOD
+ */
 /**
  * Audio output routing.
  * - -1: Default.
@@ -3599,35 +3811,56 @@ export type AUDIO_ROUTE_TYPE =
     | 7  //AUDIO_ROUTE_HDMI
     | 8  //AUDIO_ROUTE_DISPLAYPORT
     | 9  //AUDIO_ROUTE_AIRPLAY
+/** @zh-cn
+ * 媒体附属信息。
+ */
 /**
  * The media metadata.
  */
 export interface Metadata {
+    /** @zh-cn
+     * 发送媒体附属信息的用户 UID。
+     *
+     * @note 发送媒体附属信息时，请你忽略该参数。接收媒体附属信息时，你可以使用该参数来确认
+     * 哪位用户发送媒体附属信息。
+     */
     /** ID of the user who sends the metadata.
      *
      * @note When sending the metadata, ignore this parameter. When receiving
      * the metadata, use this parameter to determine who sends the metadata.
      */
     uid: number;
+    /** @zh-cn
+     * 媒体附属信息的大小。
+     */
     /**
      * The size of the metadata.
      */
     size: number;
+    /** @zh-cn
+     * 媒体附属信息 buffer。
+     */
     /**
      * The buffer of the metadata.
      */
     buffer: string;
+    /** @zh-cn
+     * 媒体附属信息发送时的时间戳（毫秒）。
+     */
     /** The timestamp (ms) that the metadata sends.
      */
     timeStampMs: number;
   }
 /** @zh-cn
- * //TODO
+ * 用户具体设置。
  *
  */
 /** The detailed options of a user.
  */
 export interface ClientRoleOptions {
+  /** @zh-cn
+   * 观众端延时级别。
+   */
   /**
    * The latency level of an audience member in interactive live streaming.
    */
@@ -4596,14 +4829,23 @@ export interface NodeRtcEngine {
    * @ignore
    */
   videoSourceEnableEncryption(enabled: boolean, encryptionConfig: EncryptionConfig): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   videoSourceSetEncryptionMode(mode: string): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   videoSourceSetEncryptionSecret(mode: string): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -5117,26 +5359,44 @@ export interface NodeRtcEngine {
    * @ignore
    */
   registerMediaMetadataObserver(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   unRegisterMediaMetadataObserver(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   sendMetadata(metadata: Metadata): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   addMetadataEventHandler(callback: Function, callback2: Function): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setMaxMetadataSize(size: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   initializePluginManager(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /** @zh-cn
    * @ignore
    */
@@ -5207,6 +5467,9 @@ export interface NodeRtcEngine {
    * @ignore
    */
   adjustUserPlaybackSignalVolume(uid: number, volume: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -5273,23 +5536,37 @@ export interface NodeRtcChannel {
    * @ignore
    */
   registerMediaMetadataObserver(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   unRegisterMediaMetadataObserver(): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   sendMetadata(metadata: Metadata): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   addMetadataEventHandler(callback: Function, callback2: Function): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setMaxMetadataSize(size: number): number;
-
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */

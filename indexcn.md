@@ -16,6 +16,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.release release}                       | 释放 `AgoraRtcEngine` 实例           |
 | {@link AgoraRtcEngine.setChannelProfile setChannelProfile}   | 设置频道场景                         |
 | {@link AgoraRtcEngine.setClientRole setClientRole}           | 设置直播场景下的用户角色             |
+| {@link AgoraRtcEngine.setClientRoleWithOptions setClientRoleWithOptions}           | 设置直播场景下的用户角色和观众端延时级别             |
 | {@link AgoraRtcEngine.joinChannel joinChannel}               | 加入频道                             |
 | {@link AgoraRtcEngine.switchChannel switchChannel}           | 快速切换直播频道|
 | {@link AgoraRtcEngine.leaveChannel leaveChannel}             | 离开频道                             |
@@ -113,6 +114,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.adjustAudioMixingVolume adjustAudioMixingVolume} | 调节音乐文件的播放音量     |
 | {@link AgoraRtcEngine.adjustAudioMixingPlayoutVolume adjustAudioMixingPlayoutVolume} | 调节音乐文件的本地播放音量 |
 | {@link AgoraRtcEngine.adjustAudioMixingPublishVolume adjustAudioMixingPublishVolume} | 调节音乐文件的远端播放音量     |
+| {@link setAudioMixingPitch setAudioMixingPitch} | 调节音乐文件播放音调      |
 | {@link AgoraRtcEngine.getAudioMixingPlayoutVolume getAudioMixingPlayoutVolume} | 获取音乐文件的本地播放音量 |
 | {@link AgoraRtcEngine.getAudioMixingPublishVolume getAudioMixingPublishVolume} | 获取音乐文件的远端播放音量 |
 | {@link AgoraRtcEngine.getAudioMixingDuration getAudioMixingDuration} | 获取音乐文件的播放时长     |
@@ -139,11 +141,12 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 
 | 方法                                                         | 描述                       |
 | ------------------------------------------------------------ | -------------------------- |
-| {@link AgoraRtcEngine.setLocalVoiceChanger setLocalVoiceChanger} | 设置本地语音变声           |
-| {@link AgoraRtcEngine.setLocalVoiceReverbPreset setLocalVoiceReverbPreset} | 设置预设的本地语音混响效果 |
-| {@link AgoraRtcEngine.setLocalVoicePitch setLocalVoicePitch} | 设置本地语音音调           |
-| {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | 设置本地语音音效均衡       |
-| {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | 设置本地语音混响           |
+| {@link AgoraRtcEngine.setLocalVoicePitch setLocalVoicePitch} | 设置本地语音音调 |
+| {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | 设置本地语音音效均衡  |
+| {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | 设置本地音效混响 |
+| {@link AgoraRtcEngine.setVoiceBeautifierPreset setVoiceBeautifierPreset} | 设置 SDK 预设的美声效果|
+| {@link AgoraRtcEngine.setAudioEffectPreset setAudioEffectPreset} | 设置 SDK 预设的人声效果  |
+| {@link AgoraRtcEngine.setAudioEffectParameters setAudioEffectParameters} | 设置 SDK 预设人声音效的参数 |
 
 ### 听声辨位
 
@@ -199,7 +202,16 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.enableLastmileTest enableLastmileTest} | 启用网络测试                                     |
 | {@link AgoraRtcEngine.disableLastmileTest disableLastmileTest} | 关闭网络测试                                     |
 | {@link AgoraRtcEngine.startLastmileProbeTest startLastmileProbeTest} | 开始通话前网络质量探测                           |
-| {@link AgoraRtcEngine.stopLastmileProbeTest stopLastmileProbeTest} | 停止通话前网络质量探测                           |
+| {@link AgoraRtcEngine.stopLastmileProbeTest stopLastmileProbeTest} | 停止通话前网络质量探测        |
+
+### 媒体附属信息
+
+| 方法                                                         | 描述                                             |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+|{@link AgoraRtcEngine.registerMediaMetadataObserver registerMediaMetadataObserver} | 注册媒体附属信息观测器        |
+|{@link AgoraRtcEngine.unRegisterMediaMetadataObserver unRegisterMediaMetadataObserver} |取消注册媒体附属信息观测器     |
+|{@link AgoraRtcEngine.setMaxMetadataSize setMaxMetadataSize}| 设置媒体附属信息的最大大小   |
+|{@link AgoraRtcEngine.sendMetadata sendMetadata}|  发送媒体附属信息  |
 
 ### 直播水印（仅适用于互动直播）
 
@@ -213,8 +225,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 
 | 方法                                                         | 描述                         |
 | ------------------------------------------------------------ | ---------------------------- |
-| {@link AgoraRtcEngine.setEncryptionSecret setEncryptionSecret} | 启用内置加密，并设置加密密码 |
-| {@link AgoraRtcEngine.setEncryptionMode setEncryptionMode} | 设置内置的加密方案 |
+| {@link AgoraRtcEngine.enableEncryption enableEncryption} | 开启或关闭内置加密 |
 
 ### 音频录制
 
@@ -299,6 +310,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 
 | 方法                                                         | 描述               |
 | ------------------------------------------------------------ | ------------------ |
+| {@link AgoraRtcEngine.sendCustomReportMessage sendCustomReportMessage}  | 自定义数据上报  |
 | {@link AgoraRtcEngine.getCallId getCallId}                   | 获取通话 ID        |
 | {@link AgoraRtcEngine.rate rate}                             | 给通话评分         |
 | {@link AgoraRtcEngine.complain complain}                     | 投诉通话质量       |
@@ -328,6 +340,9 @@ Agora Electron SDK 提供双实例的实现方法。第二个实例用以屏幕�
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin} | 加入频道 |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave} | 离开频道              |
 | {@link AgoraRtcEngine.videoSourceRenewToken videoSourceRenewToken} | 更新 Token        |
+| {@link AgoraRtcEngine.videoSourceEnableAudio videoSourceEnableAudio} | 启用音频模块     |
+| {@link AgoraRtcEngine.videoSourceEnableLoopbackRecording videoSourceEnableLoopbackRecording} | 开启声卡采集          |
+| {@link AgoraRtcEngine.videoSourceEnableEncryption videoSourceEnableEncryption} |  开启或关闭内置加密          |
 | {@link AgoraRtcEngine.getScreenDisplaysInfo getScreenDisplaysInfo} |     获取屏幕信息         |
 | {@link AgoraRtcEngine.getScreenWindowsInfo getScreenWindowsInfo}       |   获取窗口信息            |
 | {@link AgoraRtcEngine.videoSourceStartScreenCaptureByScreen videoSourceStartScreenCaptureByScreen}     |    通过屏幕信息共享屏幕        |
@@ -377,7 +392,8 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `networkQuality`                   | 报告网络上下行质量                       |
 | `lastmileQuality`                  | 报告通话前本地用户的网络质量             |
 | `lastmileProbeResult`              | 报告通话前Last-mile 网络上下行质量       |
-| `firstLocalAudioFrame`             | 已发送本地音频首帧                       |
+| `firstLocalAudioFramePublished`  | 已发布本地音频首帧回调|
+| `firstLocalVideoFramePublished`| 已发布本地视频首帧回调 |
 | `firstLocalVideoFrame`             | 已显示本地视频首帧                       |
 | `videoSizeChanged`                 | 本地或远端视频大小或旋转信息发生改变     |
 | `removeStream`                    | 远端用户已离开频道                       |
@@ -386,10 +402,17 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `videoStopped`                     | 视频功能已停止                           |
 | `streamMessage`                    | 接收到对方数据流小                       |
 | `streamMessageError`               | 接收对方数据流消息发生错误               |
+| `rtmpStreamingStateChanged`| RTMP/RTMPS 推流状态发生改变回调  |
+| `transcodingUpdated`| 推流转码设置已更新回调  |
+| `rtmpStreamingEvent`| RTMP/RTMPS 推流事件回调 |
 | `audioDeviceVolumeChanged`         | 音频设备播放音量已改变                   |
 | `localAudioStateChanged`           | 本地音频状态改变回调|
 | `remoteAudioStateChanged`          | 远端用户音频状态已改变回调|
 | `localVideoStateChanged`           | 本地视频状态已改变                       |
+| `audioPublishStateChanged`| 音频发布状态改变回调 |
+| `videoPublishStateChanged`| 视频发布状态改变回调  |
+| `audioSubscribeStateChanged`| 音频订阅状态发生改变回调   |
+| `videoSubscribeStateChanged`| 视频订阅状态发生改变回调 |
 | `remoteVideoStateChanged`          | 远端视频状态已改变                       |
 | `cameraFocusAreaChanged`           | 摄像头对焦区域已改变                     |
 | `cameraExposureAreaChanged`        | 摄像头曝光区域已改变                     |
@@ -399,6 +422,8 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `streamInjectStatus`               | 导入在线媒体流状态                       |
 | `localPublishFallbackToAudioOnly`  | 本地发布流已回退为音频流或恢复为音视频流 |
 | `remoteSubscribeFallbackToAudioOnly` | 远端订阅流已回退为音频流或恢复为音视频流 |
+| `receiveMetadata`|  媒体附属信息接收成功回调
+| `sendMetadataSuccess`|  媒体附属信息发送成功回调 |
 | `videoSourceJoinedSuccess`         | （第二个实例）已加入频道                 |
 | `videoSourceRequestNewToken`       | （第二个实例）Token 已过期               |
 | `videoSourceLeaveChannel`          | （第二个实例）已离开频道                 |
@@ -432,12 +457,14 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `-1020`   | 音频设备模块：播放设备故障。                                 |
 | `-1021`   | 音频设备模块：录音设备故障。                                 |
 | `-1025`   | 通话或直播被系统声音打断，比如电话、闹钟等。                 |
+| `-1029`   | 在通话过程中，Audio Session 的 category 必须设置成 AVAudioSessionCategoryPlayAndRecord，RtcEngine 会监控这个属性值。当这个值被修改成其他值的时候会触发这个告警，并强制设置回 AVAudioSessionCategoryPlayAndRecord。|
 | `-1031`   | 音频设备模块：录到的声音太低。                               |
 | `-1032`   | 音频设备模块：播放的声音太低。                               |
 | `-1040`   | 音频设备模块：音频驱动异常。<br/>解决方案：禁用并重新启用音频设备，或者重启机器，或者更新声卡驱动 |
+| `-1042`   | 音频采集设备和播放设备不一致，可能引起回声，建议使用同一设备采集和播放音频。        |
 | `-1051`   | 音频设备模块：录音声音监测到啸叫。                           |
 | `-1052`   | 音频设备模块：音频播放会卡顿。                               |
-| `-1053`   | 音频设备模块：音频底层设置被修改。                           |
+| `-1053`   | 音频设备模块：音频信号处理模块检测到残余回声，该回声可能由系统线程调度不及时或信号溢出导致。|
 | `-1323`   | 音频设备模块：无可用音频播放设备。<br/>解决方案：插入音频设备 |
 | `-1324`   | 音频设备模块：音频采集释放有误。<br/>解决方案：禁用并重新启用音频设备，或者重启机器，或者更新声卡驱动。 |
 | `-1610`   | 超分告警：远端用户的原始视频流的分辨率超出了可以应用超分辨率算法的要求。 |
@@ -475,6 +502,7 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `-22`     | 当用户 App 占用资源过多，或系统资源耗尽时，SDK 分配资源失败会返回该错误。 |
 | `-101`    | 不是有效的 App ID。<br/>请更换有效的 App ID 重新加入频道。   |
 | `-102`    | 不是有效的频道名。<br/>请更换有效的频道名重新加入频道。      |
+| `-103`    | 无法获取当前指定区域的服务器资源。请在调用 {@link AgoraRtcEngine.initialize initialize} 方法时尝试指定其他区域。       |
 | `-109`    | **DEPRECATED** 请改用 `ConnectionChangeReason` 中的 `9`。<br/>当前使用的 Token 过期，不再有效。一般有以下原因：<br/><li>Token 授权时间戳无效：Token 授权时间戳为 Token 生成时的时间戳，自 1970 年 1 月 1 日开始到当前时间的描述。授权该 Token 在生成后的 24 小时内可以访问 Agora 服务。如果 24 小时内没有访问，则该 Token 无法再使用。需要重新在服务端申请生成 Token。</li><li>Token 服务到期时间戳已过期：用户设置的服务到期时间戳小于当前时间戳，无法继续使用 Agora 服务（比如正在进行的通话会被强制终止）；设置服务到期时间并不意味着 Token 失效，而仅仅用于限制用户使用当前服务的时间。需要重新在服务端申请生成 Token。 </li> |
 | `-110`    | **DEPRECATED** 请改用 `ConnectionChangeReason` 中的 `8`。<br/>生成的 Token 无效，一般有以下原因：<br/><li>用户在 Console 上启用了 App Certificate，但仍旧在代码里仅使用了 App ID。当启用了 App Certificate，必须使用 Token。</li><li>字段 `uid` 为生成 Token 的必须字段，用户在调用 `joinChannel` 加入频道时必须设置相同的 `uid`。 </li> |
 | `-113`    | 用户不在频道内。<br/>调用 `sendStreamMessage`，当调用发生在频道外时，会发生该错误. |
