@@ -1232,7 +1232,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - The local client: joinedChannel
    * - The remote client: userJoined, if the user joining the channel is in
    * the communication(`0`) profile,
-   * or is a BROADCASTER in the Live Broadcast profile.
+   * or is a host in the `1` (live streaming) profile.
    *
    * When the connection between the client and Agora's server is interrupted
    * due to poor network conditions,
@@ -1314,7 +1314,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * A successful leavechannel method call triggers the removeStream callback
    * for the remote client when the user leaving the channel
-   * is in the Communication channel, or is a BROADCASTER in the Live Broadcast
+   * is in the Communication channel, or is a host in the `1` (live streaming)
    * profile.
    *
    * @return
@@ -1686,7 +1686,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - Users in the same channel must use the same channel profile.
    * @param {number} profile The channel profile:
    * - 0: for communication
-   * - 1: for live broadcasting
+   * - 1: for live streaming
    * - 2: for in-game
    * @return
    * - 0: Success.
@@ -1712,13 +1712,13 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0：方法调用失败
    */
   /**
-   * Sets the role of a user (Live Broadcast only).
+   * Sets the role of a user (live streaming only).
    *
    * This method sets the role of a user, such as a host or an audience
    * (default), before joining a channel.
    *
    * This method can be used to switch the user role after a user joins a
-   * channel. In the Live Broadcast profile,
+   * channel. In the `1` (live streaming)profile,
    * when a user switches user roles after joining a channel, a successful
    * {@link setClientRole} method call triggers the following callbacks:
    * - The local client: clientRoleChanged
@@ -1726,7 +1726,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * @param {ClientRoleType} role The client role:
    *
-   * - 1: The broadcaster
+   * - 1: The host
    * - 2: The audience
    * @return
    * - 0: Success.
@@ -1736,44 +1736,36 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.setClientRole(role);
   }
 
-  /** Sets the role of a user in a live interactive streaming.
+  /** Sets the role of a user in interactive live streaming.
    *
    * @since v3.2.0
    *
-   * You can call this method either before or after joining the channel to set the user role as audience or host. If
-   * you call this method to switch the user role after joining the channel, the SDK triggers the following callbacks:
-   * - The local client: \ref IRtcEngineEventHandler::onClientRoleChanged "onClientRoleChanged".
-   * - The remote client: \ref IRtcEngineEventHandler::onUserJoined "onUserJoined"
-   * or \ref IRtcEngineEventHandler::onUserOffline "onUserOffline".
+   * You can call this method either before or after joining the channel to
+   * set the user role as audience or host. If
+   * you call this method to switch the user role after joining the channel,
+   * the SDK triggers the following callbacks:
+   * - The local client: `clientRoleChanged`.
+   * - The remote client: `userJoined` or `userOffline`.
    *
    * @note
-   * - This method applies to the `LIVE_BROADCASTING` profile only (when the `profile` parameter in
-   * \ref IRtcEngine::setChannelProfile "setChannelProfile" is set as `CHANNEL_PROFILE_LIVE_BROADCASTING`).
-   * - The difference between this method and \ref IRtcEngine::setClientRole(CLIENT_ROLE_TYPE) "setClientRole1" is that
+   * - This method applies to the `LIVE_BROADCASTING` profile only.
+   * - The difference between this method and {@link setClientRole} is that
    * this method can set the user level in addition to the user role.
-   *  - The user role determines the permissions that the SDK grants to a user, such as permission to send local
+   *  - The user role determines the permissions that the SDK grants to a
+   * user, such as permission to send local
    * streams, receive remote streams, and push streams to a CDN address.
-   *  - The user level determines the level of services that a user can enjoy within the permissions of the user's
-   * role. For example, an audience can choose to receive remote streams with low latency or ultra low latency. Levels
+   *  - The user level determines the level of services that a user can
+   * enjoy within the permissions of the user's
+   * role. For example, an audience can choose to receive remote streams with
+   * low latency or ultra low latency. Levels
    * affect prices.
    *
-   * **Example**
-   * ```cpp
-   * ClientRoleOptions options;
-   * options.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
-   * options.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_LOW_LATENCY;
-   * agoraEngine->setClientRole(role, options);
-   * ```
-   *
-   * @param role The role of a user in a live interactive streaming. See #CLIENT_ROLE_TYPE.
-   * @param options The detailed options of a user, including user level. See ClientRoleOptions.
+   * @param role The role of a user in interactive live streaming.
+   * @param options The detailed options of a user, including user level.
    *
    * @return
-   * - 0(ERR_OK): Success.
+   * - 0: Success.
    * - < 0: Failure.
-   *  - -1(ERR_FAILED): A general error occurs (no specified reason).
-   *  - -2(ERR_INALID_ARGUMENT): The parameter is invalid.
-   *  - -7(ERR_NOT_INITIALIZED): The SDK is not initialized.
    */
   setClientRoleWithOptions(role: ClientRoleType, options: ClientRoleOptions): number {
     return this.rtcEngine.setClientRoleWithOptions(role, options);
@@ -1818,7 +1810,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - After calling this method, call the {@link stopEchoTest} method to end
    * the test. Otherwise, the app cannot run the next echo test,
    * nor can it call the {@link joinChannel} method to start a new call.
-   * - In the Live Broadcast profile, only hosts can call this method.
+   * - In the `1` (live streaming) profile, only hosts can call this method.
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -1878,7 +1870,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - After calling this method, call the {@link stopEchoTest} method to end
    * the test. Otherwise, the app cannot run the next echo test,
    * nor can it call the {@link joinChannel} method to start a new call.
-   * - In the Live Broadcast profile, only hosts can call this method.
+   * - In the `1` (live streaming) profile, only hosts can call this method.
    * @param interval The time interval (s) between when you speak and when the
    * recording plays back.
    * @return
@@ -1943,7 +1935,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note
    * - Ensure that you have called {@link enableVideo} before this method.
    * - If you only want to add a watermark image to the local video for the
-   * audience in the CDN live broadcast channel to see and capture, you can
+   * audience in the CDN live streaming channel to see and capture, you can
    * call this method or {@link setLiveTranscoding}.
    * - This method supports adding a watermark image in the PNG file format
    * only. Supported pixel formats of the PNG image are RGBA, RGB, Palette,
@@ -2115,7 +2107,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - Do not call other methods before receiving the lastMileQuality and
    * lastmileProbeResult callbacks. Otherwise, the callbacks may be interrupted
    * by other methods.
-   * - In the Live Broadcast profile, a host should not call this method after
+   * - In the `1` (live streaming) profile, a host should not call this method after
    * joining a channel.
    *
    * @param {LastmileProbeConfig} config The configurations of the last-mile
@@ -2365,7 +2357,7 @@ class AgoraRtcEngine extends EventEmitter {
   /**
    * Sets the camera capturer configuration.
    *
-   * For a video call or live broadcast, generally the SDK controls the camera
+   * For a video call or live streaming, generally the SDK controls the camera
    * output parameters.
    * When the default camera capture settings do not meet special requirements
    * or cause performance problems, we recommend using this method to set the
@@ -2669,7 +2661,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - `3`：Game streaming：游戏直播应用，需要外放游戏音效也直播出去的场景
    * - `4`：Showroom：秀场应用，音质优先和更好的专业外设支持
    * - `5`：Chatroom gaming：游戏开黑
-   * - `8`：Meeting：会议场景，适用于人声为主的多人会议。@since v3.2.0 
+   * - `8`：Meeting：会议场景，适用于人声为主的多人会议。@since v3.2.0
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -2747,7 +2739,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @deprecated This method is deprecated. Use
    * {@link setCameraCapturerConfiguration} and
    * {@link setVideoEncoderConfiguration} instead.
-   * Sets the preference option for the video quality (Live Broadcast only).
+   * Sets the preference option for the video quality (live streaming only).
    * @param {boolean} preferFrameRateOverImageQuality Sets the video quality
    * preference:
    * - true: Frame rate over image quality.
@@ -2764,7 +2756,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * @deprecated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
-   * 
+   *
    * 启用内置加密，并设置数据加密密码。
    *
    * 如需启用加密，请在 {@link joinChannel} 前调用该方法，并设置加密的密码。
@@ -2805,7 +2797,7 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 设置内置的加密方案。
-   * 
+   *
    * @depercated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
    *
    * Agora Native SDK 支持内置加密功能，默认使用 AES-128-XTS 加密方式。如需使用其他加密方式，可以调用该 API 设置。
@@ -3592,9 +3584,9 @@ class AgoraRtcEngine extends EventEmitter {
    * automatically enables interoperability with the Web SDK, so you no longer
    * need to call this method.
    *
-   * Enables interoperability with the Agora Web SDK (Live Broadcast only).
+   * Enables interoperability with the Agora Web SDK (live streaming only).
    *
-   * Use this method when the channel profile is Live Broadcast.
+   * Use this method when the channel profile is `1` (live streaming).
    * Interoperability with the Agora Web SDK is enabled by default when the
    * channel profile is Communication.
    *
@@ -3734,7 +3726,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * 设置本地语音变声。
-   * 
+   *
    * @deprecated 该方法自 v3.2.0 已废弃，请改用 {@link setAudioEffectPreset} 或 {@link setVoiceBeautifierPreset}。
    *
    * @note 该方法不能与 {@link setLocalVoiceReverbPreset} 方法同时使用，否则先调用的方法会不生效。
@@ -3759,7 +3751,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * @deprecated 该方法从 v3.2.0 起废弃，请改用 {@link setAudioEffectPreset} 或 {@link setVoiceBeautifierPreset}。
-   * 
+   *
    * 设置预设的本地语音混响效果选项。
    *
    * @note
@@ -4020,8 +4012,8 @@ class AgoraRtcEngine extends EventEmitter {
    * following callbacks:
    * - The local client: localUserRegistered and userInfoUpdated.
    * - The remote client: userJoined and userInfoUpdated, if the user joining
-   * the channel is in the communication(`0`) profile, or is a BROADCASTER in the
-   * Live Broadcast profile.
+   * the channel is in the communication(`0`) profile, or is a host in the
+   * `1` (live streaming) profile.
    *
    * **Note**: To ensure smooth communication, use the same parameter type to
    * identify the user. For example, if a user joins the channel with a user
@@ -5150,7 +5142,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * @param {number} profile Sets the channel profile:
    * - 0:(Default) Communication.
-   * - 1: Live Broadcast.
+   * - 1: Live streaming.
    * - 2: Gaming.
    *
    * @return
@@ -6215,16 +6207,16 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 调整本地播放的音乐文件的音调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * 本地人声和播放的音乐文件混音时，调用该方法可以仅调节音乐文件的音调。
-   * 
+   *
    * @note 调用该方法前，请确保你已调用 {@link startAudioMixing}。
-   * 
+   *
    * @param pitch 按半音音阶调整本地播放的音乐文件的音调，默认值为 0，即不调整音调。
    * 取值范围为 [-12,12]， 每相邻两个值的音高距离相差半音。取值的绝对值越大，音调升高或降低得越多。
-   * 
+   *
    * @return
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -6285,9 +6277,9 @@ class AgoraRtcEngine extends EventEmitter {
     * callback.
     *
     * @note
-    * - Only the broadcaster in the `1` (live streaming) profile can call this
+    * - Only the host in the `1` (live streaming) profile can call this
     * method.
-    * - Call this method after the broadcaster joins the channel.
+    * - Call this method after the host joins the channel.
     * - Ensure that you enable the RTMP Converter service before using this
     * function. See *Prerequisites* in the *Push Streams to CDN* guide.
     * - This method adds only one stream URL address each time it is
@@ -6329,7 +6321,7 @@ class AgoraRtcEngine extends EventEmitter {
   /**
    * Removes an RTMP stream from the CDN.
    * @note
-   * - Only the broadcaster in the `1` (live streaming) profile can call this
+   * - Only the host in the `1` (live streaming) profile can call this
    * method.
    * - This method removes only one RTMP URL address each time it is called.
    * - The RTMP URL address must not contain special characters, such as
@@ -6367,7 +6359,7 @@ class AgoraRtcEngine extends EventEmitter {
    * {@link setLiveTranscoding} method to update the LiveTranscoding class.
    *
    * @note
-   * - Only the broadcaster in the Live-broadcast porfile can call this method.
+   * - Only the host in the Live-broadcast porfile can call this method.
    * - Ensure that you enable the RTMP Converter service before using
    * this function. See *Prerequisites* in the *Push Streams to CDN* guide.
    * - If you call the {@link setLiveTranscoding} method to set the
@@ -6435,7 +6427,7 @@ class AgoraRtcEngine extends EventEmitter {
    * the UID of this stream is 666.
    *
    * @note
-   * - Only the broadcaster in the Live-braodcast profile can call this method.
+   * - Only the host in the Live-braodcast profile can call this method.
    * - Ensure that you enable the RTMP Converter service before using this
    * function. See *Prerequisites* in the *Push Streams to CDN* guide.
    * - Ensure that the user joins a channel before calling this method.
@@ -6448,6 +6440,12 @@ class AgoraRtcEngine extends EventEmitter {
    * @param config The configuration of the injected stream.
    * See InjectStreamConfig
    *
+   * @param {string} url The HTTP/HTTPS URL address to be added to the ongoing
+   * live streaming. Valid protocols are RTMP, HLS, and FLV.
+   * - Supported FLV audio codec type: AAC.
+   * - Supported FLV video codec type: H264 (AVC).
+   * @param {InjectStreamConfig} config The InjectStreamConfig object which
+   * contains the configuration information for the added voice or video stream.
    * @return
    * - 0: Success
    * - < 0: Failure
@@ -6459,6 +6457,12 @@ class AgoraRtcEngine extends EventEmitter {
    * live broadcast before calling this method.
    *  - ERR_NOT_INITIALIZED (7): The SDK is not initialized. Ensure that the
    * `AgoraRtcE` object is initialized before calling this method.
+   *  - `ERR_NOT_READY (3)`: The user is not in the channel.
+   *  - `ERR_NOT_SUPPORTED (4)`: The channel profile is not Live streaming.
+   * Call the {@link setChannelProfile} method and set the channel profile to
+   * Live streaming before calling this method.
+   *  - `ERR_NOT_INITIALIZED (7)`: The SDK is not initialized. Ensure that
+   * the `AgoraRtcEngine` object is initialized before using this method.
    */
   addInjectStreamUrl(url: string, config: InjectStreamConfig): number {
     return this.rtcEngine.addInjectStreamUrl(url, config);
@@ -6474,7 +6478,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0：方法调用失败
    */
   /**
-   * Removes the injected online media stream from a live broadcast.
+   * Removes the injected online media stream from a live streaming.
    *
    * @param {string} url HTTP/HTTPS URL address of the added stream to be
    * removed.
@@ -6641,7 +6645,7 @@ class AgoraRtcEngine extends EventEmitter {
    * @note
    * - Contact sales-us@agora.io before implementing this function.
    * - Call this method after the {@link joinChannel} method.
-   * - This method takes effect only when you are a broadcaster in a
+   * - This method takes effect only when you are a host in a
    * Live-broadcast channel.
    * - We do not support using string user accounts in this function.
    * - After a successful method call, if you want to call this method again,
@@ -6721,11 +6725,11 @@ class AgoraRtcEngine extends EventEmitter {
   /**
    * Stops the media stream relay.
    *
-   * Once the relay stops, the broadcaster quits all the destination channels.
+   * Once the relay stops, the host quits all the destination channels.
    *
    * After a successful method call, the SDK triggers the
    * channelMediaRelayState callback. If the callback reports the state
-   * code `0` and the error code `1`, the broadcaster
+   * code `0` and the error code `1`, the host
    * successfully stops the relay.
    *
    * **Note**:
@@ -7612,23 +7616,23 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 开启或关闭内置加密。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
-   * 
+   *
    * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
-   * 
+   *
    * **Note**:
    * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
    * - Agora 支持 4 种加密模式。除 SM4_128_ECB 模式外，
    * 其他加密模式都需要在集成 Android 或 iOS SDK 时，额外添加加密库文件。//TODO(英文还未确定)
-   * 
+   *
    * @param enabled 是否开启内置加密：
    * - true: 开启
    * - false: 关闭
    * @param config 配置内置加密模式和密钥。
-   * 
+   *
    * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
@@ -7647,7 +7651,7 @@ class AgoraRtcEngine extends EventEmitter {
    * **Note**:
    * - If you enable the built-in encryption, you cannot use the RTMP or
    * RTMPS streaming function.
-   * - The SDK returns `-4` when the encryption mode is incorrect or //FIXME(encryp)
+   * - The SDK returns `-4` when the encryption mode is incorrect or
    * the SDK fails to load the external encryption library.
    * Check the enumeration or reload the external encryption library.
    *
@@ -7665,14 +7669,14 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 设置 SDK 预设的人声音效。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * 调用该方法可以为本地发流用户设置 SDK 预设的人声音效，且不会改变原声的性别特征。设置音效后，频道内所有用户都能听到该效果。
    * 根据不同的场景，你可以为用户设置不同的音效。
-   * 
+   *
    * 为获取更好的人声效果，Agora 推荐你在调用该方法前将 {@link setAudioProfile} 的 `scenario` 设为 `3`。
-   * 
+   *
    * **Note**:
    * - 该方法在加入频道前后都能调用。
    * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
@@ -7686,9 +7690,9 @@ class AgoraRtcEngine extends EventEmitter {
    *  - {@link setLocalVoicePitch}
    *  - {@link setLocalVoiceEqualization}
    *  - {@link setLocalVoiceReverb}
-   * 
+   *
    * @param preset 预设的音效选项。
-   * 
+   *
    * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -7740,15 +7744,15 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 设置 SDK 预设的美声效果。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * 调用该方法可以为本地发流用户设置 SDK 预设的人声美化效果。设置美声效果后，频道内所有用户都能听到该效果。
    * 根据不同的场景，你可以为用户设置不同的美声效果.
-   * 
+   *
    * 为获取更好的人声效果，Agora 推荐你在调用该方法前将 `setAudioProfile` 的 `scenario` 设为 `3`，并将 `profile` 设为 `4` 或 `5`。
    *
-   * @note 
+   * @note
    * - 该方法在加入频道前后都能调用。
    * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1` 或 `6`，否则该方法会调用失败。
    * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
@@ -7760,9 +7764,9 @@ class AgoraRtcEngine extends EventEmitter {
    *  - {@link setLocalVoicePitch}
    *  - {@link setLocalVoiceEqualization}
    *  - {@link setLocalVoiceReverb}
-   * 
+   *
    * @param preset 预设的美声效果选项。
-   * 
+   *
    * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
@@ -7812,19 +7816,19 @@ class AgoraRtcEngine extends EventEmitter {
   }
   /** @zh-cn
    * 设置 SDK 预设人声音效的参数。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * 调用该方法可以对本地发流用户进行如下设置：
    * - 3D 人声音效：设置 3D 人声音效的环绕周期。
    * - 电音音效：设置电音音效的基础调式和主音音高。为方便用户自行调节电音音效，Agora 推荐你将基础调式和主音音高配置选项与应用的 UI 元素绑定。
-   * 
+   *
    * 设置后，频道内所有用户都能听到该效果。
-   * 
-   * 该方法可以单独使用，也可以搭配 {@link setAudioEffectPreset} 使用。搭配使用时， 
+   *
+   * 该方法可以单独使用，也可以搭配 {@link setAudioEffectPreset} 使用。搭配使用时，
    * 需要先调用 {@link setAudioEffectPreset} 并使用 `ROOM_ACOUSTICS_3D_VOICE` 或 `PITCH_CORRECTION` 枚举，再调用该方法使用相同的枚举。
    * 否则，该方法设置的效果会覆盖 `setAudioEffectPreset` 设置的效果。
-   * 
+   *
    * @note
    * - 该方法在加入频道前后都能调用。
    * - 为获取更好的人声效果，Agora 推荐你在调用该方法前将 {@link setAudioProfile} 的 `scenario` 设为 `3`。
@@ -7838,14 +7842,14 @@ class AgoraRtcEngine extends EventEmitter {
    *  - {@link setLocalVoicePitch}
    *  - {@link setLocalVoiceEqualization}
    *  - {@link setLocalVoiceReverb}
-   * 
+   *
    * @param preset SDK 预设的音效：
    * - 3D 人声音效: `ROOM_ACOUSTICS_3D_VOICE`.
    *  - 你需要在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置 为 `3` 或 `5`，否则该枚举设置无效。
    *  - 启用 3D 人声后，用户需要使用支持双声道的音频播放设备才能听到预期效果。
    * - 电音音效：PITCH_CORRECTION。为获取更好的人声效果，
    * Agora 建议你在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置为 `4` 或 `5`。
-   * 
+   *
    * @param param1
    * - 如果 `preset` 设为 `ROOM_ACOUSTICS_3D_VOICE`，则 `param1` 表示 3D 人声音效的环绕周期。
    * 取值范围为 [1,60]，单位为秒。默认值为 10，表示人声会 10 秒环绕 360 度。
@@ -7853,7 +7857,7 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `1`: (默认）自然大调。
    *  - `2`: 自然小调。
    *  - `3`: 和风小调。
-   * 
+   *
    * @param param2
    * - 如果 `preset` 设为 `ROOM_ACOUSTICS_3D_VOICE`，你需要将 `param2` 设置为 0。
    * - 如果 `preset` 设为 `PITCH_CORRECTION`，则 `param2` 表示电音音效的主音音高。可设为如下值：
@@ -7869,8 +7873,8 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `10`: F#
    *  - `11`: G
    *  - `12`: G#
-   * 
-   * @return 
+   *
+   * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
    */
@@ -8713,7 +8717,7 @@ on(
    *  - （直播场景下）用户身份从主播切换为观众
    *
    */
-  /** Occurs when a remote user (Communication)/host (Live Broadcast) leaves
+  /** Occurs when a remote user (Communication)/host (Live streaming) leaves
    * the channel.
    *
    * There are two reasons for users to become offline:
@@ -8733,7 +8737,7 @@ on(
    * was received within a certain period of time. If a user quits the call
    * and the message is not passed to the SDK (due to an unreliable channel),
    * the SDK assumes the user dropped offline.
-   *  - (Live broadcast only.) The client role switched from the host to the
+   *  - (Live streaming only.) The client role switched from the host to the
    * audience.
    */
   on(evt: 'userOffline', cb: (uid: number, reason: number) => void): this;
@@ -9009,7 +9013,7 @@ on(
   on(evt: 'requestChannelKey', cb: () => void): this;
   /** @zh-cn
    * 已发送本地音频首帧回调。
-   * 
+   *
    * @deprecated 该回调自 v3.2.0 已废弃，请改用 `firstLocalAudioFramePublished`。
    *
    * @param cb.elapsed 从本地用户调用 {@link joinChannel} 方法直至该回调被触发的延迟（毫秒）。
@@ -9112,7 +9116,7 @@ on(
    *
    * @param cb.newRole 切换后的角色
    */
-  /** Occurs when the user role switches in a live broadcast.
+  /** Occurs when the user role switches in a live streaming.
    *
    * For example,
    * from a host to an audience or vice versa.
@@ -9389,7 +9393,7 @@ on(
    * - `6`: The RTMP streaming publishes too frequently.
    * - `7`: The host publishes more than 10 URLs. Delete the unnecessary URLs
    * before adding new ones.
-   * - `8`: The broadcaster manipulates other hosts' URLs. Check your app
+   * - `8`: The host manipulates other hosts' URLs. Check your app
    * logic.
    * - `9`: Agora's server fails to find the RTMP stream.
    * - `10`: The format of the stream's URL address is not supported. Check
@@ -9627,13 +9631,13 @@ on(
    *   - `4`：本地视频采集失败，建议检查采集设备是否正常工作
    *   - `5`：本地视频编码失败
    *   - `11`：调用 {@link startScreenCaptureByWindow} 方法共享窗口时，共享窗口处于最小化的状态。
-   *   - `12`：该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。 
+   *   - `12`：该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。
    * 退出全屏模式后，远端用户将无法看到共享的窗口。为避免远端用户看到黑屏，Agora 建议你立即结束本次共享。
-   * 
+   *
    * 报告该错误码的常见场景：
    *  - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
    *  - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
-   *  - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。 
+   *  - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。
    */
   /**
    * Occurs when the local video state changes.
@@ -9838,14 +9842,14 @@ on(
     ) => void): this;
  /** @zh-cn
   * 已发布本地音频首帧回调。
-  * 
+  *
   * @since v3.2.0
-  * 
+  *
   * SDK 会在以下三种时机触发该回调：
   * - 开启本地音频的情况下，调用 {@link joinChannel} 成功加入频道后。
   * - 用 {@link muteLocalAudioStream(true)}，再调用 {@link muteLocalAudioStream(false)} 后。
   * - 调用 {@link disableAudio}，再调用 {@link enableAudio} 后。
-  * 
+  *
   * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
   */
  /** Occurs when the first audio frame is published.
@@ -9869,15 +9873,15 @@ on(
   )=>void): this;
   /** @zh-cn
    * 已发布本地视频首帧回调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * SDK 会在以下三种时机触发该回调：
    * - 开启本地视频的情况下，调用 {@link joinChannel} 成功加入频道后。
    * - 调用 {@link muteLocalVideoStream muteLocalVideoStream(true)}, 再调用
    * {@link muteLocalVideoStream muteLocalVideoStream(false)} 后。
    * - 调用 {@link disableVideo}，再调用 {@link enableVideo} 后。
-   * 
+   *
    * @param elapsed 从调用 {@link joinChannel} 方法到触发该回调的时间间隔（毫秒）。
    */
   /** Occurs when the first video frame is published.
@@ -9901,10 +9905,10 @@ on(
   )=>void): this;
   /** @zh-cn
    * RTMP/RTMPS 推流事件回调。
-   * 
+   *
    * @since v3.2.0
-   * 
-   * @param cb.url RTMP/RTMPS 推流 URL。 
+   *
+   * @param cb.url RTMP/RTMPS 推流 URL。
    * @param cb.eventCode RTMP/RTMPS 推流事件码。
    */
   /** Reports events during the RTMP or RTMPS streaming.
@@ -10404,8 +10408,8 @@ class AgoraRtcChannel extends EventEmitter
    * following callbacks:
    * - The local client: `localUserRegistered` and `joinChannelSuccess`.
    * - The remote client: `userJoined` and `userInfoUpdated`, if the user
-   * joining the channel is in the communication(`0`) profile, or is a BROADCASTER
-   * in the Live Broadcast profile.
+   * joining the channel is in the communication(`0`) profile, or is a host
+   * in the `1` (live streaming) profile.
    *
    * @note To ensure smooth communication, use the same parameter type to
    * identify the user. For example, if a user joins the channel with a user
@@ -10513,11 +10517,11 @@ class AgoraRtcChannel extends EventEmitter
    * Sets the role of the user.
    *
    * - This method can be used to set the user's role before the user joins a
-   * channel in a live broadcast.
-   * - This method can be used to switch the user role in a live broadcast after
+   * channel in a live streaming.
+   * - This method can be used to switch the user role in a live streaming after
    * the user joins a channel.
    *
-   * In the Live Broadcast profile, when a user calls this method to switch
+   * In the `1` (live streaming) profile, when a user calls this method to switch
    * user roles after joining a channel, SDK triggers the follwoing callbacks:
    * - The local client: `clientRoleChanged` in the `AgoraRtcChannel`
    * interface.
@@ -10535,44 +10539,36 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.setClientRole(role);
   }
 
-  /** Sets the role of a user in a live interactive streaming.
+  /** Sets the role of a user in interactive live streaming.
    *
    * @since v3.2.0
    *
-   * You can call this method either before or after joining the channel to set the user role as audience or host. If
-   * you call this method to switch the user role after joining the channel, the SDK triggers the following callbacks:
-   * - The local client: \ref IRtcChannelEventHandler::onClientRoleChanged "onClientRoleChanged".
-   * - The remote client: \ref IRtcChannelEventHandler::onUserJoined "onUserJoined"
-   * or \ref IRtcChannelEventHandler::onUserOffline "onUserOffline".
+   * You can call this method either before or after joining the channel to
+   * set the user role as audience or host. If
+   * you call this method to switch the user role after joining the channel,
+   * the SDK triggers the following callbacks:
+   * - The local client: `clientRoleChanged`.
+   * - The remote client: `userJoined` or `userOffline`.
    *
    * @note
-   * - This method applies to the `LIVE_BROADCASTING` profile only (when the `profile` parameter in
-   * \ref IRtcChannel::setChannelProfile "setChannelProfile" is set as `CHANNEL_PROFILE_LIVE_BROADCASTING`).
-   * - The difference between this method and \ref IRtcChannel::setClientRole(CLIENT_ROLE_TYPE) "setClientRole1" is that
+   * - This method applies to the `LIVE_BROADCASTING` profile only.
+   * - The difference between this method and {@link setClientRole} is that
    * this method can set the user level in addition to the user role.
-   *  - The user role determines the permissions that the SDK grants to a user, such as permission to send local
+   *  - The user role determines the permissions that the SDK grants to a
+   * user, such as permission to send local
    * streams, receive remote streams, and push streams to a CDN address.
-   *  - The user level determines the level of services that a user can enjoy within the permissions of the user's
-   * role. For example, an audience can choose to receive remote streams with low latency or ultra low latency. Levels
+   *  - The user level determines the level of services that a user can
+   * enjoy within the permissions of the user's
+   * role. For example, an audience can choose to receive remote streams with
+   * low latency or ultra low latency. Levels
    * affect prices.
    *
-   * **Example**
-   * ```cpp
-   * ClientRoleOptions options;
-   * options.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY;
-   * options.audienceLatencyLevel = AUDIENCE_LATENCY_LEVEL_LOW_LATENCY;
-   * agoraChannel->setClientRole(role, options);
-   * ```
-   *
-   * @param role The role of a user in a live interactive streaming. See #CLIENT_ROLE_TYPE.
-   * @param options The detailed options of a user, including user level. See ClientRoleOptions.
+   * @param role The role of a user in interactive live streaming.
+   * @param options The detailed options of a user, including user level.
    *
    * @return
-   * - 0(ERR_OK): Success.
+   * - 0: Success.
    * - < 0: Failure.
-   *  - -1(ERR_FAILED): A general error occurs (no specified reason).
-   *  - -2(ERR_INALID_ARGUMENT): The parameter is invalid.
-   *  - -7(ERR_NOT_INITIALIZED): The SDK is not initialized.
    */
   setClientRoleWithOptions(role: ClientRoleType, options: ClientRoleOptions): number {
     return this.rtcChannel.setClientRoleWithOptions(role, options);
@@ -10632,7 +10628,7 @@ class AgoraRtcChannel extends EventEmitter
   }
   /** @zh-cn
    * @deprecated 该方法自 v3.2.0 起废弃。请改用 {@link enableEncryption} 方法。
-   * 
+   *
    * 启用内置加密，并设置数据加密密码。
    *
    * 如需启用加密，请在 {@link joinChannel} 前调用该方法，并设置加密的密码。
@@ -11161,9 +11157,9 @@ class AgoraRtcChannel extends EventEmitter
    * `streamMessageError` callback.
    *
    * @note This method applies to the users in the communication(`0`) profile or the
-   * broadcasters in the `1` (live streaming) profile. If an audience in the
+   * hosts in the `1` (live streaming) profile. If an audience in the
    * `1` (live streaming) profile calls this method, the role of the audience may be
-   * switched to the broadcaster.
+   * switched to the host.
    *
    * @param streamId he ID of the sent data stream, returned in the
    * {@link createDataStream} method.
@@ -11200,7 +11196,7 @@ class AgoraRtcChannel extends EventEmitter
   /**
    * Publishes the local stream to a specified CDN URL address.
    *
-   * In the `1` (live streaming) profile, the broadcaster can call this method to
+   * In the `1` (live streaming) profile, the host can call this method to
    * publish the local stream to a specified CDN URL address, which is called
    * "Push Streams to CDN" or "CDN live streaming."
    *
@@ -11208,8 +11204,8 @@ class AgoraRtcChannel extends EventEmitter
    * `rtmpStreamingStateChanged` callback is any streaming state changes.
    *
    * @note
-   * - Only the broadcaster in the `1` (live streaming) profile can call this method.
-   * - Call this method after the broadcaster joins the channel.
+   * - Only the host in the `1` (live streaming) profile can call this method.
+   * - Call this method after the host joins the channel.
    * - Ensure that you enable the RTMP Converter service before using this
    * function. See *Prerequisites* in the *Push Streams to CDN* guide.
    * - This method adds only one stream RTMP URL address each time it is
@@ -11262,7 +11258,7 @@ class AgoraRtcChannel extends EventEmitter
    * report the state of removing the URL address.
    *
    * @note
-   * - Only the broadcaster in the `1` (live streaming) profile can call this
+   * - Only the host in the `1` (live streaming) profile can call this
    * method.
    * - This method removes only one RTMP URL address each time it is
    * called.
@@ -11304,7 +11300,7 @@ class AgoraRtcChannel extends EventEmitter
    * trigger the `transcodingUpdated` callback.
    *
    * @note
-   * - Only the broadcaster in the Live-broadcast porfile can call this method.
+   * - Only the host in the Live-broadcast porfile can call this method.
    * - Ensure that you enable the RTMP Converter service before using
    * this function. See *Prerequisites* in the *Push Streams to CDN* guide.
    * - If you call the {@link setLiveTranscoding} method to set the
@@ -11379,7 +11375,7 @@ class AgoraRtcChannel extends EventEmitter
    *  - `3`: 用户没有加入频道。
    */
   /**
-   * Injects the online media stream to a live broadcast.
+   * Injects the online media stream to a live streaming.
    *
    * If this method call is successful, the server pulls the voice or video
    * stream and injects it into a live channel. And all audience members in the
@@ -11395,13 +11391,13 @@ class AgoraRtcChannel extends EventEmitter
    * the UID of this stream is 666.
    *
    * @note
-   * - Only the broadcaster in the `1` (live streaming) profile can call this method.
+   * - Only the host in the `1` (live streaming) profile can call this method.
    * - Ensure that you enable the RTMP Converter service before using this
    * function. See *Prerequisites* in the *Push Streams to CDN* guide.
    * - This method applies to the `1` (live streaming) profile only.
    * - You can inject only one media stream into the channel at the same time.
    *
-   * @param url The URL address to be added to the ongoing live broadcast.
+   * @param url The URL address to be added to the ongoing live streaming.
    * Valid protocols are RTMP, HLS, and HTTP-FLV.
    * - Supported audio codec type: AAC.
    * - Supported video codec type: H264 (AVC).
@@ -11414,9 +11410,9 @@ class AgoraRtcChannel extends EventEmitter
    *  - ERR_INVALID_ARGUMENT (2): The injected URL does not exist. Call this
    * method again to inject the stream and ensure that the URL is valid.
    *  - ERR_NOT_READY (3): The user is not in the channel.
-   *  - ERR_NOT_SUPPORTED (4): The channel profile is not live broadcast.
+   *  - ERR_NOT_SUPPORTED (4): The channel profile is not live streaming.
    * Call the {@link setChannelProfile} method and set the channel profile to
-   * live broadcast before calling this method.
+   * live streaming before calling this method.
    *  - ERR_NOT_INITIALIZED (7): The SDK is not initialized. Ensure that the
    * `AgoraRtcChannel` object is initialized before calling this method.
    */
@@ -11433,10 +11429,10 @@ class AgoraRtcChannel extends EventEmitter
    * - < 0：方法调用失败
    */
   /**
-   * Removes the injected the online media stream in a live broadcast.
+   * Removes the injected the online media stream in a live streaming.
    *
    * This method removes the URL address (added by the
-   * {@link addInjectStreamUrl} method) in a live broadcast.
+   * {@link addInjectStreamUrl} method) in a live streaming.
    *
    * If this method call is successful, the SDK triggers the `userOffline`
    * (uid:666) callback and report the UID of the removed stream is 666.
@@ -11487,14 +11483,14 @@ class AgoraRtcChannel extends EventEmitter
    *
    * - If `channelMediaRelayState` returns the state code `2` and the error
    * code` 0`, and `channelMediaRelayEvent` returns the event code `4`, the
-   * broadcaster starts sending data to the destination channel.
+   * host starts sending data to the destination channel.
    * - If the `channelMediaRelayState` returns the state code `3`, an exception
    * occurs during the media stream relay.
    *
    * @note
    * - Contact sales-us@agora.io before implementing this function.
    * - Call this method after joining the channel.
-   * - This method takes effect only when you are a broadcaster in a
+   * - This method takes effect only when you are a host in a
    * live-broadcast channel.
    * - After a successful method call, if you want to call this method again,
    * ensure that you call the {@link stopChannelMediaRelay} method to quit the
@@ -11570,11 +11566,11 @@ class AgoraRtcChannel extends EventEmitter
   /**
    * Stops the media stream relay.
    *
-   * Once the relay stops, the broadcaster quits all the destination channels.
+   * Once the relay stops, the host quits all the destination channels.
    *
    * After a successful method call, the SDK triggers the
    * `channelMediaRelayState` callback. If the callback returns the state code
-   * `0` and the error code `1`, the broadcaster successfully stops the relay.
+   * `0` and the error code `1`, the host successfully stops the relay.
    *
    * @note If the method call fails, the SDK triggers the
    * channelMediaRelayState callback with the error code `2` and `8` in
@@ -11621,7 +11617,7 @@ class AgoraRtcChannel extends EventEmitter
    * Otherwise, the SDK returns the `ERR_REFUSED (5)`:
    * - This method publishes one stream only to the channel corresponding to
    * the current `AgoraRtcChannel` object.
-   * - In a Live Broadcast channel, only a broadcaster can call this method.
+   * - In a live streaming channel, only a host can call this method.
    * To switch the client role, call {@link setClientRole} of the current
    * `AgoraRtcChannel` object.
    * - You can publish a stream to only one channel at a time. For details on
@@ -11694,7 +11690,7 @@ class AgoraRtcChannel extends EventEmitter
    *
    * A successful leavechannel method call triggers the removeStream callback
    * for the remote client when the user leaving the channel
-   * is in the Communication channel, or is a BROADCASTER in the Live Broadcast
+   * is in the Communication channel, or is a host in the Live streaming
    * profile.
    *
    * @return
@@ -11851,7 +11847,7 @@ class AgoraRtcChannel extends EventEmitter
    * or RTMPS streaming function.
    * - The SDK returns `-4` when the encryption mode is incorrect or the SDK
    * fails to load the external encryption library. Check the enumeration or
-   * reload the external encryption library. //FIXME(encry)
+   * reload the external encryption library.
    *
    * @param enabled Whether to enable the built-in encryption:
    * - true: Enable the built-in encryption.
@@ -11953,7 +11949,7 @@ declare interface AgoraRtcChannel {
    *
    * @param cb.newRole 切换后的角色
    */
-  /** Occurs when the user role switches in a live broadcast.
+  /** Occurs when the user role switches in a live streaming.
    *
    * For example,
    * from a host to an audience or vice versa.
@@ -12028,7 +12024,7 @@ declare interface AgoraRtcChannel {
    *   - `1`：因过长时间收不到对方数据包，超时掉线。注意：由于 SDK 使用的是不可靠通道，也有可能对方主动离开本方没收到对方离开消息而误判为超时掉线。
    *   - `2`：用户身份从主播切换为观众。
    */
-   /** Occurs when a remote user (Communication)/host (Live Broadcast) leaves
+   /** Occurs when a remote user (Communication)/host (Live streaming) leaves
    * the channel.
    *
    * There are two reasons for users to become offline:
@@ -12048,7 +12044,7 @@ declare interface AgoraRtcChannel {
    * was received within a certain period of time. If a user quits the call
    * and the message is not passed to the SDK (due to an unreliable channel),
    * the SDK assumes the user dropped offline.
-   *  - (Live broadcast only.) The client role switched from the host to the
+   *  - (Live streaming only.) The client role switched from the host to the
    * audience.
    */
    on(evt: 'userOffline', cb: (uid: number, reason: number) => void): this;
@@ -12570,7 +12566,7 @@ declare interface AgoraRtcChannel {
    * - `6`: The RTMP streaming publishes too frequently.
    * - `7`: The host publishes more than 10 URLs. Delete the unnecessary URLs
    * before adding new ones.
-   * - `8`: The broadcaster manipulates other hosts' URLs. Check your app
+   * - `8`: The host manipulates other hosts' URLs. Check your app
    * logic.
    * - `9`: Agora's server fails to find the RTMP stream.
    * - `10`: The format of the stream's URL address is not supported. Check
@@ -12695,9 +12691,9 @@ declare interface AgoraRtcChannel {
   ) => void): this;
   /** @zh-cn
    * 音频发布状态改变回调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * @param channel 频道名。
    * @param oldState 之前的发布状态。
    * @param newState 当前的发布状态。
@@ -12723,9 +12719,9 @@ declare interface AgoraRtcChannel {
   )=> void): this;
   /** @zh-cn
    * 视频发布状态改变回调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * @param channel 频道名。
    * @param oldState 之前的发布状态。
    * @param newState 当前的发布状态。
@@ -12751,9 +12747,9 @@ declare interface AgoraRtcChannel {
   )=> void): this;
   /** @zh-cn
    * 音频订阅状态发生改变回调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * @param channel 频道名。
    * @param uid 远端用户的 ID。
    * @param oldState 之前的订阅状态。
@@ -12782,15 +12778,15 @@ declare interface AgoraRtcChannel {
   )=> void): this;
   /** @zh-cn
    * 视频订阅状态发生改变回调。
-   * 
+   *
    * @since v3.2.0
-   * 
+   *
    * @param channel 频道名。
    * @param uid 远端用户的 ID。
    * @param oldState 之前的订阅状态。
    * @param newState 当前的订阅状态。
    * @param elapseSinceLastState 两次状态变化时间间隔（毫秒）。
-   * 
+   *
    */
   /** Occurs when the audio subscribing state changes. //TODO (typo)
    *

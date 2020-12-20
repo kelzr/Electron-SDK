@@ -179,21 +179,21 @@ export interface TranscodingUser {
    */
   /** The audio channel of the sound.
    * - 0: (Default) Supports dual channels at most, depending on the upstream
-   * of the broadcaster.
-   * - 1: The audio stream of the broadcaster uses the FL audio channel.
-   * If the upstream of the broadcaster uses multiple audio channels,
+   * of the host.
+   * - 1: The audio stream of the host uses the FL audio channel.
+   * If the upstream of the host uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 2: The audio stream of the broadcaster uses the FC audio channel.
-   * If the upstream of the broadcaster uses multiple audio channels,
+   * - 2: The audio stream of the host uses the FC audio channel.
+   * If the upstream of the host uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 3: The audio stream of the broadcaster uses the FR audio channel.
-   * If the upstream of the broadcaster uses multiple audio channels,
+   * - 3: The audio stream of the host uses the FR audio channel.
+   * If the upstream of the host uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 4: The audio stream of the broadcaster uses the BL audio channel.
-   * If the upstream of the broadcaster uses multiple audio channels,
+   * - 4: The audio stream of the host uses the BL audio channel.
+   * If the upstream of the host uses multiple audio channels,
    * these channels will be mixed into mono first.
-   * - 5: The audio stream of the broadcaster uses the BR audio channel.
-   * If the upstream of the broadcaster uses multiple audio channels,
+   * - 5: The audio stream of the host uses the BR audio channel.
+   * If the upstream of the host uses multiple audio channels,
    * these channels will be mixed into mono first.
    */
   audioChannel: number;
@@ -319,7 +319,7 @@ export interface TranscodingConfig {
    * 获取旁路直播中的用户人数
    *
    */
-  /** The number of users in the live broadcast. */
+  /** The number of users in the live streaming. */
   userCount: number;
   /** @zh-cn
    * 用于旁路直播的输出音频的采样率：
@@ -622,7 +622,7 @@ export interface UserInfo {
 }
 /** @zh-cn
  * 本地语音的变声效果选项。
- * 
+ *
  * @deprecated 自 v3.2.0 废弃。
  */
 /**
@@ -768,7 +768,7 @@ export enum VoiceChangerPreset {
 }
 /** @zh-cn
  * 预设的本地语音混响效果选项。
- * 
+ *
  * @deprecated 自 v3.2.0 废弃。
  */
 /** @deprecated Deprecated from v3.2.0.
@@ -904,7 +904,7 @@ export enum AudioReverbPreset {
  * 外部导入音视频流定义。
  */
 /**
- * Configuration of the imported live broadcast voice or video stream.
+ * Configuration of the imported live streaming voice or video stream.
  */
 export interface InjectStreamConfig {
 
@@ -912,7 +912,7 @@ export interface InjectStreamConfig {
    * 添加进入直播的外部视频源宽度。默认值为 0，即保留视频源原始宽度。
    */
   /**
-   * Width of the added stream in the live broadcast.
+   * Width of the added stream in the live streaming.
    *
    * The default value is 0 pixel (same width as the original stream).
    */
@@ -921,7 +921,7 @@ export interface InjectStreamConfig {
    * 添加进入直播的外部视频源高度。默认值为 0，即保留视频源原始高度。
    */
   /**
-   * Height of the added stream in the live broadcast.
+   * Height of the added stream in the live streaming.
    *
    * The default value is 0 pixel (same height as the original stream).
    */
@@ -930,7 +930,7 @@ export interface InjectStreamConfig {
    * 添加进入直播的外部视频源码率。默认设置为 400 Kbps。
    */
   /**
-   * Video bitrate of the added stream in the live broadcast.
+   * Video bitrate of the added stream in the live streaming.
    *
    * The default value is 400 Kbps.
    */
@@ -938,7 +938,7 @@ export interface InjectStreamConfig {
   /** @zh-cn
    * 添加进入直播的外部视频源帧率。默认值为 15 fps。
    */
-  /** Video frame rate of the added stream in the live broadcast.
+  /** Video frame rate of the added stream in the live streaming.
    *
    * The default value is 15 fps.
    */
@@ -946,7 +946,7 @@ export interface InjectStreamConfig {
   /** @zh-cn
    * 添加进入直播的外部视频源 GOP。默认值为 30 帧。
    */
-  /** Video GOP of the added stream in the live broadcast in frames.
+  /** Video GOP of the added stream in the live streaming in frames.
    *
    * The default value is 30 fps.
    */
@@ -959,7 +959,7 @@ export interface InjectStreamConfig {
    * - AUDIO_SAMPLE_RATE_48000 = 48000
    */
   /**
-   * Audio-sampling rate of the added stream in the live broadcast.
+   * Audio-sampling rate of the added stream in the live streaming.
    *
    * The default value is 44100 Hz.
    *
@@ -974,7 +974,7 @@ export interface InjectStreamConfig {
    * **Note**：声网建议目前采用默认值，不要自行设置。
    */
   /**
-   * Audio bitrate of the added stream in the live broadcast.
+   * Audio bitrate of the added stream in the live streaming.
    *
    * The default value is 48 Kbps.
    *
@@ -986,7 +986,7 @@ export interface InjectStreamConfig {
    * - 1：单声道（默认）
    * - 2：双声道立体声
    */
-  /** Audio channels in the live broadcast.
+  /** Audio channels in the live streaming.
    * - 1: (Default) Mono
    * - 2: Two-channel stereo
    *
@@ -1328,7 +1328,7 @@ export interface LocalVideoStats {
   codecType: number;
   /** @zh-cn
    * 使用抗丢包技术前，客户端到 Agora 边缘服务器的丢包率(%)。
-   * 
+   *
    * @since v3.2.0
    */
   /** The video packet loss rate (%) from the local client to the Agora edge
@@ -1339,7 +1339,7 @@ export interface LocalVideoStats {
   txPacketLossRate: number;
   /** @zh-cn
    * 本地视频采集帧率 (fps)。
-   * 
+   *
    * @since v3.2.0
    */
   /** The capture frame rate (fps) of the local video.
@@ -1378,7 +1378,7 @@ export interface LocalAudioStats {
   sentBitrate: number;
   /** @zh-cn
    * 使用抗丢包技术前，客户端到 Agora 边缘服务器的音频丢包率(%)。
-   * 
+   *
    * @since v3.2.0
    */
   /**
@@ -1798,7 +1798,7 @@ export interface RemoteVideoStats {
   packetLossRate: number;
   /** @zh-cn
    * 视频有效时长（毫秒），即远端用户/主播加入频道后，既没有停止发送视频流，也没有禁用视频模块的通话时长。
-   * 
+   *
    * @since v3.2.0
    */
   /**
@@ -1966,7 +1966,7 @@ export interface CaptureParam {
    * 调用 {@link startScreenCaptureByWindow} 方法共享窗口时，是否将该窗口前置。
    * - true: 前置窗口。
    * - false:（默认）不前置窗口。
-   * 
+   *
    * @since v3.2.0
    */
   /** Whether to bring the window to the front when calling
@@ -1979,11 +1979,11 @@ export interface CaptureParam {
   windowFocus: boolean;
   /** @zh-cn
    * 待屏蔽窗口的 ID 列表。
-   * 
-   * 调用 {@link startScreenCaptureByScreen} 开启屏幕共享时，你可以通过该参数屏蔽指定的窗口。 
+   *
+   * 调用 {@link startScreenCaptureByScreen} 开启屏幕共享时，你可以通过该参数屏蔽指定的窗口。
    * 开启屏幕共享后，你可以在调用 {@link updateScreenCaptureParameters} 更新屏幕共享的配置参数时，
    * 通过该参数动态屏蔽指定的窗口。
-   * 
+   *
    * @since v3.2.0
    */
   /** A list of IDs of windows to be blocked.
@@ -2188,7 +2188,7 @@ export interface RemoteAudioStats {
   frozenRate: number;
   /** @zh-cn
    * 音频有效时长（毫秒），即远端用户/主播加入频道后，既没有停止发送音频流，也没有禁用音频模块的通话时长。
-   * 
+   *
    * @since v3.2.0
    */
   /**
@@ -2543,27 +2543,24 @@ export enum VIDEO_PROFILE_TYPE {
    * 38：分辨率 640 × 360，帧率 15 fps，码率 800 Kbps。
    * **Note**：该视频属性仅适用于直播频道场景。
    */
-  /** @zh-cn
-   * 38: 640 &times; 360, frame rate 15 fps, bitrate 800 Kbps.
-   * **Note**: Live broadcast profile only.
+  /** 38: 640 &times; 360, frame rate 15 fps, bitrate 800 Kbps.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_LANDSCAPE_360P_9 = 38,
   /** @zh-cn
    * 39：分辨率 640 × 360，帧率 24 fps，码率 800 Kbps。
    * **Note**：该视频属性仅适用于直播频道场景。
    */
-  /** @zh-cn
-   * 39: 640 &times; 360, frame rate 24 fps, bitrate 800 Kbps.
-   * **Note**: Live broadcast profile only.
+  /** 39: 640 &times; 360, frame rate 24 fps, bitrate 800 Kbps.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_LANDSCAPE_360P_10 = 39,
   /** @zh-cn
    * 100：分辨率 640 × 360，帧率 24 fps，码率 1000 Kbps。
    * **Note**：该视频属性仅适用于直播频道场景。
    */
-  /** @zh-cn
-   * 100: 640 &times; 360, frame rate 24 fps, bitrate 1000 Kbps.
-   * **Note**: Live broadcast profile only.
+  /** 100: 640 &times; 360, frame rate 24 fps, bitrate 1000 Kbps.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_LANDSCAPE_360P_11 = 100,
   /** @zh-cn
@@ -2720,7 +2717,7 @@ export enum VIDEO_PROFILE_TYPE {
    * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** 1038: 360 &times; 640, frame rate 15 fps, bitrate 800 Kbps.
-   * **Note**: Live broadcast profile only.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_PORTRAIT_360P_9 = 1038,
   /** @zh-cn
@@ -2728,7 +2725,7 @@ export enum VIDEO_PROFILE_TYPE {
    * **Note**：该视频属性仅适用于直播频道场景。
    */
   /** 1039: 360 &times; 640, frame rate 24 fps, bitrate 800 Kbps.
-   * **Note**: Live broadcast profile only.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_PORTRAIT_360P_10 = 1039,
   /** @zh-cn
@@ -2736,7 +2733,7 @@ export enum VIDEO_PROFILE_TYPE {
    * **Note**： 该视频属性仅适用于直播频道场景。
    */
   /** 1100: 360 &times; 640, frame rate 24 fps, bitrate 1000 Kbps.
-   * **Note**: Live broadcast profile only.
+   * **Note**: `1` (live streaming) profile only.
    */
   VIDEO_PROFILE_PORTRAIT_360P_11 = 1100,
   /** @zh-cn
@@ -2852,7 +2849,7 @@ export enum RTMP_STREAMING_EVENT
 };
 /** @zh-cn
  * 预设的音效选项。
- * 
+ *
  * @since v3.2.0
  */
 /** The options for SDK preset audio effects.
@@ -2860,7 +2857,7 @@ export enum RTMP_STREAMING_EVENT
  * @since v3.2.0
  */
 export enum AUDIO_EFFECT_PRESET
-{   
+{
     /** @zh-cn
      * 原声，即关闭人声音效。
      */
@@ -2869,7 +2866,7 @@ export enum AUDIO_EFFECT_PRESET
     AUDIO_EFFECT_OFF = 0x00000000,
     /** @zh-cn
      * KTV。
-     * 
+     *
      * @note 为获取更好的人声效果，Agora 建议你在使用该枚举前将 {@link setAudioProfile} 的 `profile` 参数设置为 `4` 或 `5`。
      */
     /** An audio effect typical of a KTV venue.
@@ -2881,7 +2878,7 @@ export enum AUDIO_EFFECT_PRESET
      */
     ROOM_ACOUSTICS_KTV = 0x02010100,
     /** @zh-cn
-     * 
+     *
      */
     /** An audio effect typical of a concert hall.
      *
@@ -3045,15 +3042,15 @@ export enum AUDIO_EFFECT_PRESET
 /** The options for SDK preset voice beautifier effects.
  */
 export enum VOICE_BEAUTIFIER_PRESET
-{   
+{
     /** @zh-cn
-     * 
+     *
      */
     /** Turn off voice beautifier effects and use the original voice.
      */
     VOICE_BEAUTIFIER_OFF = 0x00000000,
     /** @zh-cn
-     * 
+     *
      */
     /** A more magnetic voice.
      *
@@ -3062,7 +3059,7 @@ export enum VOICE_BEAUTIFIER_PRESET
      */
     CHAT_BEAUTIFIER_MAGNETIC = 0x01010100,
     /** @zh-cn
-     * 
+     *
      */
     /** A fresher voice.
      *
@@ -3101,9 +3098,9 @@ export enum VOICE_BEAUTIFIER_PRESET
      */
     TIMBRE_TRANSFORMATION_RINGING = 0x01030800
 };
-/** The latency level of an audience member in a live interactive streaming.
+/** The latency level of an audience member in interactive live streaming.
  *
- * @note Takes effect only when the user role is `CLIENT_ROLE_BROADCASTER`.
+ * @note Takes effect only when the user role is audience.
  */
 export enum AUDIENCE_LATENCY_LEVEL_TYPE
 {
@@ -3112,78 +3109,65 @@ export enum AUDIENCE_LATENCY_LEVEL_TYPE
     /** 2: (Default) Ultra low latency. */
     AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY = 2,
 };
+/** @zh-cn
+ * //TODO
+ * 
+ * @since v3.2.0
+ * 
+ * - 0: 加入频道后的初始订阅状态。
+ * - 1: 订阅失败。可能是因为：
+ *   - 远端用户：
+ *     - 调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或
+ * {@link muteLocalVideoStream muteLocalVideoStream(true)} 停止发送本地媒体流。
+ *     - 调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
+ *     - 调用 {@link enableLocalAudio enableLocalAudio(false)} 或
+ * {@link enableLocalVideo enableLocalVideo(false)} 关闭本地音频或视频采集。
+ *     - 用户角色为观众。
+ *   - 本地用户调用以下方法停止接收远端媒体流：
+ *     - 调用 {@link muteRemoteAudioStream muteRemoteAudioStream(true)}、
+ * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)} 或
+ * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
+ * 停止接收远端音频流。
+ *     - 调用 {@link muteRemoteVideoStream muteRemoteVideoStream(true)}、
+ * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)} 或
+ * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
+ * 停止接收远端音频流。
+ * - 2: 正在订阅。
+ * - 3: 收到了远端流，订阅成功。
+ */
 /** The subscribing state.
  *
  * @since v3.2.0
+ *
+ * - 0: The initial subscribing state after joining the channel.
+ * - 1: Fails to subscribe to the remote stream. Possible reasons:
+ *   - The remote user:
+ *     - Calls {@link muteLocalAudioStream muteLocalAudioStream(true)} or
+ * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
+ * sending local streams.
+ *     - Calls {@link disableAudio} or {@link disableVideo} to disable the
+ * entire audio or video modules.
+ *     - Calls {@link enableLocalAudio enableLocalAudio(false)} or
+ * {@link enableLocalVideo enableLocalVideo(false)} to disable the local
+ * audio sampling or video capturing.
+ *     - The role of the remote user is `2` (audience).
+ *   - The local user calls the following methods to stop receiving remote
+ * streams:
+ *     - Calls {@link muteRemoteAudioStream muteRemoteAudioStream(true)},
+ * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)}, or
+ * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
+ * to stop receiving remote audio streams.
+ *     - Calls {@link muteRemoteVideoStream muteRemoteVideoStream(true)},
+ * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)}, or
+ * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
+ * to stop receiving remote video streams.
+ * - 2: Subscribing.
+ * - 3: Subscribes to and receives the remote stream successfully.
  */
 export type STREAM_SUBSCRIBE_STATE =
-    /** @zh-cn
-     * 0：加入频道后的初始订阅状态。
-     */
   | 0 //SUB_STATE_IDLE
-    /**
-     * 1：订阅失败。可能是因为：
-     * - 远端用户：
-     *  - 调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或
-     * {@link muteLocalVideoStream muteLocalVideoStream(true)} 停止发送本地媒体流。
-     *  - 调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
-     *  - 调用 {@link enableLocalAudio enableLocalAudio(false)} 或
-     * {@link enableLocalVideo enableLocalVideo(false)} 关闭本地音频或视频采集。
-     *  - 用户角色为观众。
-     * - 本地用户调用以下方法停止接收远端媒体流：
-     *  - 调用 {@link muteRemoteAudioStream muteRemoteAudioStream(true)}、
-     * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)} 或
-     * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
-     * 停止接收远端音频流。
-     *  - 调用 {@link muteRemoteVideoStream muteRemoteVideoStream(true)}、
-     * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)} 或
-     * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
-     * 停止接收远端音频流。
-     */
   | 1 //SUB_STATE_NO_SUBSCRIBED
-  /**
-   * 2：正在订阅。
-   */
   | 2 //SUB_STATE_SUBSCRIBING
-  /**
-   * 3：收到了远端流，订阅成功。
-   */
-  | 3 //SUB_STATE_SUBSCRIBED
-    /**
-     * 0: The initial subscribing state after joining the channel.
-     */
-  | 0 //SUB_STATE_IDLE
-    /**
-     * 1: Fails to subscribe to the remote stream. Possible reasons:
-     * - The remote user:
-     *  - Calls {@link muteLocalAudioStream muteLocalAudioStream(true)} or
-     * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
-     * sending local streams.
-     *  - Calls {@link disableAudio} or {@link disableVideo} to disable the
-     * entire audio or video modules.
-     *  - Calls {@link enableLocalAudio enableLocalAudio(false)} or
-     * {@link enableLocalVideo enableLocalVideo(false)} to disable the local
-     * audio sampling or video capturing.
-     *  - The role of the remote user is `2` (audience).
-     * - The local user calls the following methods to stop receiving remote
-     * streams:
-     *  - Calls {@link muteRemoteAudioStream muteRemoteAudioStream(true)},
-     * {@link muteAllRemoteAudioStreams muteAllRemoteAudioStreams(true)}, or
-     * {@link setDefaultMuteAllRemoteAudioStreams setDefaultMuteAllRemoteAudioStreams(true)}
-     * to stop receiving remote audio streams.
-     *  - Calls {@link muteRemoteVideoStream muteRemoteVideoStream(true)},
-     * {@link muteAllRemoteVideoStreams muteAllRemoteVideoStreams(true)}, or
-     * {@link setDefaultMuteAllRemoteVideoStreams setDefaultMuteAllRemoteVideoStreams(true)}
-     * to stop receiving remote video streams.
-     */
-  | 1 //SUB_STATE_NO_SUBSCRIBED
-    /**
-     * 2: Subscribing.
-     */
-  | 2 //SUB_STATE_SUBSCRIBING
-    /**
-     * 3: Subscribes to and receives the remote stream successfully.
-     */
   | 3 //SUB_STATE_SUBSCRIBED
 
 /** @zh-cn
@@ -3361,7 +3345,7 @@ export interface ChannelMediaRelayConfiguration {
    * `channel` and `uid` you set in `srcInfo`. The default value is NULL,
    * which means that the SDK passes in the APP ID.
    * - `uid`:
-   *  - ID of the broadcaster whose media stream you want to relay. The
+   *  - ID of the host whose media stream you want to relay. The
    * default value is 0, which means that the SDK randomly generates a UID.
    *  - You must set it as 0.
    *
@@ -3393,7 +3377,7 @@ export interface ChannelMediaRelayConfiguration {
    * and set it as the default value NULL, which means that the SDK passes in
    * the APP ID.
    *  - If you have enabled the App Certificate, you must use Token.
-   * - `uid`: ID of the broadcaster in the destination channel.
+   * - `uid`: ID of the host in the destination channel.
    * The value ranges from 0 to 2<sup>32</sup>-1. To avoid UID conflicts,
    * this `uid` must be different from any other UIDs in the destination
    * channel. The default value is 0, which means the SDK randomly generates
@@ -3517,161 +3501,103 @@ export type ChannelMediaRelayError =
   | 11; // 11: RELAY_ERROR_DEST_TOKEN_EXPIRED
 /** @zh-cn
  * 访问区域。
- */  
+ * 
+ * @since v3.2.0
+ * 
+ * - 1: 中国大陆。
+ * - 2: 北美区域。
+ * - 4: 欧洲区域。
+ * - 8: 除中国大陆以外的亚洲区域。
+ * - 16: 日本区域。
+ * - 32: 印度区域。
+ * - 0xFFFFFFFF:（默认）全球。
+ */
 /**
  * Regions for connection.
  *
  * @since v3.2.0
+ *
+ * - 1: Mainland China.
+ * - 2: North America.
+ * - 4: Europe.
+ * - 8: Asia, excluding Mainland China.
+ * - 16: Japan.
+ * - 32: India.
+ * - 0xFFFFFFFF: (Default) Global.
  */
 export type AREA_CODE =
-    /** @zh-cn
-     * 中国大陆。
-     */  
-    /**
-     * Mainland China.
-     */
   | 1 //AREA_CODE_CN = ,
-    /** @zh-cn
-     * 北美区域。
-     */  
-    /**
-     * North America.
-     */
   | 2 //AREA_CODE_NA = ,
-    /** @zh-cn
-     * 欧洲区域。
-     */
-    /**
-     * Europe.
-     */
   | 4 //AREA_CODE_EUR = ,
-    /** @zh-cn
-     * 除中国大陆以外的亚洲区域。
-     */ 
-    /**
-      * Asia, excluding Mainland China.
-      */
   | 8 //AREA_CODE_AS = ,
-    /** @zh-cn
-     * 日本区域。
-     */
-    /**
-      * Japan.
-      */
   | 16//AREA_CODE_JAPAN = ,
-     /** @zh-cn
-      * 印度区域。
-      */
-     /**
-      * India.
-      */
   | 32 //AREA_CODE_INDIA = ,
-     /**
-     *（默认）全球。
-     */
-     /**
-      * (Default) Global.
-      */
   | (0xFFFFFFFF); //AREA_CODE_GLOBAL =
+/** @zh-cn
+ *
+ * //TODO
+ *
+ * @since v3.2.0
+ * - 0: 加入频道后的初始发布状态。
+ * - 1: 发布失败。可能是因为：
+ *   - 本地用户调用 {@link muteLocalAudioStream muteLocalAudioStream(true)} 或 
+ * {@link muteLocalVideoStream muteLocalVideoStream(true)} 停止发送本地媒体流。
+ *   - 本地用户调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
+ *   - 本地用户调用 {@link enableLocalAudio enableLocalAudio(false)} 或 
+ * {@link enableLocalVideo (false)} 关闭本地音频或视频采集。
+ *   - 本地用户角色为观众。
+ * - 2: 正在发布。
+ * - 3: 发布成功。
+ */
 /** The publishing state.
  *
  * @since v3.2.0
+ *
+ * - 0: The initial publishing state after joining the channel.
+ * - 1: Fails to publish the local stream. Possible reasons:
+ *  - The local user calls
+ * {@link muteLocalAudioStream muteLocalAudioStream(true)} or
+ * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
+ * sending local streams.
+ *  - The local user calls {@link disableAudio} or {@link disableVideo} to
+ * disable the entire audio or video module.
+ *  - The local user calls {@link enableLocalAudio enableLocalAudio(false)}
+ * or {@link enableLocalVideo enableLocalVideo(false)} to disable the
+ * local audio sampling or video capturing.
+ *  - The role of the local user is `2` (audience).
+ * - 2: Publishing.
+ * - 3: Publishes successfully.
  */
 export type STREAM_PUBLISH_STATE =
-     /** @zh-cn
-     * 0: 加入频道后的初始发布状态。
-     */
-     0 //PUB_STATE_IDLE
-     /** 1: 发布失败。可能是因为：
-     * - 本地用户调用 {@link muteLocalAudioStream(true)} 或 {@link muteLocalVideoStream(true)} 停止发送本地媒体流。
-     * - 本地用户调用 {@link disableAudio} 或 {@link disableVideo} 关闭本地音频或视频模块。
-     * - 本地用户调用 {@link enableLocalAudio(false)} 或 {@link enableLocalVideo(false)} 关闭本地音频或视频采集。
-     * - 本地用户角色为观众。
-     */
-     1 //PUB_STATE_NO_PUBLISHED 
-     /** 2: 正在发布。
-     */
-     2 //PUB_STATE_PUBLISHING
-    /** 3: 发布成功。
-     */
-     3 //PUB_STATE_PUBLISHED
-     /** 0: The initial publishing state after joining the channel.
-      */
-     0 //PUB_STATE_IDLE
-     /** 1: Fails to publish the local stream. Possible reasons:
-      * - The local user calls
-      * {@link muteLocalAudioStream muteLocalAudioStream(true)} or
-      * {@link muteLocalVideoStream muteLocalVideoStream(true)} to stop
-      * sending local streams.
-      * - The local user calls {@link disableAudio} or {@link disableVideo} to
-      * disable the entire audio or video module.
-      * - The local user calls {@link enableLocalAudio enableLocalAudio(false)}
-      *  or {@link enableLocalVideo enableLocalVideo(false)} to disable the
-      * local audio sampling or video capturing.
-      * - The role of the local user is `2` (audience).
-      */
+    | 0 //PUB_STATE_IDLE
     | 1 //PUB_STATE_NO_PUBLISHED
-      /** 2: Publishing.
-       */
     | 2 //PUB_STATE_PUBLISHING
-      /** 3: Publishes successfully.
-       */
     | 3 //PUB_STATE_PUBLISHED
 /**
  * Audio output routing.
+ * - -1: Default.
+ * - 0: Headset.
+ * - 1: Earpiece.
+ * - 2: Headset with no microphone.
+ * - 3: Speakerphone.
+ * - 4: Loudspeaker.
+ * - 5: Bluetooth headset.
+ * - 6: USB peripheral (macOS only).
+ * - 7: HDMI peripheral (macOS only).
+ * - 8: DisplayPort peripheral (macOS only).
+ * - 9: Apple AirPlay (macOS only).
  */
 export type AUDIO_ROUTE_TYPE =
-    /**
-     * -1: Default.
-     */
     | -1 //AUDIO_ROUTE_DEFAULT
-    /**
-     * 0: Headset.
-     */
     | 0  //AUDIO_ROUTE_HEADSET
-    /**
-     * 1: Earpiece.
-     */
     | 1  //AUDIO_ROUTE_EARPIECE
-    /**
-     * 2: Headset with no microphone.
-     */
     | 2  //AUDIO_ROUTE_HEADSET_NO_MIC
-    /**
-     * 3: Speakerphone.
-     */
     | 3  //AUDIO_ROUTE_SPEAKERPHONE
-    /**
-     * 4: Loudspeaker.
-     */
     | 4  //AUDIO_ROUTE_LOUDSPEAKER
-    /**
-     * 5: Bluetooth headset.
-     */
     | 5  //AUDIO_ROUTE_BLUETOOTH
-    /**
-     * 6: USB peripheral (macOS only).
-     *
-     * @since v3.2.0
-     */
     | 6  //AUDIO_ROUTE_USB
-    /**
-     * 7: HDMI peripheral (macOS only).
-     *
-     * @since v3.2.0
-     */
     | 7  //AUDIO_ROUTE_HDMI
-    /**
-     * 8: DisplayPort peripheral (macOS only).
-     *
-     * @since v3.2.0
-     */
     | 8  //AUDIO_ROUTE_DISPLAYPORT
-    /**
-     * 9: Apple AirPlay (macOS only).
-     *
-     * @since v3.2.0
-     */
     | 9  //AUDIO_ROUTE_AIRPLAY
 /**
  * The media metadata.
@@ -3697,11 +3623,14 @@ export interface Metadata {
   }
 /** @zh-cn
  * //TODO
- * 
+ *
  */
 /** The detailed options of a user.
  */
 export interface ClientRoleOptions {
+  /**
+   * The latency level of an audience member in interactive live streaming.
+   */
   audienceLatencyLevel: AUDIENCE_LATENCY_LEVEL_TYPE;
 };
 /** @zh-cn
@@ -5399,7 +5328,7 @@ export interface NodeRtcChannel {
    * @ignore
    */
   setClientRoleWithOptions(
-    role: ClientRoleType, 
+    role: ClientRoleType,
     options: ClientRoleOptions
   ): number;
 
