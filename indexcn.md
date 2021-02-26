@@ -235,13 +235,6 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.stopAudioRecording stopAudioRecording} | 停止客户端录音。 |
 
 
-### 输入在线媒体流（仅适用于互动直播）
-
-| 方法                                                         | 描述                 |
-| ------------------------------------------------------------ | -------------------- |
-| {@link AgoraRtcEngine.addInjectStreamUrl addInjectStreamUrl} | 导入在线媒体流 URL   |
-| {@link AgoraRtcEngine.removeInjectStreamUrl removeInjectStreamUrl} | 删除导入的在线媒体流 |
-
 ### 音频播放设备管理
 
 | 方法                                                         | 描述                       |
@@ -419,7 +412,6 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `transcodingUpdated`               | 旁路推流配置已更新                       |
 | `channelMediaRelayState`   |跨频道媒体流转发状态发生改变回调|
 | `channelMediaRelayEvent`           |跨频道媒体流转发事件回调|
-| `streamInjectStatus`               | 导入在线媒体流状态                       |
 | `localPublishFallbackToAudioOnly`  | 本地发布流已回退为音频流或恢复为音视频流 |
 | `remoteSubscribeFallbackToAudioOnly` | 远端订阅流已回退为音频流或恢复为音视频流 |
 | `receiveMetadata`|  媒体附属信息接收成功回调

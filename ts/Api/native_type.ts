@@ -767,7 +767,7 @@ export enum VoiceChangerPreset {
    * 语聊美声：活力（女）。此枚举为女声定制化效果，不适用于男声。若男声使用此音效设置，则音频可能会产生失真。
    */
   /**
-   * 	(For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
+   * (For female only) A more vital voice. Do not use it when the speaker is a male; otherwise, voice distortion occurs.
    */
   GENERAL_BEAUTY_VOICE_FEMALE_VITALITY = 0x00200003
 

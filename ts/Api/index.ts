@@ -2493,7 +2493,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - < 0：方法调用失败
    */
   /**
-   * Enables/Disables image enhancement and sets the options. (Windows only)
+   * Enables/Disables image enhancement and sets the options.
    *
    * @since v3.0.0 for Windows
    * @since v3.2.0 for macOS
@@ -2729,7 +2729,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - 3: High-quality audio chatroom scenario where hosts mainly play music.
    * - 4: Showroom scenario where a single host wants high-quality audio.
    * - 5: Gaming scenario for group chat that only contains the human voice.
-   * - 8: @since v3.2.0. Meeting scenario that mainly contains the human voice.
+   * - 8: Meeting scenario that mainly contains the human voice.
    *
    * Under different audio scenarios, the device uses different volume types.
    * For details, see
@@ -3406,15 +3406,31 @@ class AgoraRtcEngine extends EventEmitter {
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
    */
-  /**
-   * Sets the log file size (KB).
+  /** Sets the size of a log file that the SDK outputs.
    *
-   * The Agora SDK has two log files, each with a default size of 512 KB.
-   * If you set size as 1024 KB, the SDK outputs log files with a total
-   * maximum size of 2 MB.
-   * If the total size of the log files exceed the set value, the new output
-   * log files overwrite the old output log files.
-   * @param {number} size The SDK log file size (KB).
+   *
+   * @note If you want to set the log file size, ensure that you call
+   * this method before {@link setLogFile}, or the logs are cleared.
+   *
+   * By default, the SDK outputs five log files, `agorasdk.log`,
+   * `agorasdk_1.log`, `agorasdk_2.log`, `agorasdk_3.log`, `agorasdk_4.log`,
+   * each with a default size of 1024 KB.
+   * These log files are encoded in UTF-8. The SDK writes the latest logs in
+   * `agorasdk.log`. When `agorasdk.log` is full, the SDK deletes the log
+   * file with the earliest
+   * modification time among the other four, renames `agorasdk.log` to the
+   * name of the deleted log file, and create a new `agorasdk.log` to record
+   * latest logs.
+   *
+   * Related APIs:
+   * - {@link setLogFile}
+   * - {@link setLogFilter}
+   *
+   * @param size The size (KB) of a log file. The default value is 1024 KB.
+   * If you set `size` to 1024 KB,
+   * the SDK outputs at most 5 MB log files; if you set it to less than
+   * 1024 KB, the maximum size of a log file is still 1024 KB.
+   *
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -6527,6 +6543,8 @@ class AgoraRtcEngine extends EventEmitter {
    * 调用该方法后，SDK 会在本地触发 `streamInjectStatus` 回调，报告导入在线媒体流的状态。
    * 成功导入媒体流后，该音视频流会出现在频道中，频道内所有用户都会收到 `userJoined` 回调，其中 `uid` 为 666。
    *
+   * @warning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
+   *
    * @note
    * - 该方法只适用于直播场景下的主播。
    * - 调用该方法前，请确保已开通旁路推流的功能，详见《推流到 CDN》文档中的 “前提条件”。
@@ -6560,6 +6578,10 @@ class AgoraRtcEngine extends EventEmitter {
    * - The remote client:
    *  - `userJoined`(uid:666), reports the stream is injected successfully and
    * the UID of this stream is 666.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @note
    * - Only the host in the Live-braodcast profile can call this method.
@@ -6607,6 +6629,9 @@ class AgoraRtcEngine extends EventEmitter {
    * 删除输入的在线媒体流。
    *
    * 成功删除后，会触发 `removeStream` 回调，其中 `uid` 为 `666`
+   *
+   * @waning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
+   * 
    * @param {string} url 已导入、待删除的外部视频流 URL 地址
    * @returns {number}
    * - 0：方法调用成功
@@ -6614,6 +6639,10 @@ class AgoraRtcEngine extends EventEmitter {
    */
   /**
    * Removes the injected online media stream from a live streaming.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param {string} url HTTP/HTTPS URL address of the added stream to be
    * removed.
@@ -7736,7 +7765,7 @@ class AgoraRtcEngine extends EventEmitter {
   /** Sends the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
-   * the `setMetadata` method to send the media metadata.
+   * call the `setMetadata` method to send the media metadata.
    *
    * If it is a successful sending, the sender receives the
    * `sendMetadataSuccess` callback, and the receiver receives the
@@ -9610,6 +9639,8 @@ on(
    * 导入在线媒体流状态回调。
    *
    * 该回调表明向直播导入的外部视频流的状态。
+   * 
+   * @warning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
    *
    * @param cb.url 导入进直播的外部视频源的 URL 地址。
    *
@@ -9630,6 +9661,11 @@ on(
    */
   /** Occurs when a voice or video stream URL address is added to a live
    * broadcast.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
+   *
    * - url: Pointer to the URL address of the externally injected stream.
    * - uid: User ID.
    * - status: State of the externally injected stream:
@@ -10956,6 +10992,9 @@ class AgoraRtcChannel extends EventEmitter
   /**
    * Sets the built-in encryption mode.
    *
+   * @depercated This method is deprecated from v3.2.0. Use
+   * the {@link enableEncryption} method instead.
+   *
    * The Agora SDK supports built-in encryption, which is set to the
    * `aes-128-xts` mode by default. To use other encryption modes, call this
    * method.
@@ -11622,6 +11661,8 @@ class AgoraRtcChannel extends EventEmitter
    *
    * 调用该方法后，SDK 会在本地触发 `streamInjectStatus` 回调，报告导入在线媒体流的状态。
    * 成功导入媒体流后，该音视频流会出现在频道中，频道内所有用户都会收到 `userJoined` 回调，其中 `uid` 为 666。
+   * 
+   * @warning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
    *
    * @note
    * - 该方法仅使用于直播场景下的主播。
@@ -11657,6 +11698,10 @@ class AgoraRtcChannel extends EventEmitter
    *  - `userJoined`(uid:666), reports the stream is injected successfully and
    * the UID of this stream is 666.
    *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
+   *
    * @note
    * - Only the host in the `1` (live streaming) profile can call this method.
    * - Ensure that you enable the RTMP Converter service before using this
@@ -11690,6 +11735,9 @@ class AgoraRtcChannel extends EventEmitter
    * 删除输入的在线媒体流。
    *
    * 成功删除后，会触发 `removeStream` 回调，其中 `uid` 为 `666`
+   * 
+   * @warning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
+   * 
    * @param {string} url 已导入、待删除的外部视频流 URL 地址
    * @returns {number}
    * - 0：方法调用成功
@@ -11698,11 +11746,16 @@ class AgoraRtcChannel extends EventEmitter
   /**
    * Removes the injected the online media stream in a live streaming.
    *
+   *
    * This method removes the URL address (added by the
    * {@link addInjectStreamUrl} method) in a live streaming.
    *
    * If this method call is successful, the SDK triggers the `userOffline`
    * (uid:666) callback and report the UID of the removed stream is 666.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param url The URL address of the injected stream to be removed.
    *
@@ -12097,7 +12150,7 @@ class AgoraRtcChannel extends EventEmitter
   /** Sends the media metadata.
    *
    * After calling the {@link registerMediaMetadataObserver} method, you can
-   * the `setMetadata` method to send the media metadata.
+   * call the `setMetadata` method to send the media metadata.
    *
    * If it is a successful sending, the sender receives the
    * `sendMetadataSuccess` callback, and the receiver receives the
@@ -12925,6 +12978,8 @@ declare interface AgoraRtcChannel {
   on(evt: 'transcodingUpdated', cb: () => void): this;
   /** @zh-cn
    * 输入在线媒体流状态回调。
+   * 
+   * @warning 客户端输入在线媒体流功能即将停服。如果你尚未集成该功能，Agora 建议你不要使用。详见《部分服务下架计划》。
    *
    * {@link addInjectStreamUrl} 输入在线媒体流后，会触发该回调。
    * @param cb.url 输入频道内的在线媒体流地址
@@ -12945,6 +13000,10 @@ declare interface AgoraRtcChannel {
    */
   /** Occurs when a voice or video stream URL address is added to a live
    * broadcast.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param cb.url The URL address of the externally injected stream.
    * @param cb.uid User ID.
@@ -13118,7 +13177,7 @@ declare interface AgoraRtcChannel {
    * @param cb.elapseSinceLastState 两次状态变化时间间隔（毫秒）。
    *
    */
-  /** Occurs when the audio subscribing state changes. //TODO (typo)
+  /** Occurs when the video subscribing state changes.
    *
    * @since v3.2.0
    *
