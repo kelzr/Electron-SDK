@@ -4417,6 +4417,10 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `userJoined (uid: 666)`, if the method call is successful and the online
    * media stream is injected into the channel.
    *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
+   *
    * @note
    * - Only the host in the Live-braodcast profile can call this method.
    * - Ensure that you enable the RTMP Converter service before using this
@@ -4448,6 +4452,10 @@ class AgoraRtcEngine extends EventEmitter {
 
   /**
    * Removes the injected online media stream from a live streaming.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param {string} url HTTP/HTTPS URL address of the added stream to be
    * removed.
@@ -6249,6 +6257,11 @@ declare interface AgoraRtcEngine {
   on(evt: 'transcodingUpdated', cb: () => void): this;
   /** Occurs when a voice or video stream URL address is added to a live
    * broadcast.
+   *
+   * @warning Agora will soon stop the service for injecting online media 
+   * streams on the client. If you have not implemented this service, Agora 
+   * recommends that you do not use it.
+   *
    * - url: Pointer to the URL address of the externally injected stream.
    * - uid: User ID.
    * - status: State of the externally injected stream:
@@ -7591,6 +7604,10 @@ class AgoraRtcChannel extends EventEmitter
    *  - `userJoined`(uid:666), reports the stream is injected successfully and
    * the UID of this stream is 666.
    *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
+   *
    * @note
    * - Only the host in the `1` (live streaming) profile can call this method.
    * - Ensure that you enable the RTMP Converter service before using this
@@ -7623,11 +7640,16 @@ class AgoraRtcChannel extends EventEmitter
   /**
    * Removes the injected the online media stream in a live streaming.
    *
+   *
    * This method removes the URL address (added by the
    * {@link addInjectStreamUrl} method) in a live streaming.
    *
    * If this method call is successful, the SDK triggers the `userOffline`
    * (uid:666) callback and report the UID of the removed stream is 666.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param url The URL address of the injected stream to be removed.
    *
@@ -8330,6 +8352,10 @@ declare interface AgoraRtcChannel {
   on(evt: 'transcodingUpdated', cb: () => void): this;
   /** Occurs when a voice or video stream URL address is added to a live
    * broadcast.
+   *
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
+   * recommends that you do not use it.
    *
    * @param cb.url The URL address of the externally injected stream.
    * @param cb.uid User ID.

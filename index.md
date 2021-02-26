@@ -242,15 +242,6 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.startAudioRecording startAudioRecording} | Starts an audio recording on the client. |
 | {@link AgoraRtcEngine.stopAudioRecording stopAudioRecording}|Stops an audio recording on the client.|
 
-### Inject an online media stream
-
-> This group of methods apply to Live Broadcast only.
-
-| Method                                                       | Description                                            |
-| ------------------------------------------------------------ | ------------------------------------------------------ |
-| {@link AgoraRtcEngine.addInjectStreamUrl addInjectStreamUrl} | Adds an online media stream to a live broadcast.       |
-| {@link AgoraRtcEngine.removeInjectStreamUrl removeInjectStreamUrl} | Removes the online media stream from a live broadcast. |
-
 ### Audio playback device management
 
 | Method                                                   | Description              |
