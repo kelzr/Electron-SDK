@@ -6258,8 +6258,8 @@ declare interface AgoraRtcEngine {
   /** Occurs when a voice or video stream URL address is added to a live
    * broadcast.
    *
-   * @warning Agora will soon stop the service for injecting online media 
-   * streams on the client. If you have not implemented this service, Agora 
+   * @warning Agora will soon stop the service for injecting online media
+   * streams on the client. If you have not implemented this service, Agora
    * recommends that you do not use it.
    *
    * - url: Pointer to the URL address of the externally injected stream.

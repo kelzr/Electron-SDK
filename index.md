@@ -416,7 +416,6 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 | `cameraFocusAreaChanged`           | Occurs when the camera focus area changes.                   |
 | `cameraExposureAreaChanged`        | Occurs when the camera exposure area changes.                |
 | `transcodingUpdated`               | Occurs when the publisher's transcoding settings are updated. |
-| `streamInjectStatus`               | Reports the status of the injected online media stream.      |
 |`channelMediaRelayState`|Occurs when the state of the media stream relay changes.|
 |`channelMediaRelayEvent`| Reports events during the media stream relay.|
 | `localPublishFallbackToAudioOnly`  | Occurs:<br><li>When the published media stream falls back to an audio-only stream due to poor network conditions.</li><br><li>When the published media stream switches back to the video after the network conditions improve.</li> |
