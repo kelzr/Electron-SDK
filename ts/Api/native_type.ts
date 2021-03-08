@@ -30,7 +30,9 @@ export type AgoraNetworkQuality =
   | 3 // poor
   | 4 // bad
   | 5 // very bad
-  | 6; // down
+  | 6 // down
+  | 7 // unSupported
+  | 8 // detecting
 /**
  * The codec type of the local video：
  * - 0: VP8
@@ -520,6 +522,16 @@ export enum AudioReverbPreset {
    */
   AUDIO_VIRTUAL_STEREO = 0x00200001
 }
+
+export enum CAPTURE_BRIGHTNESS_LEVEL_TYPE {
+  CAPTURE_BRIGHTNESS_LEVEL_INVALID = -1,
+
+  CAPTURE_BRIGHTNESS_LEVEL_NORMAL = 0,
+
+  CAPTURE_BRIGHTNESS_LEVEL_BRIGHT = 1,
+
+  CAPTURE_BRIGHTNESS_LEVEL_DARK = 2,
+}
 /**
  * Configuration of the imported live streaming voice or video stream.
  */
@@ -770,6 +782,8 @@ export interface LocalVideoStats {
    * @since v3.2.0
    */
   captureFrameRate: number;
+
+  captureBrightnessLevel: CAPTURE_BRIGHTNESS_LEVEL_TYPE;
 }
 /**
  * The statistics of the local audio stream.
@@ -1068,12 +1082,19 @@ export enum CaptureOutPreference {
    * video preview quality. This option requires extra CPU and RAM usage for
    * video pre-processing.
    */
-  CAPTURER_OUTPUT_PREFERENCE_PREVIEW = 2
+  CAPTURER_OUTPUT_PREFERENCE_PREVIEW = 2,
+    /** 3: Allows you to customize the width and height of the video image captured by the local camera.
+    *
+    * @since v3.3.0
+    */
+    CAPTURER_OUTPUT_PREFERENCE_MANUAL = 3,
 }
 /** Camera capturer configuration. */
 export interface CameraCapturerConfiguration {
   /** The output configuration of camera capturer. */
   preference: CaptureOutPreference;
+  captureWidth: number;
+  captureHeight: number;
 }
 /** The relative location of the region to the screen or window. */
 export interface Rectangle {
@@ -1268,6 +1289,12 @@ export interface RemoteAudioStats {
    * @since v3.2.0
    */
   publishDuration: number;
+
+  qoeQuality: number;
+
+  qualityChangedReason: number;
+
+  mosValue: number;
 }
 
 /**
@@ -1420,6 +1447,12 @@ export enum ENCRYPTION_MODE {
      /** 4: 128-bit SM4 encryption, ECB mode.
       */
       SM4_128_ECB = 4,
+      /** 5: 128-bit AES encryption, GCM mode.
+       */
+      AES_128_GCM = 5,
+      /** 6: 256-bit AES encryption, GCM mode.
+       */
+      AES_256_GCM = 6,
 };
 /**
  * Configurations of built-in encryption schemas.
@@ -1813,6 +1846,17 @@ export enum VOICE_BEAUTIFIER_PRESET
      * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_VITALITY = 0x01010300,
+    /**
+     * @since v3.3.0
+     *
+     * Singing beautifier effect.
+     * - If you call \ref IRtcEngine::setVoiceBeautifierPreset "setVoiceBeautifierPreset" (SINGING_BEAUTIFIER), you can beautify a male-sounding voice and add a reverberation
+     * effect that sounds like singing in a small room. Agora recommends not using \ref IRtcEngine::setVoiceBeautifierPreset "setVoiceBeautifierPreset" (SINGING_BEAUTIFIER)
+     * to process a female-sounding voice; otherwise, you may experience vocal distortion.
+     * - If you call \ref IRtcEngine::setVoiceBeautifierParameters "setVoiceBeautifierParameters"(SINGING_BEAUTIFIER, param1, param2), you can beautify a male- or
+     * female-sounding voice and add a reverberation effect.
+     */
+    SINGING_BEAUTIFIER = 0x01020100,
     /** A more vigorous voice.
      */
     TIMBRE_TRANSFORMATION_VIGOROUS = 0x01030100,
@@ -1894,7 +1938,7 @@ export interface ChannelMediaInfo {
    * The default value is NULL, which means that
    * the SDK applies the current channel name.
    */
-  channel: string;
+  channelName: string;
   /**
    * The token that enables the user to join the channel.
    *
@@ -2189,6 +2233,36 @@ export interface ClientRoleOptions {
   audienceLatencyLevel: AUDIENCE_LATENCY_LEVEL_TYPE;
 };
 
+export type CLOUD_PROXY_TYPE =
+    | 0 //NONE_PROXY
+    | 1  //UDP_PROXY
+    | 2  //TCP_PROXY
+
+export interface RtcContext {
+  logConfig: LogConfig
+};
+
+export interface LogConfig {
+  filePath: string,
+  fileSize: number,
+  level: number
+};
+
+export enum VOICE_CONVERSION_PRESET
+{
+    VOICE_CONVERSION_OFF = 0x00000000,
+    VOICE_CHANGER_NEUTRAL = 0x03010100,
+    VOICE_CHANGER_SWEET = 0x03010200,
+    VOICE_CHANGER_SOLID = 0x03010300,
+    VOICE_CHANGER_BASS = 0x03010400
+};
+
+export interface DataStreamConfig
+{
+  syncWithAudio: boolean,
+  ordered: boolean
+};
+
 /**
  * interface for c++ addon (.node)
  * @ignore
@@ -2197,7 +2271,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  initialize(appId: string, areaCode?: AREA_CODE): number;
+  initialize(appId: string, areaCode?: AREA_CODE, logConfig?: LogConfig): number;
   /**
    * @ignore
    */
@@ -2221,14 +2295,16 @@ export interface NodeRtcEngine {
     token: string,
     channel: string,
     info: string,
-    uid: number
+    uid: number,
+    options?: ChannelMediaOptions
   ): number;
   /**
    * @ignore
    */
   switchChannel(
     token: string,
-    channel: string
+    channel: string,
+    options?: ChannelMediaOptions
   ): number;
   /**
    * @ignore
@@ -2888,7 +2964,7 @@ export interface NodeRtcEngine {
   /**
    * @ignore
    */
-  createDataStream(reliable: boolean, ordered: boolean): number;
+  createDataStream(reliable: boolean | DataStreamConfig, ordered ?: boolean): number;
   /**
    * @ignore
    */
@@ -3171,6 +3247,30 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setAudioEffectParameters(presset: AUDIO_EFFECT_PRESET, param1: number, param2: number): number;
+  /**
+   * @ignore
+   */
+  setRecordingAudioFrameParameters(sampleRate: number, channel: number, mode: number, samplesPerCall: number): number;
+  /**
+   * @ignore
+   */
+  setCloudProxy(type:CLOUD_PROXY_TYPE): number;
+  /**
+   * @ignore
+   */
+  enableDeepLearningDenoise(enabled:boolean): number;
+  /**
+   * @ignore
+   */
+  setVoiceBeautifierParameters(preset:VOICE_BEAUTIFIER_PRESET, param1: number, param2: number): number;
+  /**
+   * @ignore
+   */
+  uploadLogFile(): string;
+  /**
+   * @ignore
+   */
+  setVoiceConversionPreset(preset:VOICE_CONVERSION_PRESET): number;
 }
 /**
  * @ignore
@@ -3345,8 +3445,8 @@ export interface NodeRtcChannel {
    * @ignore
    */
   createDataStream(
-    reliable: boolean,
-    ordered: boolean
+    reliable: boolean | DataStreamConfig,
+    ordered?: boolean
   ): number;
 
   /**

@@ -700,6 +700,7 @@ namespace agora {
                 NODE_SET_OBJ_PROP_UINT32(obj, "codecType", stats.codecType);
                 NODE_SET_OBJ_PROP_UINT32(obj, "txPacketLossRate", stats.txPacketLossRate);
                 NODE_SET_OBJ_PROP_UINT32(obj, "captureFrameRate", stats.captureFrameRate);
+                NODE_SET_OBJ_PROP_UINT32(obj, "captureBrightnessLevel", (int)stats.captureBrightnessLevel);
 
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_LOCAL_VIDEO_STATS);
@@ -980,6 +981,22 @@ namespace agora {
             MAKE_JS_CALL_2(RTC_EVENT_STREAM_PUBLISHED, string, url, int32, error);
         }
 
+        void NodeEventHandler::onStreamPublished(const char *url, int error)
+        {
+            std::string mUrl = std::string(url);
+            node_async_call::async_call([this, mUrl, error] {
+                this->onStreamPublished_node(mUrl.c_str(), error);
+            });
+        }
+        
+        void NodeEventHandler::onStreamUnpublished(const char *url)
+        {
+            std::string mUrl = std::string(url);
+            node_async_call::async_call([this, mUrl] {
+                this->onStreamUnpublished_node(mUrl.c_str());
+            });   
+        }
+
         void NodeEventHandler::onStreamUnpublished_node(const char *url)
         {
             FUNC_TRACE;
@@ -1119,6 +1136,9 @@ namespace agora {
                 NODE_SET_OBJ_PROP_UINT32(obj, "frozenRate", stats.frozenRate);
                 NODE_SET_OBJ_PROP_UINT32(obj, "totalActiveTime", stats.totalActiveTime);
                 NODE_SET_OBJ_PROP_UINT32(obj, "publishDuration", stats.publishDuration);
+                NODE_SET_OBJ_PROP_UINT32(obj, "qoeQuality", stats.qoeQuality);
+                NODE_SET_OBJ_PROP_UINT32(obj, "qualityChangedReason", stats.qualityChangedReason);
+                NODE_SET_OBJ_PROP_UINT32(obj, "mosValue", stats.mosValue);
 
                 Local<Value> arg[1] = { obj };
                 auto it = m_callbacks.find(RTC_EVENT_REMOTE_AUDIO_STATS);
@@ -1231,6 +1251,72 @@ namespace agora {
         {
             FUNC_TRACE;
             MAKE_JS_CALL_0(RTC_EVENT_VIDEO_SOURCE_LEAVE_CHANNEL);
+        }
+
+        void NodeEventHandler::onVideoSourceLocalAudioStats(const LocalAudioStats& stats)
+        {
+            node_async_call::async_call([this, stats] {
+                do {
+                    Isolate *isolate = Isolate::GetCurrent();
+                    HandleScope scope(isolate);
+                    Local<Context> context = isolate->GetCurrentContext();
+                    Local<Object> obj = Object::New(isolate);
+                    CHECK_NAPI_OBJ(obj);
+
+                    NODE_SET_OBJ_PROP_UINT32(obj, "numChannels", stats.numChannels);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "sentSampleRate", stats.sentSampleRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "sentBitrate", stats.sentBitrate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "txPacketLossRate", stats.txPacketLossRate);
+
+                    Local<Value> arg[1] = { obj };
+                    auto it = m_callbacks.find(RTC_EVENT_LOCAL_AUDIO_STATS);
+                    if (it != m_callbacks.end()) {
+                        it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
+                    }
+                } while (false);
+            });
+        }
+        
+        void NodeEventHandler::onVideoSourceVideoSizeChanged(uid_t uid, int width, int height, int rotation)
+        {
+            node_async_call::async_call([this, uid, width, height, rotation] {
+                MAKE_JS_CALL_4(RTC_EVENT_VIDEO_SOURCE_VIDEO_SIZE_CHANGED, uid, uid, int32, width, int32, height, int32, rotation);
+            });
+        }
+        
+        void NodeEventHandler::onVideoSourceLocalVideoStats(const LocalVideoStats& stats)
+        {
+            node_async_call::async_call([this, stats] {
+                do {
+                    Isolate *isolate = Isolate::GetCurrent();
+                    HandleScope scope(isolate);
+                    Local<Context> context = isolate->GetCurrentContext();
+                    Local<Object> obj = Object::New(isolate);
+                    CHECK_NAPI_OBJ(obj);
+
+                    NODE_SET_OBJ_PROP_UINT32(obj, "sentBitrate", stats.sentBitrate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "sentFrameRate", stats.sentFrameRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "targetBitrate", stats.targetBitrate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "targetFrameRate", stats.targetFrameRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "encoderOutputFrameRate", stats.encoderOutputFrameRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "rendererOutputFrameRate", stats.rendererOutputFrameRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "qualityAdaptIndication", stats.qualityAdaptIndication);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "encodedBitrate", stats.encodedBitrate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "encodedFrameWidth", stats.encodedFrameWidth);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "encodedFrameHeight", stats.encodedFrameHeight);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "encodedFrameCount", stats.encodedFrameCount);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "codecType", stats.codecType);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "txPacketLossRate", stats.txPacketLossRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "captureFrameRate", stats.captureFrameRate);
+                    NODE_SET_OBJ_PROP_UINT32(obj, "captureBrightnessLevel", (int)stats.captureBrightnessLevel);
+
+                    Local<Value> arg[1] = { obj };
+                    auto it = m_callbacks.find(RTC_EVENT_VIDEO_SOURCE_LOCAL_VIDEO_STATS);
+                    if (it != m_callbacks.end()) {
+                        it->second->callback.Get(isolate)->Call(context, it->second->js_this.Get(isolate), 1, arg); \
+                    }
+                } while (false);
+            });
         }
 
         void NodeEventHandler::addEventHandler(const std::string& eventName, Persistent<Object>& obj, Persistent<Function>& callback)
@@ -1530,6 +1616,16 @@ namespace agora {
                 MAKE_JS_CALL_1(RTC_EVENT_AUDIO_ROUTE_CHANGED, int32, (int)routing);
             });
 
+        }
+
+        // 3.3.0 callbacks
+        void NodeEventHandler::onUploadLogResult(const char * requestId, bool success, UPLOAD_ERROR_REASON reason) {
+            FUNC_TRACE;
+
+            std::string mRequestId(requestId);
+            node_async_call::async_call([this, mRequestId, success, reason] {
+                MAKE_JS_CALL_3(RTC_EVENT_UPLOAD_LOG_RESULT, string, mRequestId.c_str(), bool, success, int32, reason);
+            });
         }
     }
 }

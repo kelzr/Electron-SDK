@@ -96,6 +96,9 @@ namespace agora {
 #define RTC_EVENT_VIDEO_SOURCE_JOIN_SUCCESS "videosourcejoinsuccess"
 #define RTC_EVENT_VIDEO_SOURCE_REQUEST_NEW_TOKEN "videosourcerequestnewtoken"
 #define RTC_EVENT_VIDEO_SOURCE_LEAVE_CHANNEL "videosourceleavechannel"
+#define RTC_EVENT_VIDEO_SOURCE_LOCAL_AUDIO_STATS "videoSourceLocalAudioStats"
+#define RTC_EVENT_VIDEO_SOURCE_LOCAL_VIDEO_STATS "videoSourceLocalVideoStats"
+#define RTC_EVENT_VIDEO_SOURCE_VIDEO_SIZE_CHANGED "videoSourceVideoSizeChanged"
 
 #define RTC_EVENT_FIRST_LOCAL_AUDIO_FRAME_PUBLISH "firstLocalAudioFramePublished"
 #define RTC_EVENT_FIRST_LOCAL_VIDEO_FRAME_PUBLISH "firstLocalVideoFramePublished"
@@ -106,6 +109,7 @@ namespace agora {
 #define RTC_EVENT_VIDEO_SUBSCRIBE_STATE_CHANGED "videoSubscribeStateChanged"
 #define RTC_EVENT_AUDIO_ROUTE_CHANGED "audioRouteChanged"
 #define RTC_EVENT_API_ERROR "apierror"
+#define RTC_EVENT_UPLOAD_LOG_RESULT "uploadLogResult"
         class NodeRtcEngine;
         class NodeUid;
         class NodeEventHandler : public IRtcEngineEventHandler, public IAgoraVideoSourceEventHandler
@@ -179,6 +183,9 @@ namespace agora {
             virtual void onVideoSourceJoinedChannel(agora::rtc::uid_t uid) override;
             virtual void onVideoSourceRequestNewToken() override;
             virtual void onVideoSourceLeaveChannel() override;
+            virtual void onVideoSourceLocalAudioStats(const LocalAudioStats& stats) override;
+            virtual void onVideoSourceVideoSizeChanged(uid_t uid, int width, int height, int rotation) override;
+            virtual void onVideoSourceLocalVideoStats(const LocalVideoStats& stats) override;
             virtual void onVideoSourceExit() override;
             void fireApiError(const char* funcName);
             void addEventHandler(const std::string& eventName, Persistent<Object>& obj, Persistent<Function>& callback);
@@ -211,7 +218,11 @@ namespace agora {
             virtual void onAudioSubscribeStateChanged(const char* channel, uid_t uid, STREAM_SUBSCRIBE_STATE oldState, STREAM_SUBSCRIBE_STATE newState, int elapseSinceLastState);
             virtual void onVideoSubscribeStateChanged(const char* channel, uid_t uid, STREAM_SUBSCRIBE_STATE oldState, STREAM_SUBSCRIBE_STATE newState, int elapseSinceLastState);
             virtual void onAudioRouteChanged(AUDIO_ROUTE_TYPE routing);
+            virtual void onStreamPublished(const char *url, int error);
+            virtual void onStreamUnpublished(const char *url);
             
+            //3.3.0
+            virtual void onUploadLogResult(const char * requestId, bool success, UPLOAD_ERROR_REASON reason );
   private:
             void onJoinChannelSuccess_node(const char* channel, uid_t uid, int elapsed) ;
             void onRejoinChannelSuccess_node(const char* channel, uid_t uid, int elapsed) ;

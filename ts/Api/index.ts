@@ -50,7 +50,11 @@ import {
   AUDIO_EFFECT_PRESET,
   VOICE_BEAUTIFIER_PRESET,
   AUDIENCE_LATENCY_LEVEL_TYPE,
-  ClientRoleOptions
+  ClientRoleOptions,
+  CLOUD_PROXY_TYPE,
+  LogConfig,
+  VOICE_CONVERSION_PRESET,
+  DataStreamConfig
 } from './native_type';
 import { EventEmitter } from 'events';
 import { deprecate, config, Config } from '../Utils';
@@ -646,6 +650,18 @@ class AgoraRtcEngine extends EventEmitter {
       fire('videoSourceLeaveChannel');
     });
 
+    this.rtcEngine.onEvent('videoSourceLocalAudioStats', function(stats: LocalAudioStats) {
+      fire('videoSourceLocalAudioStats', stats);
+    });
+
+    this.rtcEngine.onEvent('videoSourceLocalVideoStats', function(stats: LocalVideoStats) {
+      fire('videoSourceLocalVideoStats', stats);
+    });
+
+    this.rtcEngine.onEvent('videoSourceVideoSizeChanged', function(uid: number, width: number, height: number, rotation: number) {
+      fire('videoSourceVideoSizeChanged', uid, width, height, rotation);
+    });
+
     this.rtcEngine.onEvent('localUserRegistered', function(
       uid: number,
       userAccount: string
@@ -737,6 +753,10 @@ class AgoraRtcEngine extends EventEmitter {
 
     this.rtcEngine.onEvent('audioRouteChanged', function(routing: AUDIO_ROUTE_TYPE) {
       fire('audioRouteChanged', routing);
+    })
+
+    this.rtcEngine.onEvent('uploadLogResult', function(requestId: string, success: boolean, reason: number) {
+      fire('uploadLogResult', requestId, success, reason);
     })
 
     this.rtcEngine.registerDeliverFrame(function(infos: any) {
@@ -1029,8 +1049,8 @@ class AgoraRtcEngine extends EventEmitter {
    * - 0: Success.
    * - < 0: Failure.
    */
-  initialize(appid: string, areaCode: AREA_CODE = (0xFFFFFFFF)): number {
-    return this.rtcEngine.initialize(appid, areaCode);
+  initialize(appid: string, areaCode: AREA_CODE = (0xFFFFFFFF), logConfig?: LogConfig): number {
+    return this.rtcEngine.initialize(appid, areaCode, logConfig);
   }
 
   /**
@@ -1154,9 +1174,10 @@ class AgoraRtcEngine extends EventEmitter {
     token: string,
     channel: string,
     info: string,
-    uid: number
+    uid: number,
+    options?: ChannelMediaOptions
   ): number {
-    return this.rtcEngine.joinChannel(token, channel, info, uid);
+    return this.rtcEngine.joinChannel(token, channel, info, uid, options);
   }
 
   /**
@@ -2449,7 +2470,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /**
    * Specifies an SDK output log file.
-   *
+   * @deprecated
    * The log file records all log data for the SDK’s operation. Ensure that
    * the directory for the log file exists and is writable.
    *
@@ -2465,7 +2486,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** Sets the size of a log file that the SDK outputs.
    *
-   *
+   * @deprecated
    * @note If you want to set the log file size, ensure that you call
    * this method before {@link setLogFile}, or the logs are cleared.
    *
@@ -2512,7 +2533,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   /**
    * Sets the output log level of the SDK.
-   *
+   * @deprecated
    * You can use one or a combination of the filters. The log level follows
    * the sequence of OFF, CRITICAL, ERROR, WARNING, INFO, and DEBUG.
    * Choose a level to see the logs preceding that level. For example, if you
@@ -2997,8 +3018,8 @@ class AgoraRtcEngine extends EventEmitter {
    *  - `ERR_NOT_READY (3)`
    *  - `ERR_REFUSED (5)`
    */
-  switchChannel(token: string, channel: string) : number {
-    return this.rtcEngine.switchChannel(token, channel);
+  switchChannel(token: string, channel: string, options?: ChannelMediaOptions) : number {
+    return this.rtcEngine.switchChannel(token, channel, options);
   }
 
   /**
@@ -4495,7 +4516,7 @@ class AgoraRtcEngine extends EventEmitter {
    * - Returns the ID of the data stream, if this method call succeeds.
    * - < 0: Failure and returns an error code.
    */
-  createDataStream(reliable: boolean, ordered: boolean): number {
+  createDataStream(reliable: boolean|DataStreamConfig, ordered?: boolean): number {
     return this.rtcEngine.createDataStream(reliable, ordered);
   }
 
@@ -4926,6 +4947,10 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.complain(callId, desc);
   }
   //TODO(input)
+  setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number {
+    return this.rtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
+  }
+
   setRecordingAudioFrameParameters(sampleRate: number, channel: 1 | 2, mode: 0 | 1 | 2, samplesPerCall: number): number {
     return this.rtcEngine.setRecordingAudioFrameParameters(sampleRate, channel, mode, samplesPerCall);
   }
@@ -5428,6 +5453,23 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.setAudioEffectParameters(preset, param1, param2);
   }
 
+  // 3.3.0 apis
+  setCloudProxy(type:CLOUD_PROXY_TYPE): number {
+    return this.rtcEngine.setCloudProxy(type);
+  }
+  enableDeepLearningDenoise(enabled:boolean): number {
+    return this.rtcEngine.enableDeepLearningDenoise(enabled);
+  }
+  setVoiceBeautifierParameters(preset:VOICE_BEAUTIFIER_PRESET, param1:number, param2:number): number {
+    return this.rtcEngine.setVoiceBeautifierParameters(preset, param1, param2);
+  }
+  uploadLogFile(): string {
+    return this.rtcEngine.uploadLogFile();
+  }
+  //3.3.1
+  setVoiceConversionPreset(preset:VOICE_CONVERSION_PRESET): number {
+    return this.rtcEngine.setVoiceConversionPreset(preset);
+  }
 }
 /** The AgoraRtcEngine interface. */
 declare interface AgoraRtcEngine {
@@ -6116,6 +6158,12 @@ declare interface AgoraRtcEngine {
    * - uid: The User ID.
    */
   on(evt: 'videoSourceLeaveChannel', cb: () => void): this;
+
+  on(evt: 'videoSourceLocalAudioStats', cb: (stats: LocalAudioStats) => void): this;
+
+  on(evt: 'videoSourceLocalVideoStats', cb: (stats: LocalVideoStats) => void): this;
+
+  on(evt: 'videoSourceVideoSizeChanged', cb: (uid: number, width: number, height: number, rotation: number) => void): this;
   /** Occurs when the remote video state changes.
    *
    * @param cb.uid ID of the user whose video state changes.
@@ -6634,6 +6682,12 @@ declare interface AgoraRtcEngine {
     oldState: STREAM_SUBSCRIBE_STATE,
     newState: STREAM_SUBSCRIBE_STATE,
     elapseSinceLastState: number
+  )=> void): this;
+
+  on(evt: 'uploadLogResult', cb: (
+    requestId: string,
+    success: boolean,
+    reason: number
   )=> void): this;
 
   on(evt: string, listener: Function): this;
@@ -7460,7 +7514,7 @@ class AgoraRtcChannel extends EventEmitter
    * - 0: Success
    * - < 0: Failure
    */
-  createDataStream(reliable: boolean, ordered: boolean): number {
+  createDataStream(reliable: boolean|DataStreamConfig, ordered?: boolean): number {
     return this.rtcChannel.createDataStream(reliable, ordered);
   }
   /**
@@ -7639,7 +7693,6 @@ class AgoraRtcChannel extends EventEmitter
   }
   /**
    * Removes the injected the online media stream in a live streaming.
-   *
    *
    * This method removes the URL address (added by the
    * {@link addInjectStreamUrl} method) in a live streaming.
