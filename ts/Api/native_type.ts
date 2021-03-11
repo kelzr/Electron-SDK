@@ -43,7 +43,6 @@ export type AgoraNetworkQuality =
   | 3 // poor
   | 4 // bad
   | 5 // very bad
-  | 6; // down
   | 6 // down
   | 7 // unSupported
   | 8 // detecting
@@ -909,22 +908,44 @@ export enum AudioReverbPreset {
    */
   AUDIO_VIRTUAL_STEREO = 0x00200001
 }
+/** @zh-cn
+ *
+ * 本地采集的画质亮度级别
+ *
+ * @since v3.3.1
+ */
 /** The brightness level of the video image captured by the local camera.
  *
  * @since v3.3.1
  */
  export enum CAPTURE_BRIGHTNESS_LEVEL_TYPE {
+  /** @zh-cn
+   *
+   * -1: SDK 未检测出本地采集的画质亮度级别。请等待几秒，通过下一次回调的 `captureBrightnessLevel` 获取亮度级别。
+   */
   /** -1: The SDK does not detect the brightness level of the video image.
    * Wait a few seconds to get the brightness level from
    * `CAPTURE_BRIGHTNESS_LEVEL_TYPE` in the next callback.
    */
   CAPTURE_BRIGHTNESS_LEVEL_INVALID = -1,
+  /** @zh-cn
+   *
+   * 0: 本地采集的画质亮度正常。
+   */
   /** 0: The brightness level of the video image is normal.
    */
   CAPTURE_BRIGHTNESS_LEVEL_NORMAL = 0,
+  /** @zh-cn
+   *
+   * 1: 本地采集的画质亮度偏亮。
+   */
   /** 1: The brightness level of the video image is too bright.
    */
   CAPTURE_BRIGHTNESS_LEVEL_BRIGHT = 1,
+  /** @zh-cn
+   *
+   * 2: 本地采集的画质亮度偏暗。
+   */
   /** 2: The brightness level of the video image is too dark.
    */
   CAPTURE_BRIGHTNESS_LEVEL_DARK = 2,
@@ -1376,6 +1397,11 @@ export interface LocalVideoStats {
    * @since v3.2.0
    */
   captureFrameRate: number;
+  /** @zh-cn
+   * 本地采集的画质亮度级别。详见 {@link CAPTURE_BRIGHTNESS_LEVEL_TYPE}
+   *
+   * @since v3.3.1
+   */
   /** The brightness level of the video image captured by the local camera.
    * See {@link CAPTURE_BRIGHTNESS_LEVEL_TYPE}.
    *
@@ -1897,6 +1923,11 @@ export enum CaptureOutPreference {
    * video pre-processing.
    */
   CAPTURER_OUTPUT_PREFERENCE_PREVIEW = 2,
+  /** @zh-cn
+   * 3：允许用户设置本地摄像头采集的视频宽高。
+   *
+   * @since v3.3.1
+   */
   /** 3: Allows you to customize the width and height of the video image
    * captured by the local camera.
    *
@@ -1914,6 +1945,12 @@ export interface CameraCapturerConfiguration {
    */
   /** The output preference of camera capturer. */
   preference: CaptureOutPreference;
+  /** @zh-cn
+   * 本地采集的视频宽度 (px)。如果你需要自定义本地采集的视频宽度，请先将 `preference`
+   * 设为 `CAPTURER_OUTPUT_PREFERENCE_MANUAL(3)`，再通过 `captureWidth` 设置采集的视频宽度。
+   *
+   * @since v3.3.1
+   */
   /** The width (px) of the video image captured by the local camera.
    * To customize the width of the video image, set `preference`
    * as `CAPTURER_OUTPUT_PREFERENCE_MANUAL(3)` first,
@@ -1922,6 +1959,12 @@ export interface CameraCapturerConfiguration {
    * @since v3.3.1
    */
   captureWidth: number;
+  /** @zh-cn
+   * 本地采集的视频高度 (px)。如果你需要自定义本地采集的视频高度，请先将 `preference`
+   * 设为 `CAPTURER_OUTPUT_PREFERENCE_MANUAL(3)`，再通过 `captureHeight` 设置采集的视频高度。
+   *
+   * @since v3.3.1
+   */
   /** The height (px) of the video image captured by the local camera.
    * To customize the height of the video image, set `preference` as
    * `CAPTURER_OUTPUT_PREFERENCE_MANUAL(3)` first,
@@ -2282,6 +2325,13 @@ export interface RemoteAudioStats {
    * @since v3.2.0
    */
   publishDuration: number;
+  /** @zh-cn
+   * 接收远端音频时，本地用户的主观体验质量：
+   * - `0`: 主观体验质量较好。
+   * - `1`: 主观体验质量较差。
+   *
+   * @since v3.3.1
+   */
   /**
    * Quality of experience (QoE) of the local user when receiving a remote
    * audio stream:
@@ -2291,6 +2341,16 @@ export interface RemoteAudioStats {
    * @since v3.3.1
    */
   qoeQuality: number;
+  /** @zh-cn
+   * 接收远端音频时，本地用户主观体验质量较差的原因：
+   * - `0`: 无原因，说明主观体验质量较好。
+   * - `1`: 远端用户的网络较差。
+   * - `2`: 本地用户的网络较差。
+   * - `4`: 本地用户的 Wi-Fi 或者移动数据网络信号弱。
+   * - `8`: 本地用户同时开启 Wi-Fi 和蓝牙，二者信号互相干扰，导致音频传输质量下降。
+   *
+   * @since v3.3.1
+   */
   /**
    * The reason for poor QoE of the local user when receiving a remote audio
    * stream:
@@ -2305,6 +2365,23 @@ export interface RemoteAudioStats {
    * @since v3.3.1
    */
   qualityChangedReason: number;
+  /**
+   * 统计周期内，Agora 实时音频 MOS（平均主观意见分）评估方法对接收到的远端音频流的质量评分。
+   * 返回值范围为 [0,500]。返回值除以 100 即可得到 MOS 分数，范围为 [0,5] 分，分数越高，音频质量越好。
+   *
+   * @since v3.3.1
+   *
+   * Agora 实时音频 MOS 评分对应的主观音质感受如下：
+   *
+   * | MOS 分数   | 音质感受                                             |
+   * |------------|----------------------------------------------------|
+   * | 大于 4 分  | 音频质量佳，清晰流畅。                            |
+   * | 3.5 - 4 分 | 音频质量较好，偶有音质损伤，但依然清晰。                       |
+   * | 3 - 3.5 分 | 音频质量一般，偶有卡顿，不是非常流畅，需要一点注意力才能听清。 |
+   * | 2.5 - 3 分 | 音频质量较差，卡顿频繁，需要集中精力才能听清。                 |
+   * | 2 - 2.5 分 | 音频质量很差，偶有杂音，部分语义丢失，难以交流。               |
+   * | 小于 2 分  | 音频质量非常差，杂音频现，大量语义丢失，完全无法交流。         |
+   */
   /**
    * The quality of the remote audio stream as determined by the Agora
    * real-time audio MOS (Mean Opinion Score) measurement method in the
@@ -2606,11 +2683,21 @@ export enum ENCRYPTION_MODE {
       /** 4: Reserved property.
        */
       SM4_128_ECB = 4,
+     /** @zh-cn
+      * 5: 128 位 AES 加密，GCM 模式。
+      *
+      * @since v3.3.1
+      */
       /** 5: 128-bit AES encryption, GCM mode.
        *
        * @since v3.3.1
        */
       AES_128_GCM = 5,
+     /** @zh-cn
+      * 6: 256 位 AES 加密，GCM 模式。
+      *
+      * @since v3.3.1
+      */
       /** 6: 256-bit AES encryption, GCM mode.
        *
        * @since v3.3.1
@@ -3395,6 +3482,15 @@ export enum VOICE_BEAUTIFIER_PRESET
      * female-sounding voice; otherwise, you may experience vocal distortion.
      */
     CHAT_BEAUTIFIER_VITALITY = 0x01010300,
+    /** @zh-cn
+     * 歌唱美声。
+     * - 如果调用 {@link setVoiceBeautifierPreset}(SINGING_BEAUTIFIER)，
+     * 你可以美化男声并添加歌声在小房间的混响效果。请勿用于设置女声，否则音频会失真。
+     * - 如果调用 {@link setVoiceBeautifierParameters}(SINGING_BEAUTIFIER, param1, param2)，
+     * 你可以美化男声或女声并添加混响效果。
+     *
+     * @since v3.3.1
+     */
     /**
      * @since v3.3.1
      *
@@ -4027,6 +4123,15 @@ export interface ClientRoleOptions {
    */
   audienceLatencyLevel: AUDIENCE_LATENCY_LEVEL_TYPE;
 };
+/** @zh-cn
+ *
+ * @since v3.3.1
+ *
+ * 云代理类型:
+ * - 0: 不使用云代理。
+ * - 1: UDP 协议的云代理。
+ * - 2: 预留。
+ */
 /** The cloud proxy type.
  *
  * @since v3.3.1
@@ -4042,17 +4147,32 @@ export type CLOUD_PROXY_TYPE =
        * 2: Reserved property.
        */
     | 2  //TCP_PROXY
+/** @zh-cn
+ * Agora SDK 日志文件的配置。
+ *
+ * @since v3.3.1
+ */
 /** The configuration of the log files.
  *
  * @since v3.3.1
  */
 export interface LogConfig {
+  /** @zh-cn
+   * 日志文件的完整路径。
+   *
+   *
+   * 请确保你指定的目录存在而且可写。你可通过该参数修改日志文件名。
+   */
   /** The absolute path of log files.
    *
    * Ensure that the directory for the log files exists and is writable.
    * You can use this parameter to rename the log files.
    */
   filePath: string,
+  /** @zh-cn
+   * 单个日志文件的大小，单位为 KB。默认值为 1024 KB。如果你将 `fileSize` 设为 1024 KB，SDK 会最多输出总计 5 MB 的日志文件。
+   * 如果你将 `fileSize` 设为小于 1024 KB，设置不生效，单个日志文件最大仍为 1024 KB。
+   */
   /** The size (KB) of a log file.
    *
    * The default value is 1024 KB. If you set
@@ -4061,6 +4181,15 @@ export interface LogConfig {
    * maximum size of a log file is still 1024 KB.
    */
   fileSize: number,
+  /** @zh-cn
+   * Agora SDK 的日志输出等级:
+   * - `0x0000`: 不输出任何日志。
+   * - `0x0001`: (默认) 输出 FATAL、ERROR、WARN、INFO 级别的日志。我们推荐你将日志级别设为该等级。
+   * - `0x0002`: 仅输出 FATAL、ERROR、WARN 级别的日志。
+   * - `0x0004`: 仅输出 FATAL、ERROR 级别的日志。
+   * - `0x0008`: 仅输出 FATAL 级别的日志。
+   *
+   */
   /** The output log level of the SDK:
    * - `0x0000`: Do not output any log.
    * - `0x0001`: (Default) Output logs of the FATAL, ERROR, WARN and INFO
@@ -4071,71 +4200,150 @@ export interface LogConfig {
    */
   level: number
 };
+/** @zh-cn
+ *
+ * @since v3.3.1
+ *
+ * 预设的变声效果选项
+ */
 /** The options for SDK preset voice conversion effects.
  *
  * @since v3.3.1
  */
 export enum VOICE_CONVERSION_PRESET
 {
+    /** @zh-cn
+     * 原声，即关闭变声效果。
+     */
     /** Turn off voice conversion effects and use the original voice.
      */
     VOICE_CONVERSION_OFF = 0x00000000,
+    /** @zh-cn
+     * 中性。为避免音频失真，请确保仅对女声设置该效果。
+     */
     /** A gender-neutral voice. To avoid audio distortion, ensure that you use
      * this enumerator to process a female-sounding voice.
      */
     VOICE_CHANGER_NEUTRAL = 0x03010100,
+    /** @zh-cn
+     * 甜美。为避免音频失真，请确保仅对女声设置该效果。
+     */
     /** A sweet voice. To avoid audio distortion, ensure that you use this
      * enumerator to process a female-sounding voice.
      */
     VOICE_CHANGER_SWEET = 0x03010200,
+    /** @zh-cn
+     * 稳重。为避免音频失真，请确保仅对男声设置该效果。
+     */
     /** A steady voice. To avoid audio distortion, ensure that you use this
      * enumerator to process a male-sounding voice.
      */
     VOICE_CHANGER_SOLID = 0x03010300,
+    /** @zh-cn
+     * 低沉。为避免音频失真，请确保仅对男声设置该效果。
+     */
     /** A deep voice. To avoid audio distortion, ensure that you use this
      * enumerator to process a male-sounding voice.
      */
     VOICE_CHANGER_BASS = 0x03010400
 };
-
+/** @zh-cn
+ * 本地视频状态
+ */
 /** Local video state types.
  */
 export enum LOCAL_VIDEO_STREAM_STATE
 {
+    /** @zh-cn
+     *
+     * 0: 本地视频默认初始状态。
+     */
     /** 0: Initial state. */
     LOCAL_VIDEO_STREAM_STATE_STOPPED = 0,
+    /** @zh-cn
+     *
+     * 1: 本地视频采集设备启动成功。通过 Window Symbol 共享窗口且共享窗口为最大化时，也会报告该状态。
+     */
     /** 1: The local video capturing device starts successfully.
      *
      * The SDK also reports this state when you share a maximized window by calling \ref IRtcEngine::startScreenCaptureByWindowId "startScreenCaptureByWindowId".
      */
     LOCAL_VIDEO_STREAM_STATE_CAPTURING = 1,
+    /** @zh-cn
+     *
+     * 2: 本地视频首帧编码成功。
+     */
    /** 2: The first video frame is successfully encoded. */
     LOCAL_VIDEO_STREAM_STATE_ENCODING = 2,
+    /** @zh-cn
+     *
+     * 3: 本地视频启动失败。
+     */
     /** 3: The local video fails to start. */
     LOCAL_VIDEO_STREAM_STATE_FAILED = 3
 };
-
+/** @zh-cn
+ *
+ * 本地视频出错原因
+ */
 /** Local video state error codes.
  */
 export enum LOCAL_VIDEO_STREAM_ERROR {
+    /** @zh-cn
+     *
+     * 0: 本地视频状态正常。
+     */
     /** 0: The local video is normal. */
     LOCAL_VIDEO_STREAM_ERROR_OK = 0,
+    /** @zh-cn
+     *
+     * 1: 出错原因不明确。
+     */
     /** 1: No specified reason for the local video failure. */
     LOCAL_VIDEO_STREAM_ERROR_FAILURE = 1,
+    /** @zh-cn
+     *
+     * 2: 没有权限启动本地视频采集设备。
+     */
     /** 2: No permission to use the local video capturing device. */
     LOCAL_VIDEO_STREAM_ERROR_DEVICE_NO_PERMISSION = 2,
+    /** @zh-cn
+     *
+     * 3: 本地视频采集设备正在使用中。
+     */
     /** 3: The local video capturing device is in use. */
     LOCAL_VIDEO_STREAM_ERROR_DEVICE_BUSY = 3,
+    /** @zh-cn
+     *
+     * 4: 本地视频采集失败，建议检查采集设备是否正常工作。
+     */
     /** 4: The local video capture fails. Check whether the capturing device
      * is working properly.
      */
     LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE = 4,
+    /** @zh-cn
+     *
+     * 5: 本地视频编码失败。
+     */
     /** 5: The local video encoding fails. */
     LOCAL_VIDEO_STREAM_ERROR_ENCODE_FAILURE = 5,
+    /** @zh-cn
+     * 11: 通过 Window Symbol 共享窗口时，共享窗口处于最小化的状态。
+     */
     /** 11: The shared window is minimized when you share a window by the
      * window symbol.
      */
     LOCAL_VIDEO_STREAM_ERROR_SCREEN_CAPTURE_WINDOW_MINIMIZED = 11,
+    /** @zh-cn
+     *
+     * 该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。
+     * 退出全屏模式后，远端用户将无法看到共享的窗口。为避免远端用户看到黑屏，Agora 建议你立即结束本次共享。
+     *
+     * 报告该错误码的常见场景：
+     * - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
+     * - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
+     * - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。
+     */
     /** 12: The error code indicates that a window shared by the window symbol
      * has been closed, or a full-screen window
      * shared by the window symbol has exited full-screen mode.
@@ -4156,50 +4364,107 @@ export enum LOCAL_VIDEO_STREAM_ERROR {
      */
     LOCAL_VIDEO_STREAM_ERROR_SCREEN_CAPTURE_WINDOW_CLOSED = 12,
 };
-
+/** @zh-cn
+ *
+ * 本地音频状态
+ */
 /** Local audio state types.
  */
 export enum LOCAL_AUDIO_STREAM_STATE
 {
+    /** @zh-cn
+     *
+     * 0: 本地音频默认初始状态。
+     */
     /** 0: The local audio is in the initial state.
      */
     LOCAL_AUDIO_STREAM_STATE_STOPPED = 0,
+    /** @zh-cn
+     *
+     * 1: 本地音频采集设备启动成功。
+     */
     /** 1: The recording device starts successfully.
      */
     LOCAL_AUDIO_STREAM_STATE_RECORDING = 1,
+    /** @zh-cn
+     *
+     * 2: 本地音频首帧编码成功。
+     */
     /** 2: The first audio frame encodes successfully.
      */
     LOCAL_AUDIO_STREAM_STATE_ENCODING = 2,
+    /** @zh-cn
+     *
+     * 3: 本地音频启动失败。
+     */
     /** 3: The local audio fails to start.
      */
     LOCAL_AUDIO_STREAM_STATE_FAILED = 3
 };
-
+/** @zh-cn
+ *
+ * 本地音频出错原因
+ */
 /** Local audio state error codes.
  */
 export enum LOCAL_AUDIO_STREAM_ERROR
 {
+    /** @zh-cn
+     *
+     * 0: 本地音频状态正常。
+     */
     /** 0: The local audio is normal.
      */
     LOCAL_AUDIO_STREAM_ERROR_OK = 0,
+    /** @zh-cn
+     *
+     * 1: 本地音频出错原因不明确。
+     */
     /** 1: No specified reason for the local audio failure.
      */
     LOCAL_AUDIO_STREAM_ERROR_FAILURE = 1,
+    /** @zh-cn
+     *
+     * 2: 没有权限启动本地音频采集设备。
+     */
     /** 2: No permission to use the local audio device.
      */
     LOCAL_AUDIO_STREAM_ERROR_DEVICE_NO_PERMISSION = 2,
+    /** @zh-cn
+     *
+     * 3: 本地音频采集设备已经在使用中。
+     */
     /** 3: The microphone is in use.
      */
     LOCAL_AUDIO_STREAM_ERROR_DEVICE_BUSY = 3,
+    /** @zh-cn
+     *
+     * 4: 本地音频采集失败，建议你检查采集设备是否正常工作。
+     */
     /** 4: The local audio capturing fails. Check whether the capturing device
      * is working properly.
      */
     LOCAL_AUDIO_STREAM_ERROR_RECORD_FAILURE = 4,
+    /** @zh-cn
+     *
+     * 5: 本地音频编码失败。
+     */
     /** 5: The local audio encoding fails.
      */
     LOCAL_AUDIO_STREAM_ERROR_ENCODE_FAILURE = 5
 };
-
+/** @zh-cn
+ * 数据流设置。
+ *
+ * @since v3.3.1
+ *
+ * |`syncWithAudio` |`ordered`| SDK 行为|
+ * |--------------|--------|-------------|
+ * | false   |  false   |接收端接收到数据包后，SDK 立刻触发 `streamMessage` 回调。 |
+ * | true |  false | <p>如果数据包的延迟在音频延迟的范围内，SDK 会在播放音频的同时触发与该音频包同步的 `streamMessage` 回调。</p><p>如果数据包的延迟超出了音频延迟，SDK 会在接收到该数据包时立刻触发 `streamMessage` 回调；此情况会造成音频包和数据包的不同步。</p> |
+ * | false  |  true |<p>如果数据包的延迟在 5 秒以内，SDK 会修正数据包的乱序问题。</p><p>如果数据包的延迟超出 5 秒，SDK 会丢弃该数据包。</p>   |
+ * | true  |  true   |<p>如果数据包的延迟在音频延迟的范围内，SDK 会修正数据包的乱序问题。</p><p>如果数据包的延迟超出音频延迟，SDK 会丢弃该数据包。</p>     |
+ */
 /** The configurations for the data stream.
  *
  * @since v3.3.1
@@ -4249,6 +4514,15 @@ export enum LOCAL_AUDIO_STREAM_ERROR
  */
 export interface DataStreamConfig
 {
+  /** @zh-cn
+   * 是否与本地发送的音频流同步：
+   *
+   * - true: 数据流与音频流同步。
+   * - false: 数据流与音频流不同步。
+   *
+   * 设置为与音频同步后，如果数据包的延迟在音频延迟的范围内，SDK 会在播放音频的同时触发与该音频包同步的 `streamMessage` 回调。
+   * 当需要数据包立刻到达接收端时，不能将该参数设置为 `true`。Agora 建议你仅在需要实现特殊场景，例如歌词同步时，设置为与音频同步。
+   */
   /** Whether to synchronize the data packet with the published audio packet.
    *
    * - true: Synchronize the data packet with the audio packet.
@@ -4267,6 +4541,14 @@ export interface DataStreamConfig
    * lyric synchronization.
    */
   syncWithAudio: boolean,
+  /** @zh-cn
+   * 是否保证接收到的数据按发送的顺序排列：
+   *
+   * - true: 保证 SDK 按照发送方发送的顺序输出数据包。
+   * - false: 不保证 SDK 按照发送方发送的顺序输出数据包。
+   *
+   * 当需要数据包立刻到达接收端时，不能将该参数设置为 `true`。
+   */
   /** Whether the SDK guarantees that the receiver receives the data in the
    * sent order.
    *
@@ -5931,26 +6213,44 @@ export interface NodeRtcEngine {
    * @ignore
    */
   setAudioEffectParameters(presset: AUDIO_EFFECT_PRESET, param1: number, param2: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setRecordingAudioFrameParameters(sampleRate: number, channel: number, mode: number, samplesPerCall: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setCloudProxy(type:CLOUD_PROXY_TYPE): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   enableDeepLearningDenoise(enabled:boolean): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   setVoiceBeautifierParameters(preset:VOICE_BEAUTIFIER_PRESET, param1: number, param2: number): number;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */
   uploadLogFile(): string;
+  /** @zh-cn
+   * @ignore
+   */
   /**
    * @ignore
    */

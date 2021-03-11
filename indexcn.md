@@ -137,7 +137,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.resumeEffect resumeEffect}           | 恢复播放指定的音效文件         |
 | {@link AgoraRtcEngine.resumeAllEffects resumeAllEffects}   | 恢复播放所有音效文件           |
 
-### 变声与混响
+### 设置人声效果
 
 | 方法                                                         | 描述                       |
 | ------------------------------------------------------------ | -------------------------- |
@@ -145,8 +145,10 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 | {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | 设置本地语音音效均衡  |
 | {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | 设置本地音效混响 |
 | {@link AgoraRtcEngine.setVoiceBeautifierPreset setVoiceBeautifierPreset} | 设置 SDK 预设的美声效果|
+| {@link AgoraRtcEngine.setVoiceBeautifierParameters setVoiceBeautifierParameters} | 设置 SDK 预设美声效果的参数|
 | {@link AgoraRtcEngine.setAudioEffectPreset setAudioEffectPreset} | 设置 SDK 预设的人声效果  |
 | {@link AgoraRtcEngine.setAudioEffectParameters setAudioEffectParameters} | 设置 SDK 预设人声音效的参数 |
+| {@link AgoraRtcEngine.setVoiceConversionPreset setVoiceConversionPreset} | 设置 SDK 预设的变声效果 |
 
 ### 听声辨位
 
@@ -283,7 +285,7 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 
 | 方法                                                       | 描述       |
 | ---------------------------------------------------------- | ---------- |
-| {@link AgoraRtcEngine.createDataStream createDataStream}   | 创建数据流 |
+| {@link AgoraRtcEngine.createDataStreamWithConfig createDataStreamWithConfig}   | 创建数据流 |
 | {@link AgoraRtcEngine.sendStreamMessage sendStreamMessage} | 发送数据流 |
 
 ### 其他音频控制
@@ -303,13 +305,12 @@ Agora Electron SDK 基于 Agora SDK for macOS 和 Agora SDK for Windows，使用
 
 | 方法                                                         | 描述               |
 | ------------------------------------------------------------ | ------------------ |
+| {@link AgoraRtcEngine.setCloudProxy setCloudProxy} | 设置 Agora 云代理服务  |
+| {@link AgoraRtcEngine.enableDeepLearningDenoise enableDeepLearningDenoise} | 开启/关闭 AI 降噪模式 |
 | {@link AgoraRtcEngine.sendCustomReportMessage sendCustomReportMessage}  | 自定义数据上报  |
 | {@link AgoraRtcEngine.getCallId getCallId}                   | 获取通话 ID        |
 | {@link AgoraRtcEngine.rate rate}                             | 给通话评分         |
 | {@link AgoraRtcEngine.complain complain}                     | 投诉通话质量       |
-| {@link AgoraRtcEngine.setLogFile setLogFile}                 | 设置日志文件       |
-| {@link AgoraRtcEngine.setLogFileSize setLogFileSize}         | 设置日志文件大小       |
-| {@link AgoraRtcEngine.setLogFile setLogFilter}               | 设置日志过滤等级       |
 | {@link AgoraRtcEngine.getVersion getVersion}                 | 查询 SDK 版本号    |
 | {@link AgoraRtcEngine.getErrorDescription getErrorDescription} | 获取警告或错误描述 |
 
@@ -332,6 +333,7 @@ Agora Electron SDK 提供双实例的实现方法。第二个实例用以屏幕�
 | {@link AgoraRtcEngine.setupLocalVideoSource setupLocalVideoSource} | 设置 `videoSource` 的渲染器     |
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin} | 加入频道 |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave} | 离开频道              |
+| {@link AgoraRtcEngine.videoSourceSetChannelProfile videoSourceSetChannelProfile}|设置频道属性|
 | {@link AgoraRtcEngine.videoSourceRenewToken videoSourceRenewToken} | 更新 Token        |
 | {@link AgoraRtcEngine.videoSourceEnableAudio videoSourceEnableAudio} | 启用音频模块     |
 | {@link AgoraRtcEngine.videoSourceEnableLoopbackRecording videoSourceEnableLoopbackRecording} | 开启声卡采集          |
@@ -419,6 +421,12 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `videoSourceJoinedSuccess`         | （第二个实例）已加入频道                 |
 | `videoSourceRequestNewToken`       | （第二个实例）Token 已过期               |
 | `videoSourceLeaveChannel`          | （第二个实例）已离开频道                 |
+| `videoSourceLocalAudioStats`       | （第二个实例）报告通话中本地音频流统计信息|
+| `videoSourceLocalVideoStats`       | （第二个实例）报告本地视频流统计信息 |
+| `videoSourceVideoSizeChanged`      | （第二个实例）本地或远端视频大小或旋转信息发生改变  |
+| `videoSourceLocalVideoStateChanged`| （第二个实例）本地视频状态已改变 |
+| `videoSourceLocalAudioStateChanged`| （第二个实例）本地音频状态改变回调|
+
 
 
 <a name = "warn"></a>
@@ -442,6 +450,7 @@ Agora Electron SDK 通过 {@link AgoraRtcEngine.on} 方法监听上述方法触�
 | `-121`    | TICKET 非法，打开频道失败。                                  |
 | `-122`    | 尝试打开另一个服务器。                                       |
 | `-131`    | 频道连接不可恢复。 ｜
+| `-157`| 尚未集成必要的动态库。调用 {@link AgoraRtcEngine.enableDeepLearningDenoise enableDeepLearningDenoise} 前，你没有将用于 AI 降噪的动态库集成到项目文件中。|
 | `-701`    | 打开伴奏出错。                                               |
 | `-1014`   | 音频设备模块：运行时播放设备出现警告。                       |
 | `-1016`   | 音频设备模块：运行时录音设备出现警告。                       |

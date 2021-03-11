@@ -1093,10 +1093,13 @@ class AgoraRtcEngine extends EventEmitter {
    * @param {string} appid Agora 为 App 开发者签发的 App ID，每个项目都应该有一个独一无二的 App ID
    * @param areaCode 服务器的访问区域。该功能为高级设置，适用于有访问安全限制的场景。支持的区域详见 {@link AREA_CODE}
    * 指定访问区域后，Agora SDK 会连接指定区域内的 Agora 服务器。注解：仅支持指定单个访问区域。
+   * @param logConfig Agora SDK 日志文件配置。默认情况下，SDK 会生成 `agorasdk.log`、`agorasdk_1.log`、`agorasdk_2.log`、`agorasdk_3.log`、`agorasdk_4.log` 这 5 个日志文件。
+   * 每个文件的默认大小为 1024 KB。日志文件为 UTF-8 编码。最新的日志永远写在 `agorasdk.log` 中。`agorasdk.log` 写满后，SDK 会从 1-4
+   * 中删除修改时间最早的一个文件，然后将 `agorasdk.log` 重命名为该文件，并建立新的 `agorasdk.log` 写入最新的日志。
+   *
    * @returns {number}
    * - 0：方法调用成功
    * - < 0：方法调用失败
-   *  - 错误码 `101`: App ID 无效，请检查你的 App ID
    */
   /**
    * Initializes the Agora service.
@@ -1231,32 +1234,44 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 加入频道。
+   * 加入频道并设置是否自动订阅音频或视频流。
    *
-   * 该方法让用户加入通话频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。使用不同 App ID 的 App 是不能互通的。如果已在通话中，用户必须调用 {@link leaveChannel} 退出当前通话，才能进入下一个频道。
    *
-   * 成功调用该方加入频道后，本地会触发 `joinedChannel` 回调；通信场景下的用户和直播场景下的主播加入频道后，远端会触发 `userJoined` 回调。
+   * 该方法让用户加入通话频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。使用不同 App ID 的 App 是不能互通的。
+   * 如果已在通话中，用户必须调用 {@link leaveChannel} 退出当前通话，才能进入下一个频道。
+   *
+   * 成功调用该方法加入频道后，本地会触发 `joinedChannel` 回调；
+   * 通信场景下的用户和直播场景下的主播加入频道后，远端会触发 `userJoined` 回调。
+   *
    *
    * 在网络状况不理想的情况下，客户端可能会与 Agora 的服务器失去连接；SDK 会自动尝试重连，重连成功后，本地会触发 `rejoinedChannel` 回调。
    *
-   * @param {string} token 在 App 服务器端生成的用于鉴权的 Token：
-   * - 安全要求不高：你可以填入在 Agora Console 获取到的临时 Token。详见[获取临时 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取临时-token)
-   * - 安全要求高：将值设为在 App 服务端生成的正式 Token。详见[获取 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取正式-token)
+   * @note 请确保用于生成 Token 的 App ID 和调用 {@link initialize} 时传入的 App ID 一致。
    *
-   * @param {string} channel （必填）标识通话频道的字符，长度在 64 个字节以内的字符串。以下为支持的字符集范围（共 89 个字符）：
-   * - 26 个小写英文字母 a-z
-   * - 26 个大写英文字母 A-Z
-   * - 10 个数字 0-9
-   * - 空格
-   * - “!”, “#”, “$”, “%”, “&”, “(”, “)”, “+”, “-”, “:”, “;”, “<”, “=”, “.”, “>”, “?”, “@”, “[”, “]”, “^”, “_”, “{”, “}”, “|”, “~”, “,”
-   * @param {string} info (非必选项) 开发者需加入的任何附加信息。一般可设置为空字符串，或频道相关信息。该信息不会传递给频道内的其他用户
-   * @param {number} uid 用户 ID，32 位无符号整数。
-   * - 建议设置范围：1到 2<sup>32</sup>-1，并保证唯一性。
-   * - 如果不指定（即设为 0），SDK 会自动分配一个
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
-   *  - 错误码 `2`，`3`，`5`
+   *
+   * @param token 在服务端生成的用于鉴权的 Token。
+   * 详见[从服务端生成 Token](https://docs.agora.io/cn/Interactive%20Broadcast/token_server?platform=Electron)。
+   * @param channel 标识通话的频道名称，长度在 64 字节以内的字符串。以下为支持的字符集范围（共 89 个字符）:
+   * - 26 个小写英文字母 a~z；
+   * - 26 个大写英文字母 A~Z；
+   * - 10个数字 0~9；
+   * - 空格；
+   * - "!"、"#"、"$"、"%"、"&"、"("、")"、"+"、"-"、":"、";"、"<"、"="、"."、">"、"?"、"@"、"["、"]"、"^"、"_"、" {"、"}"、"|"、"~"、","。
+   * @param info (非必选项) 预留参数。
+   * @param uid (非必选项) 用户 ID，32位无符号整数。建议设置范围：1到 2<sup>32</sup>-1，并保证唯一性。如果不指定（即设为0），SDK 会自动分配一个，
+   * 并在 `joinedChannel` 回调方法中返回，App 层必须记住该返回值并维护，SDK 不对该返回值进行维护。
+   * 请注意：频道内每个用户的 UID 必须是唯一的。如果想要从不同的设备同时接入同一个频道，请确保每个设备上使用的 UID 是不同的。
+   * @param options 频道媒体设置选项。
+   *
+   * @return
+   * - 0(ERR_OK): 方法调用成功。
+   * - < 0: 方法调用失败。
+   *    - `-2`: 参数无效。
+   *    - `-3`: SDK 初始化失败，请尝试重新初始化 SDK。
+   *    - `-5`: 调用被拒绝。可能有如下两个原因：
+   *       - 已经创建了一个同名的 AgoraRtcChannel 频道。
+   *       - 已经通过 IChannel 加入了一个频道，并在该 AgoraRtcChannel 频道中发布了音视频流。由于通过 AgoraRtcEngine 加入频道会默认发布音视频流，而 SDK 不支持同时在两个频道发布音视频流，因此会报错。
+   *    - `-7`: SDK 尚未初始化，就调用该方法。请确认在调用 API 之前已创建 AgoraRtcRtcEngine 对象并完成初始化。
    */
   /**
    * Joins a channel with the user ID, and configures whether to
@@ -1272,7 +1287,7 @@ class AgoraRtcEngine extends EventEmitter {
    * before entering another channel.
    *
    * A successful `joinChannel` method call triggers the following callbacks:
-   * - The local client: `joinChannelSuccess`.
+   * - The local client: `joinedChannel`.
    * - The remote client: `userJoined`, if the user joining the channel is
    * in the `0` (communication) profile, or is a host in the `1`
    * (live streaming) profile.
@@ -2429,6 +2444,7 @@ class AgoraRtcEngine extends EventEmitter {
    会需要更高的 CPU 及内存，容易导致性能问题。在这种情况下，我们推荐将摄像头采集偏好设置为 `CAPTURER_OUTPUT_PREFERENCE_PERFORMANCE(1)`，避免性能问题。
    * - 如果没有本地预览功能或者对预览质量没有要求，我们推荐将采集偏好设置为 `CAPTURER_OUTPUT_PREFERENCE_PERFORMANCE(1)`，以优化 CPU 和内存的资源分配
    * - 如果用户希望本地预览视频比实际编码发送的视频清晰，可以将采集偏好设置为 `CAPTURER_OUTPUT_PREFERENCE_PREVIEW(2)`
+   * - 如果用户需要自定义本地采集的视频宽高，请将采集偏好设为 `CAPTURER_OUTPUT_PREFERENCE_MANUAL(3)`。
    *
    * @note 请在启动摄像头之前调用该方法，如 {@link joinChannel}、{@link enableVideo} 或者 {@link enableLocalVideo}
    * @param {CameraCapturerConfiguration} config 摄像头采集偏好
@@ -2934,20 +2950,22 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复发送本地音频流。
+   * 取消或恢复发布本地音频流。
    *
    * 成功调用该方法后，远端会触发 `userMuteAudio` 回调。
    *
-   * @note 我们建议你在 {@link setChannelProfile} 后调用该方法。因为如果你在该方法后调用 `setChannelProfile`方法，
-   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否停止发送本地音频。
+   * @note
+   * - 该方法不影响音频采集状态，因为没有禁用音频采集设备。
+   * - 该方法在加入频道前后都能调用。如果你在该方法后调用 {@link setChannelProfile} 方法，
+   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否取消发布本地音频。因此我们建议在 `setChannelProfile` 后调用该方法。
    *
+   * @param mute 是否取消发布本地音频流。
+   * - true: 取消发布。
+   * - false:（默认）发布。
    *
-   * @param {boolean} mute
-   * - true：停止发送本地音频流
-   * - false：继续发送本地音频流（默认）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes publishing the local audio stream.
@@ -2978,14 +2996,21 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复接收所有音频流。
+   * 取消或恢复订阅所有远端用户的音频流。
    *
-   * @param {boolean} mute
-   * - true：停止接收所有音频流
-   * - false：继续接收所有音频流（默认）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * 自 v3.3.1 起，成功调用该方法后，本地用户会取消或恢复订阅所有远端用户的音频流，包括在调用该方法后加入频道的用户的音频流。
+   *
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
+   *
+   * @param mute 是否取消订阅所有远端用户的音频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes subscribing to the audio streams of all remote users.
@@ -3014,18 +3039,23 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置是否默认接收音频流。
+   * 默认取消或恢复订阅远端用户的音频流。
    *
-   * 该方法在加入频道前后都可调用。如果在加入频道后调用 `setDefaultMuteAllRemoteAudioStreams (true)`，会接收不到后面加入频道的用户的音频流。
+   * @deprecated 该方法自 v3.3.1 起废弃。
    *
-   * @note 停止接收音频流后，如果想要恢复接收，请调用 {@link muteRemoteAudioStream}(false)，并指定你想要接收的远端用户 uid；
-   * 如果想恢复接收多个用户的音频流，则需要多次调用 {@link muteRemoteAudioStream}(false)。`setDefaultMuteAllRemoteAudioStreams (false)` 只能恢复接收后面加入频道的用户的音频流。
-   * @param {boolean} mute
-   * - true：默认不接收所有音频流
-   * - false：默认接收所有音频流（默认）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * 该方法需要在加入频道后调用。调用成功后，本地用户取消或恢复订阅调用时刻之后加入频道的远端用户。
+   *
+   * @note 取消订阅音频流后，如果需要恢复订阅频道内的远端，可以进行如下操作：
+   * - 如果需要恢复订阅单个用户的音频流，调用 {@link muteRemoteAudioStream}(false)，并指定你想要订阅的远端用户 ID。
+   * - 如果想恢复订阅多个用户的音频流，则需要多次调用 {@link muteRemoteAudioStream}(false)。
+   *
+   * @param mute 是否默认取消订阅远端用户的音频流：
+   * - true: 默认取消订阅。
+   * - false:（默认）默认订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes subscribing to the audio streams of all remote users
@@ -3064,21 +3094,16 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复接收指定音频流。
+   * 取消或恢复订阅指定远端用户的音频流。
    *
-   * 如果之前有调用过 {@link muteAllRemoteAudioStreams}(true) 停止订阅所有远端
-   * 音频，在调用 `muteRemoteAudioStreams` 之前请确保你已调用 {@link muteAllRemoteAudioStreams}(false)。
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
    *
-   * `muteAllRemoteAudioStreams` 是全局控制，`muteRemoteAudioStream` 是精细控制。
-   *
-   * @param {number} uid 指定的用户 ID
-   * @param {boolean} mute
-   * - `true`：停止接收指定用户的音频流
-   * - `false`：继续接收指定用户的音频流
-   *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param userId 指定用户的用户 ID。
+   * @param mute 是否取消订阅指定远端用户的音频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
    */
   /**
    * Stops or resumes subscribing to the audio stream of a specified user.
@@ -3103,22 +3128,19 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复发送本地视频流。
+   * 取消或恢复发布本地视频流。
    *
    * 成功调用该方法后，远端会触发 `userMuteVideo` 回调。
    *
    * @note
-   * - 调用该方法时，SDK 不再发送本地视频流，但摄像头仍然处于工作状态。
-   * - 我们建议你在 {@link setChannelProfile} 后调用该方法。因为如果你在该方法后调用 `setChannelProfile`方法，
-   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否停止发送本地视频。
+   * - 相比于调用 {@link enableLocalVideo} 控制本地视频流发送，调用该方法响应速度更快。
+   * - 该方法不影响视频采集状态，因为没有禁用摄像头。
+   * - 该方法在加入频道前后都能调用。如果你在该方法后调用 {@link setChannelProfile} 方法，
+   * SDK 会根据你设置的频道场景以及用户角色，重新设置是否取消发布本地视频。因此我们建议在 `setChannelProfile` 后调用该方法。
    *
-   * @param {boolean} mute
-   * - `true`：停止发送本地视频流
-   * - `false`：发动本地视频流（默认）
-   *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param mute 是否取消发布本地视频流。
+   * - true: 取消发布。
+   * - false: （默认）发布。
    */
   /** Stops or resumes publishing the local video stream.
    *
@@ -3259,15 +3281,21 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复接收所有视频流。
+   * 取消或恢复订阅所有远端用户的视频流。
    *
-   * @param {boolean} mute
-   * - true：停止接收所有视频流
-   * - false：继续接收所有视频流（默认）
+   * 自 v3.3.1 起，成功调用该方法后，本地用户会取消或恢复订阅所有远端用户的视频流，包括在调用该方法后加入频道的用户的视频流。
    *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
+   *
+   * @param mute 是否取消订阅所有远端用户的视频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes subscribing to the video streams of all remote users.
@@ -3296,20 +3324,23 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 设置是否默认接收视频流。
+   * 默认取消或恢复订阅远端用户的视频流。
    *
-   * 该方法在加入频道前后都可调用。如果在加入频道后调用 `setDefaultMuteAllRemoteVideoStreams (true)`，会接收不到设置后加入频道的用户的视频流。
+   * @deprecated 该方法自 v3.3.1 起废弃。
    *
-   * @note 停止接收视频流后，如果想要恢复接收，请调用 {@link muteRemoteVideoStream}(false)，
-   * 并指定你想要接收的远端用户 uid；如果想恢复接收多个用户的视频流，则需要多次调用 {@link muteRemoteVideoStream}(false)。
-   * `setDefaultMuteAllRemoteVideoStreams (false)` 只能恢复接收后面加入频道的用户的视频流。
-   * @param {boolean} mute
-   * - true：默认不接收任何视频流
-   * - false：默认继续接收所有视频流（默认）
+   * 该方法需要在加入频道后调用。调用成功后，本地用户取消或恢复订阅调用时刻之后加入频道的远端用户。
    *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @note 取消订阅视频流后，如果需要恢复订阅频道内的远端，可以进行如下操作：
+   * - 如果需要恢复订阅单个用户的视频流，调用 {@link muteRemoteVideoStream}(false)，并指定你想要订阅的远端用户 ID。
+   * - 如果想恢复订阅多个用户的视频流，则需要多次调用 {@link muteRemoteVideoStream}(false)。
+   *
+   * @param mute 是否默认取消订阅远端用户的视频流：
+   * - true: 默认取消订阅。
+   * - false:（默认）默认订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /** Stops or resumes subscribing to the video streams of all remote users
    * by default.
@@ -3397,20 +3428,16 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   /** @zh-cn
-   * 停止/恢复接收指定视频流。
+   * 取消或恢复订阅指定远端用户的视频流。
    *
-   * 如果之前有调用过 {@link muteAllRemoteVideoStreams}(true) 停止订阅所有远端
-   * 视频，在调用 `muteRemoteVideoStreams` 之前请确保你已调用 {@link muteAllRemoteVideoStreams}(false)。
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
    *
-   * `muteAllRemoteVideoStreams` 是全局控制，`muteRemoteVideoStream` 是精细控制。
-   *
-   * @param {number} uid 指定用户的 ID
-   * @param {boolean} mute
-   * - true：停止接收指定用户的视频流
-   * - false：继续接收指定用户的视频流（默认）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param userId 指定用户的用户 ID。
+   * @param mute 是否取消订阅指定远端用户的视频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
    */
   /**
    * Stops or resumes subscribing to the video stream of a specified user.
@@ -3484,6 +3511,8 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置日志文件。
    *
+   * @deprecated 该方法从 v3.3.1 起废弃，请改用 {@link initialize} 中的 `logConfig`。
+   *
    * 设置 SDK 的输出 log 文件。SDK 运行时产生的所有 log 将写入该文件。你的 app 必须保证指定的目录存在而且可写。
    *
    * @note 如需调用本方法，请在调用 {@link initialize} 方法初始化 `AgoraRtcEngine` 对象后立即调用，否则可能造成输出日志不完整。
@@ -3511,6 +3540,8 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * 设置 Agora SDK 输出的单个日志文件大小。
+   *
+   * @deprecated 该方法从 v3.3.1 起废弃，请改用 {@link initialize} 中的 `logConfig`。
    *
    * 默认情况下，SDK 会生成 `agorasdk.log`、`agorasdk_1.log`、`agorasdk_2.log`、
    * `agorasdk_3.log`、`agorasdk_4.log` 这 5 个日志文件。
@@ -3592,6 +3623,8 @@ class AgoraRtcEngine extends EventEmitter {
 
   /** @zh-cn
    * 设置日志文件过滤器。
+   *
+   * @deprecated 该方法从 v3.3.1 起废弃，请改用 {@link initialize} 中的 `logConfig`。
    *
    * 该方法设置 SDK 的输出日志过滤等级。不同的过滤等级可以单独或组合使用。
    *
@@ -3911,7 +3944,10 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 设置本地语音变声。
    *
-   * @deprecated 该方法自 v3.2.0 已废弃，请改用 {@link setAudioEffectPreset} 或 {@link setVoiceBeautifierPreset}。
+   * @deprecated 该方法从 v3.2.0 起废弃，请改用如下方法：
+   * - {@link setAudioEffectPreset} ：音效
+   * - {@link setVoiceBeautifierPreset} ：美声效果
+   * - {@link setVoiceConversionPreset} ：变声效果
    *
    * @note 该方法不能与 {@link setLocalVoiceReverbPreset} 方法同时使用，否则先调用的方法会不生效。
    * @param {VoiceChangerPreset} preset 设置本地语音的变声效果选项。
@@ -4170,31 +4206,39 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 使用 User Account 加入频道。
    *
-   * 该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
-   * - 本地：`localUserRegistered` 和 `userInfoUpdated`
-   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
+   *  该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
    *
-   * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
+   * - 本地：`localUserRegistered` 和 `joinedChannel` 回调
+   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined`
+   * 和 `userInfoUpdated` 回调
    *
-   * @param token 在 App 服务器端生成的用于鉴权的 Token：
-   * - 安全要求不高：你可以使用 Console 生成的临时 Token，详见[获取临时 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取临时-token)
-   * - 安全要求高：将值设为你的服务端生成的正式 Token，详见[获取正式 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取正式-token)
-   * @param channel 标识频道的频道名，最大不超过 64 字节。以下为支持的字符集范围（共 89 个字符）：
+   * 用户成功加入频道后，默认订阅频道内所有其他用户的音频流和视频流，因此产生用量并影响计费。如果想取消订阅，可以通过调用相应的 `mute` 方法实现。
+   *
+   * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。
+   * 如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
+   *
+   * @param token 在服务端生成的用于鉴权的 Token。详见[从服务端生成 Token](https://docs.agora.io/cn/Interactive%20Broadcast/token_server?platform=Electron)。
+   * @param channelId 标识频道的频道名，最大不超过 64 字节。以下为支持的字符集范围（共 89 个字符）：
    * - 26 个小写英文字母 a-z
    * - 26 个大写英文字母 A-Z
    * - 10 个数字 0-9
    * - 空格
    * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ","
-   * @param userAccount 用户 User Account。该参数为必须，最大不超过 255 字节，不可为 NULL。请确保加入频道的 User Account 的唯一性。
+   * @param userAccount 用户 User Account。该参数为必需，最大不超过 255 字节，不可为 `null`。请确保注册的 User Account 的唯一性。以下为支持的字符集范围（共 89 个字符）：
    * - 26 个小写英文字母 a-z
    * - 26 个大写英文字母 A-Z
    * - 10 个数字 0-9
    * - 空格
-   * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ","
-   * @returns
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
-   *  - 错误码 `2`，`3`，`5`
+   * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@",
+   * "[", "]", "^", "_", " {", "}", "|", "~", ","
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   *  - `-2`
+   *  - `-3`
+   *  - `-5`
+   *  - `-7`
    */
   /**
    * Joins the channel with a user account.
@@ -4329,25 +4373,21 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 当直播频道中的观众想从一个频道切换到另一个频道时，可以调用该方法，实现快速切换。
    *
-   * 成功调用该方切换频道后，本地会先收到离开原频道的回调 `leavechannel`，
+   * 成功调用该方切换频道后，本地会先收到离开原频道的回调 `leaveChannel`，
    * 再收到成功加入新频道的回调 `joinedChannel`。
    *
    * @note 该方法仅适用直播场景下的的观众。
    *
-   * @param token 在服务器端生成的用于鉴权的 Token：
-   * - 安全要求不高：你可以填入在 Agora Console 获取到的临时 Token。详见
-   * [获取临时 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取临时-token)
-   * - 安全要求高：将值设为在 App 服务端生成的正式 Token。详
-   * 见[获取 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取正式-token)
-
-   * @param channel 标识频道的频道名，最大不超过 64 字节。以下为支持的字符集范围（共 89 个字符）：
+   * @param token 在服务端生成的用于鉴权的 Token。详见[从服务端生成 Token](https://docs.agora.io/cn/Interactive%20Broadcast/token_server?platform=Electron)。
+   * @param channelId 标识频道的频道名，最大不超过 64 字节。以下为支持的字符集范围
+   * （共 89 个字符）：
    * - 26 个小写英文字母 a-z
    * - 26 个大写英文字母 A-Z
    * - 10 个数字 0-9
    * - 空格
-   * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".",
-   * ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ","
-   *
+   * - "!"，"#"，"$"，"%"，"&"，"("，")"，"+"，"-"，":"，";"，"<"，"="，"."，">"，
+   * "?"，"@"，"["，"]"，"^"，"_"，" {"， "}"，"|"，"~"，","
+   * @param options 频道媒体设置选项。
    * @returns
    * - 0：方法调用成功
    * - < 0：方法调用失败
@@ -5716,7 +5756,7 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceUpdateScreenCaptureRegion(rect);
   }
   /** @zh-cn
-   * 开启声卡采集。
+   * 双实例方法：开启声卡采集。
    *
    * 启用声卡采集功能后，声卡播放的声音会被合到本地音频流中，从而可以发送到远端。
    *
@@ -5761,7 +5801,7 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceEnableLoopbackRecording(enabled, deviceName)
   }
   /** @zh-cn
-   * 启用音频模块（默认为开启状态）。
+   * 双实例方法：启用音频模块（默认为开启状态）。
    *
    * @note
    * - 该方法设置的是内部引擎为开启状态，在频道内和频道外均可调用，且在 {@link leaveChannel} 后仍然有效。
@@ -5804,27 +5844,27 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceEnableAudio()
   }
   /** @zh-cn
-   * 开启或关闭内置加密。
+   * 双实例方法：开启或关闭内置加密。
    *
    * @since v3.2.0
    *
    * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
    *
-   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。用户离开频道后，SDK 会自动关闭加密。如需重新开启加密，你需要在用户再次加入频道前调用该方法。
    *
-   * **Note**:
-   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
-   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
-   * 重新加载外部加密库。
+   * @note 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
    *
    * @param enabled 是否开启内置加密：
    * - true: 开启
    * - false: 关闭
-   * @param config 配置内置加密模式和密钥。
+   * @param encryptionConfig 配置内置加密模式和密钥。
    *
    * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
+   *  - `-2`: 调用了无效的参数。需重新指定参数。
+   *  - `-4`: 设置的加密模式不正确或加载外部加密库失败。需检查枚举值是否正确或重新加载外部加密库。
+   *  - `-7`: SDK 尚未初始化。
    */
   /** Enables/Disables the built-in encryption.
    *
@@ -5857,7 +5897,7 @@ class AgoraRtcEngine extends EventEmitter {
     return this.rtcEngine.videoSourceEnableEncryption(enabled, encryptionConfig);
   }
   /** @zh-cn
-   * 设置内置的加密方案。
+   * 双实例方法：设置内置的加密方案。
    *
    * @deprecated 该方法自 v3.2.0 废弃，请改用 {@link videoSourceEnableEncryption}。
    *
@@ -6804,6 +6844,8 @@ class AgoraRtcEngine extends EventEmitter {
   /** @zh-cn
    * 创建数据流。
    *
+   * @deprecated 该方法自 v3.3.1 起废弃，请改用 {@link createDataStreamWithConfig}
+   *
    * 该方法用于创建数据流。`AgoraRtcEngine` 生命周期内，每个用户最多只能创建 5 个数据流。
    *
    * @note
@@ -6851,6 +6893,21 @@ class AgoraRtcEngine extends EventEmitter {
   createDataStream(reliable: boolean, ordered: boolean): number {
     return this.rtcEngine.createDataStream(reliable, ordered);
   }
+  /** @zh-cn
+   * 创建数据流。
+   *
+   * @since v3.3.1
+   *
+   * 该方法用于创建数据流。每个用户在每个频道内最多只能创建 5 个数据流。
+   *
+   * 相比 {@link createDataStream}，本方法不支持数据可靠，接收方会丢弃超出发送时间 5 秒后的数据包。
+   *
+   * @param config 数据流设置
+   *
+   * @return
+   * - 返回数据流 ID，创建数据流成功。
+   * - < 0: 创建数据流失败。
+   */
   /** Creates a data stream.
    *
    * @since v3.3.1
@@ -8006,12 +8063,9 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
    *
-   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。用户离开频道后，SDK 会自动关闭加密。如需重新开启加密，你需要在用户再次加入频道前调用该方法。
    *
-   * **Note**:
-   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
-   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
-   * 重新加载外部加密库。
+   * @note 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
    *
    * @param enabled 是否开启内置加密：
    * - true: 开启
@@ -8021,6 +8075,9 @@ class AgoraRtcEngine extends EventEmitter {
    * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
+   *  - `-2`: 调用了无效的参数。需重新指定参数。
+   *  - `-4`: 设置的加密模式不正确或加载外部加密库失败。需检查枚举值是否正确或重新加载外部加密库。
+   *  - `-7`: SDK 尚未初始化。需在调用 API 之前已创建 AgoraRtcEngine 对象并完成初始化。
    */
   /** Enables/Disables the built-in encryption.
    *
@@ -8072,6 +8129,8 @@ class AgoraRtcEngine extends EventEmitter {
    *  - {@link setLocalVoicePitch}
    *  - {@link setLocalVoiceEqualization}
    *  - {@link setLocalVoiceReverb}
+   *  - {@link setVoiceBeautifierParameters}
+   *  - {@link setVoiceConversionPreset}
    *
    * @param preset 预设的音效选项。
    *
@@ -8148,6 +8207,8 @@ class AgoraRtcEngine extends EventEmitter {
    *  - {@link setLocalVoicePitch}
    *  - {@link setLocalVoiceEqualization}
    *  - {@link setLocalVoiceReverb}
+   *  - {@link setVoiceBeautifierParameters}
+   *  - {@link setVoiceConversionPreset}
    *
    * @param preset 预设的美声效果选项。
    *
@@ -8228,6 +8289,8 @@ class AgoraRtcEngine extends EventEmitter {
    *   - {@link setLocalVoicePitch}
    *   - {@link setLocalVoiceEqualization}
    *   - {@link setLocalVoiceReverb}
+   *   - {@link setVoiceBeautifierParameters}
+   *   - {@link setVoiceConversionPreset}
    *
    * @param preset SDK 预设的音效：
    * - 3D 人声音效: `ROOM_ACOUSTICS_3D_VOICE`.
@@ -8363,6 +8426,30 @@ class AgoraRtcEngine extends EventEmitter {
   }
 
   // 3.3.0 apis
+  /** @zh-cn
+   * 设置 Agora 云代理服务。
+   *
+   * @since v3.3.1
+   *
+   * 当用户防火墙限制 IP 和端口号时，你需要参考《使用云代理》开放相应 IP 和端口号，然后调用该方法开启云代理，并将 `type` 参数设置为 `1`，即 UDP 协议的云代理。
+   *
+   * 成功连接云代理后，SDK 会触发 `connectionStateChanged(2, 11)` 回调。
+   *
+   * 如果你想关闭已设置的云代理，请调用 `setCloudProxy(0)`。如果你想更改已设置的云代理类型，
+   * 请先调用 `setCloudProxy(0)`，再调用 `setCloudProxy` 并传入你期望的 `type` 值。
+   *
+   * @note
+   * - Agora 推荐你在频道外调用该方法。
+   * - 使用 UDP 协议的云代理时，推流到 CDN 和跨频道媒体流转发功能不可用。
+   *
+   * @param type 云代理类型。该参数为必填参数，如果你不赋值，SDK 会报错。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   *  - `-2`: 传入的参数无效
+   *  - `-7`: SDK 尚未初始化
+   */
   /** Sets the Agora cloud proxy service.
    *
    * @since v3.3.1
@@ -8401,6 +8488,42 @@ class AgoraRtcEngine extends EventEmitter {
   setCloudProxy(type:CLOUD_PROXY_TYPE): number {
     return this.rtcEngine.setCloudProxy(type);
   }
+  /** @zh-cn
+   * 开启或关闭 AI 降噪模式。
+   *
+   * SDK 默认开启传统降噪模式，以消除大部分平稳噪声。如果你还需要消除非平稳噪声，Agora 推荐你按如下步骤开启 AI 降噪模式：
+   *
+   * 1. 将 libs 文件夹中的动态库集成到项目中。
+   *  - macOS: `AgoraAIDenoiseExtension.framework`
+   *  - Windows: `libagora_ai_denoise_extension.dll`
+   * 2. 调用 `enableDeepLearningDenoise(true)`。
+   *
+   * AI 降噪模式对设备性能有要求。只有在设备性能良好的情况下，SDK 才会成功开启 AI 降噪模式。例如，
+   * 支持在如下设备及其之后的型号中开启 AI 降噪模式：
+   * - iPhone 6S
+   * - MacBook Pro 2015
+   * - iPad Pro 第二代
+   * - iPad mini 第五代
+   * - iPad Air 第三代
+   *
+   * 成功开启 AI 降噪模式后，如果 SDK 检测到当前设备的性能不足，SDK 会自动关闭 AI 降噪模式，并开启传统降噪模式。
+   *
+   * 在频道内，如果你调用了 `enableDeepLearningDenoise(false)` 或 SDK 自动关闭了 AI 降噪模式，当你需要重新开启 AI 降噪模式时，
+   * 你需要先调用 {@link leaveChannel}，再调用 `enableDeepLearningDenoise(true)`。
+   *
+   * @note
+   * - 该方法需要动态加载动态库，所以 Agora 推荐在加入频道前调用该方法。
+   * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
+   *
+   * @param enable 是否开启 AI 降噪模式：
+   * - true:（默认）开启。
+   * - false: 关闭。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   *  - `-157`: 未集成用于 AI 降噪的动态库。
+   */
   /** Enables or disables deep-learning noise reduction.
    *
    * @since v3.3.1
@@ -8456,6 +8579,47 @@ class AgoraRtcEngine extends EventEmitter {
   enableDeepLearningDenoise(enabled:boolean): number {
     return this.rtcEngine.enableDeepLearningDenoise(enabled);
   }
+  /** @zh-cn
+   * 设置 SDK 预设美声效果的参数。
+   *
+   * @since v3.3.1
+   *
+   * 调用该方法可以设置歌唱美声效果的性别特征和混响效果。该方法对本地发流用户进行设置。设置后，频道内所有用户都能听到该效果。
+   *
+   * 为获取更好的人声效果，Agora 推荐你在调用该方法前将 {@link setAudioProfile} 的 `scenario`
+   * 设为 `3`，并将 `profile` 设为 `4`
+   * 或 `5`。
+   *
+   * @note
+   * - 该方法在加入频道前后都能调用。
+   * - 请勿将 {@link setAudioProfile} 的 `profile` 参数设置为 `1`
+   * 或 `6`，否则该方法不生效。
+   * - 该方法对人声的处理效果最佳，Agora 不推荐调用该方法处理含音乐的音频数据。
+   * - 调用该方法后，Agora 不推荐调用以下方法，否则该方法设置的效果会被覆盖：
+   *    - {@link setAudioEffectPreset}
+   *    - {@link setAudioEffectParameters}
+   *    - {@link setVoiceBeautifierPreset}
+   *    - {@link setLocalVoiceReverbPreset}
+   *    - {@link setLocalVoiceChanger}
+   *    - {@link setLocalVoicePitch}
+   *    - {@link setLocalVoiceEqualization}
+   *    - {@link setLocalVoiceReverb}
+   *    - {@link setVoiceConversionPreset}
+   *
+   * @param preset SDK 预设的音效：
+   * - `SINGING_BEAUTIFIER`: 歌唱美声。
+   * @param param1 歌声的性别特征：
+   * - `1`: 男声。
+   * - `2`: 女声。
+   * @param param2 歌声的混响效果：
+   * - `1`: 歌声在小房间的混响效果。
+   * - `2`: 歌声在大房间的混响效果。
+   * - `3`:  歌声在大厅的混响效果。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   */
   /** Sets parameters for SDK preset voice beautifier effects.
    *
    * @since v3.3.1
@@ -8507,6 +8671,10 @@ class AgoraRtcEngine extends EventEmitter {
   setVoiceBeautifierParameters(preset:VOICE_BEAUTIFIER_PRESET, param1:number, param2:number): number {
     return this.rtcEngine.setVoiceBeautifierParameters(preset, param1, param2);
   }
+  /** @zh-cn
+   *
+   * @ignore
+   */
   /**
    * @ignore
    */
@@ -9761,6 +9929,11 @@ on(
   /** Occurs when the video source leaves the channel.
    */
   on(evt: 'videoSourceLeaveChannel', cb: () => void): this;
+  /** @zh-cn
+   * 通话中本地音频流的统计信息回调。
+   *
+   * @param cb.stats 本地音频流统计信息
+   */
   /** Reports the statistics of the audio stream of the local video source.
    *
    * The SDK triggers this callback once every two seconds.
@@ -9768,6 +9941,14 @@ on(
    * @param cb.stats The statistics of the local audio stream.
    */
   on(evt: 'videoSourceLocalAudioStats', cb: (stats: LocalAudioStats) => void): this;
+  /** @zh-cn
+   * 通话中本地视频流的统计信息回调。
+   *
+   * @note 如果你此前调用 {@link enableDualStreamMode} 方法，则本回调描述本地设备发送的视频大流的统计信息。
+   *
+   *
+   * @param cb.stats 本地视频流统计信息
+   */
   /** Reports the statistics of the video stream of the local video source.
    *
    * The SDK triggers this callback once every two seconds for each
@@ -9783,6 +9964,17 @@ on(
    * @param cb.stats Statistics of the local video stream.
    */
   on(evt: 'videoSourceLocalVideoStats', cb: (stats: LocalVideoStats) => void): this;
+  /** @zh-cn
+   * 本地或远端视频大小和旋转信息发生改变回调。
+   *
+   * @param cb.uid 图像尺寸和旋转信息发生变化的用户的用户 ID（本地用户的 `uid` 为 `0`）
+   *
+   * @param cb.width 视频流的宽度（px）
+   *
+   * @param cb.height 视频流的高度（px）
+   *
+   * @param cb.rotation 旋转信息 [0, 360]
+   */
   /** Occurs when the video size or rotation of the video source
    * changes.
    *
@@ -9794,6 +9986,24 @@ on(
    * @param cb.rotation New rotation of the video [0 to 360).
    */
   on(evt: 'videoSourceVideoSizeChanged', cb: (uid: number, width: number, height: number, rotation: number) => void): this;
+  /** @zh-cn
+   * 本地视频状态发生改变回调
+   *
+   * 本地视频的状态发生改变时，SDK 会触发该回调返回当前的本地视频状态。你可以通过该回调了解当前视频的状态以及出现故障的原因，方便排查问题。
+   *
+   * SDK 会在如下情况触发 `localVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_FAILED，LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 回调：
+   * - 应用退到后台，系统回收摄像头。
+   * - 摄像头正常启动，但连续 4 秒都没有输出采集的视频。
+   *
+   * 摄像头输出采集的视频帧时，如果连续 15 帧中，所有视频帧都一样，SDK
+   * 触发 `localVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING，LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 回调。
+   * 注意：帧重复检测仅针对分辨率大于 200 × 200，帧率大于等于 10 fps，码率小于 20 Kbps 的视频帧。
+   *
+   * @note 对某些机型而言，当本地视频采集设备正在使用中时，SDK 不会在本地视频状态发生改变时触发该回调，你需要自行做超时判断。
+   *
+   * @param cb.state 本地视频状态
+   * @param cb.error 本地视频出错原因
+   */
   /**
    * Occurs when the local video state of the video source changes.
    *
@@ -9827,6 +10037,20 @@ on(
    * @param cb.error The detailed error information of the local video.
    */
   on(evt: 'videoSourceLocalVideoStateChanged', cb: (state: LOCAL_VIDEO_STREAM_STATE, error: LOCAL_VIDEO_STREAM_ERROR) => void): this;
+  /** @zh-cn
+   * 本地音频状态发生改变回调。
+   *
+   * 本地音频的状态发生改变时（包括本地麦克风采集状态和音频编码状态），
+   * SDK 会触发该回调报告当前的本地音频状态。在本地音频出现故障时，
+   * 该回调可以帮助你了解当前音频的状态以及出现故障的原因，方便你排查问题。
+   *
+   * @note
+   * 当状态为 `LOCAL_AUDIO_STREAM_STATE_FAILED(3)` 时，
+   * 你可以在 `err` 参数中查看返回的错误信息。
+   *
+   * @param cb.state 当前的本地音频状态。
+   * @param cb.error 本地音频出错原因。
+   */
   /**
    * Occurs when the local audio state of the video source changes.
    *
@@ -10279,33 +10503,22 @@ on(
     cb: (uid: number, userInfo: UserInfo) => void
   ): this;
   /** @zh-cn
-   * 本地视频状态发生改变回调。
+   * 本地视频状态发生改变回调
    *
-   * 本地视频的状态发生改变时，SDK 会触发该回调返回当前的本地视频状态；当状态码为 `3` 时，
-   * 你可以在错误码查看返回的错误信息。 该接口在本地视频出现故障时，方便你了解当前视频的状态
-   * 以及出现故障的原因。
+   * 本地视频的状态发生改变时，SDK 会触发该回调返回当前的本地视频状态。你可以通过该回调了解当前视频的状态以及出现故障的原因，方便排查问题。
    *
+   * SDK 会在如下情况触发 `localVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_FAILED，LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 回调：
+   * - 应用退到后台，系统回收摄像头。
+   * - 摄像头正常启动，但连续 4 秒都没有输出采集的视频。
    *
-   * @param cb.localVideoState 当前的本地视频状态码：
-   *   - `0`：本地视频默认初始状态
-   *   - `1`：本地视频采集设备启动成功。调用 {@link startScreenCaptureByWindow} 方法共享窗口且共享窗口为最大化时，也会报告该状态。
-   *   - `2`：本地视频首帧编码成功
-   *   - `3`：本地视频启动失败
+   * 摄像头输出采集的视频帧时，如果连续 15 帧中，所有视频帧都一样，SDK
+   * 触发 `localVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING，LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 回调。
+   * 注意：帧重复检测仅针对分辨率大于 200 × 200，帧率大于等于 10 fps，码率小于 20 Kbps 的视频帧。
    *
-   * @param cb.error 本地视频错误码：
-   *   - `0`：本地视频状态正常
-   *   - `1`：出错原因不明确
-   *   - `2`：没有权限启动本地视频采集设备
-   *   - `3`：本地视频采集设备正在使用中
-   *   - `4`：本地视频采集失败，建议检查采集设备是否正常工作
-   *   - `5`：本地视频编码失败
-   *   - `11`：调用 {@link startScreenCaptureByWindow} 方法共享窗口时，共享窗口处于最小化的状态。
-   *   - `12`：该错误码表示通过窗口 ID 共享的窗口已关闭，或通过窗口 ID 共享的全屏窗口已退出全屏。
-   * 退出全屏模式后，远端用户将无法看到共享的窗口。为避免远端用户看到黑屏，Agora 建议你立即结束本次共享。
-   * 报告该错误码的常见场景：
-   *     - 本地用户关闭共享的窗口时，SDK 会报告该错误码。
-   *     - 本地用户先放映幻灯片，然后共享放映中的幻灯片。结束放映时，SDK 会报告该错误码。
-   *     - 本地用户先全屏观看网页视频或网页文档，然后共享网页视频或网页文档。结束全屏时，SDK 会报告该错误码。
+   * @note 对某些机型而言，当本地视频采集设备正在使用中时，SDK 不会在本地视频状态发生改变时触发该回调，你需要自行做超时判断。
+   *
+   * @param cb.localVideoState 本地视频状态
+   * @param cb.err 本地视频出错原因
    */
   /**
    * Occurs when the local video state changes.
@@ -10347,27 +10560,16 @@ on(
   /** @zh-cn
    * 本地音频状态发生改变回调。
    *
-   * 本地音频的状态发生改变时（包括本地麦克风录制状态和音频编码状态），SDK 会触发该回调报告
-   * 当前的本地音频状态。在本地音频出现故障时，该回调可以帮助你了解当前音频的状态以及出现故障
-   * 的原因，方便你排查问题。
+   * 本地音频的状态发生改变时（包括本地麦克风采集状态和音频编码状态），
+   * SDK 会触发该回调报告当前的本地音频状态。在本地音频出现故障时，
+   * 该回调可以帮助你了解当前音频的状态以及出现故障的原因，方便你排查问题。
    *
+   * @note
+   * 当状态为 `LOCAL_AUDIO_STREAM_STATE_FAILED(3)` 时，
+   * 你可以在 `err` 参数中查看返回的错误信息。
    *
-   * @note 当状态码为 `3` 时，你可以在错误码中查看返回的错误信息。
-   *
-   *
-   * @param cb.state 当前的本地音频状态：
-   *  - `0` 本地音频默认初始状态。
-   *  - `1` 本地音频录制设备启动成功。
-   *  - `2` 本地音频首帧编码成功。
-   *  - `3` 本地音频启动失败。
-   *
-   * @param cb.error 本地音频错误码：
-   *  - `0` 本地音频状态正常。
-   *  - `1` 本地音频出错原因不明确。
-   *  - `2` 没有权限启动本地音频录制设备。
-   *  - `3` 本地音频录制设备已经在使用中。
-   *  - `4` 本地音频录制失败，建议你检查录制设备是否正常工作。
-   *  - `5` 本地音频编码失败。
+   * @param cb.state 当前的本地音频状态。
+   * @param cb.err 本地音频出错原因。
    */
   /**
    * Occurs when the local audio state changes.
@@ -10700,6 +10902,9 @@ on(
     newState: STREAM_SUBSCRIBE_STATE,
     elapseSinceLastState: number
   )=> void): this;
+  /** @zh-cn
+   * 预留
+   */
   /**
    * Reserved callback.
    */
@@ -10988,38 +11193,44 @@ class AgoraRtcChannel extends EventEmitter
     })
   }
   /** @zh-cn
-   * 通过 UID 加入频道。
+   * 加入频道并设置是否自动订阅音频或视频流。
    *
-   * {@link AgoraRtcChannel.joinChannel} 与 {@link AgoraRtcEngine.joinChannel}
-   * 方法有以下区别：
-   * - {@link AgoraRtcChannel.joinChannel}:
-   *  - 无 `channel` 参数。因为创建 `AgoraRtcChannel` 对象时已指定了 `channel`。
-   *  - 加了 `options` 参数，可在加入频道前通过该参数设置是否订阅该频道的音视频流。
-   *  - 通过创建多个 `AgoraRtcChannel` 对象，并调用相应对象的 `joinChannel` 方法实现同
-   * 时加入多个频道。
-   *  - 过该方法加入频道后，SDK 默认不发布本地音视频流到本频道，用户需要调用 {@link publish} 方法发布。
-   * - {@link AgoraRtcEngine.joinChannel}:
-   *  - 需要填入可以标识频道的 `channelId`。
-   *  - 无 `options` 参数。加入频道即默认订阅频道内的音视频流。
-   *  - 只允许加入一个频道。
-   *  - 通过该方法加入频道后，SDK 默认发布音视频流发布到本频道。
    *
-   * @note
-   * - 该方法不支持相同的用户重复加入同一个频道。
-   * - 我们建议不同频道中使用不同的 UID。
-   * - 如果想要从不同的设备同时接入同一个频道，请确保每个设备上使用的 UID 是不同的。
-   * - 请确保用于生成 Token 的 App ID 和创建 IChannel 对象时用的 App ID 一致。
-   * @param token 在 App 服务器端生成的用于鉴权的 Token：
-   * - 安全要求不高：你可以使用控制台生成的临时 Token，详见 [获取临时 Token](https://docs.agora.io/cn/Agora%20Platform/token?platform=All%20Platforms#获取临时-token).
-   * - 安全要求高：将值设为你的服务端生成的正式 Token，详见 [获取正式 Token](https://docs.agora.io/cn/Agora%20Platform/token?platform=All%20Platforms#获取正式-token).
-   * @param info （非必选项）开发者需加入的任何附加信息。一般可设置为空字符串，或频道相关信息。该信息不会传递给频道内的其他用户。
-   * @param uid 用户 ID，32 位无符号整数。建议设置范围：1 到 2<sup>32</sup>-1，并保证唯一性。如果不指定（即设为 0），SDK 会自动分配一个，
-   * 并在 joinChannelSuccess` 回调中返回，App 层必须记住该返回值并维护，SDK 不对该返回值进行维护。
-   * @param options 频道媒体设置选项，详见 {@link ChannelMediaOptions}
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
-   *  - 错误码 `2`，`3`，`5`
+   * 该方法让用户加入通话频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。使用不同 App ID 的 App 是不能互通的。
+   * 如果已在通话中，用户必须调用 {@link leaveChannel} 退出当前通话，才能进入下一个频道。
+   *
+   * 成功调用该方法加入频道后，本地会触发 `joinChannelSuccess` 回调；
+   * 通信场景下的用户和直播场景下的主播加入频道后，远端会触发 `userJoined` 回调。
+   *
+   *
+   * 在网络状况不理想的情况下，客户端可能会与 Agora 的服务器失去连接；SDK 会自动尝试重连，重连成功后，本地会触发 `rejoinChannelSuccess` 回调。
+   *
+   * @note 请确保用于生成 Token 的 App ID 和调用 {@link initialize} 时传入的 App ID 一致。
+   *
+   *
+   * @param token 在服务端生成的用于鉴权的 Token。
+   * 详见[从服务端生成 Token](https://docs.agora.io/cn/Interactive%20Broadcast/token_server?platform=Electron)。
+   * @param channel 标识通话的频道名称，长度在 64 字节以内的字符串。以下为支持的字符集范围（共 89 个字符）:
+   * - 26 个小写英文字母 a~z；
+   * - 26 个大写英文字母 A~Z；
+   * - 10个数字 0~9；
+   * - 空格；
+   * - "!"、"#"、"$"、"%"、"&"、"("、")"、"+"、"-"、":"、";"、"<"、"="、"."、">"、"?"、"@"、"["、"]"、"^"、"_"、" {"、"}"、"|"、"~"、","。
+   * @param info (非必选项) 预留参数。
+   * @param uid (非必选项) 用户 ID，32位无符号整数。建议设置范围：1到 2<sup>32</sup>-1，并保证唯一性。如果不指定（即设为0），SDK 会自动分配一个，
+   * 并在 `joinChannelSuccess` 回调方法中返回，App 层必须记住该返回值并维护，SDK 不对该返回值进行维护。
+   * 请注意：频道内每个用户的 UID 必须是唯一的。如果想要从不同的设备同时接入同一个频道，请确保每个设备上使用的 UID 是不同的。
+   * @param options 频道媒体设置选项。
+   *
+   * @return
+   * - 0(ERR_OK): 方法调用成功。
+   * - < 0: 方法调用失败。
+   *    - `-2`: 参数无效。
+   *    - `-3`: SDK 初始化失败，请尝试重新初始化 SDK。
+   *    - `-5`: 调用被拒绝。可能有如下两个原因：
+   *       - 已经创建了一个同名的 AgoraRtcChannel 频道。
+   *       - 已经通过 IChannel 加入了一个频道，并在该 AgoraRtcChannel 频道中发布了音视频流。由于通过 AgoraRtcEngine 加入频道会默认发布音视频流，而 SDK 不支持同时在两个频道发布音视频流，因此会报错。
+   *    - `-7`: SDK 尚未初始化，就调用该方法。请确认在调用 API 之前已创建 AgoraRtcRtcEngine 对象并完成初始化。
    */
   /** Joins a channel with the user ID, and configures whether to
    * automatically subscribe to the audio or video streams.
@@ -11106,26 +11317,39 @@ class AgoraRtcChannel extends EventEmitter
   /** @zh-cn
    * 使用 User Account 加入频道。
    *
-   * 该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
-   * - 本地：`localUserRegistered` 和 `userInfoUpdated`
-   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined` 和 `userInfoUpdated` 回调
+   *  该方法允许本地用户使用 User Account 加入频道。成功加入频道后，会触发以下回调：
    *
-   * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
+   * - 本地：`localUserRegistered` 和 `joinChannelSuccess` 回调
+   * - 远端：通信场景下的用户和直播场景下的主播加入频道后，远端会依次触发 `userJoined`
+   * 和 `userInfoUpdated` 回调
    *
-   * @param token 在 App 服务器端生成的用于鉴权的 Token：
-   * - 安全要求不高：你可以使用 Console 生成的临时 Token，详见[获取临时 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取临时-token)
-   * - 安全要求高：将值设为你的服务端生成的正式 Token，详见[获取正式 Token](https://docs.agora.io/cn/Video/token?platform=All%20Platforms#获取正式-token)
-   * @param userAccount 用户 User Account。该参数为必须，最大不超过 255 字节，不可为 NULL。请确保加入频道的 User Account 的唯一性。
+   * 用户成功加入频道后，默认订阅频道内所有其他用户的音频流和视频流，因此产生用量并影响计费。如果想取消订阅，可以通过调用相应的 `mute` 方法实现。
+   *
+   * @note 为保证通信质量，请确保频道内使用同一类型的数据标识用户身份。即同一频道内需要统一使用 UID 或 User Account。
+   * 如果有用户通过 Agora Web SDK 加入频道，请确保 Web 加入的用户也是同样类型。
+   *
+   * @param token 在服务端生成的用于鉴权的 Token。详见[从服务端生成 Token](https://docs.agora.io/cn/Interactive%20Broadcast/token_server?platform=Electron)。
+   * @param channelId 标识频道的频道名，最大不超过 64 字节。以下为支持的字符集范围（共 89 个字符）：
    * - 26 个小写英文字母 a-z
    * - 26 个大写英文字母 A-Z
    * - 10 个数字 0-9
    * - 空格
    * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ","
-   * @param options 频道媒体设置选项，详见 {@link ChannelMediaOptions}
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
-   *  - 错误码 `2`，`3`，`5`
+   * @param userAccount 用户 User Account。该参数为必需，最大不超过 255 字节，不可为 `null`。请确保注册的 User Account 的唯一性。以下为支持的字符集范围（共 89 个字符）：
+   * - 26 个小写英文字母 a-z
+   * - 26 个大写英文字母 A-Z
+   * - 10 个数字 0-9
+   * - 空格
+   * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@",
+   * "[", "]", "^", "_", " {", "}", "|", "~", ","
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
+   *  - `-2`
+   *  - `-3`
+   *  - `-5`
+   *  - `-7`
    */
   /**
    * Joins the channel with a user account.
@@ -11517,18 +11741,23 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.setRemoteVoicePosition(uid, pan, gain);
   }
   /** @zh-cn
-   * 设置是否默认接收音频流。
+   * 默认取消或恢复订阅远端用户的音频流。
    *
-   * 该方法在加入频道前后都可调用。如果在加入频道后调用 `setDefaultMuteAllRemoteAudioStreams (true)`，会接收不到后面加入频道的用户的音频流。
+   * @deprecated 该方法自 v3.3.1 起废弃。
    *
-   * @note 停止接收音频流后，如果想要恢复接收，请调用 {@link muteRemoteAudioStream}(false)，并指定你想要接收的远端用户 uid；
-   * 如果想恢复接收多个用户的音频流，则需要多次调用 {@link muteRemoteAudioStream}(false)。`setDefaultMuteAllRemoteAudioStreams (false)` 只能恢复接收后面加入频道的用户的音频流。
-   * @param {boolean} mute
-   * - true：默认不接收所有音频流
-   * - false：默认接收所有音频流（默认）
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * 该方法需要在加入频道后调用。调用成功后，本地用户取消或恢复订阅调用时刻之后加入频道的远端用户。
+   *
+   * @note 取消订阅音频流后，如果需要恢复订阅频道内的远端，可以进行如下操作：
+   * - 如果需要恢复订阅单个用户的音频流，调用 {@link muteRemoteAudioStream}(false)，并指定你想要订阅的远端用户 ID。
+   * - 如果想恢复订阅多个用户的音频流，则需要多次调用 {@link muteRemoteAudioStream}(false)。
+   *
+   * @param mute 是否默认取消订阅远端用户的音频流：
+   * - true: 默认取消订阅。
+   * - false:（默认）默认订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /** Stops or resumes subscribing to the audio streams of all remote users
    * by default.
@@ -11565,20 +11794,23 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.setDefaultMuteAllRemoteAudioStreams(mute);
   }
   /** @zh-cn
-   * 设置是否默认接收视频流。
+   * 默认取消或恢复订阅远端用户的视频流。
    *
-   * 该方法在加入频道前后都可调用。如果在加入频道后调用 `setDefaultMuteAllRemoteVideoStreams (true)`，会接收不到设置后加入频道的用户的视频流。
+   * @deprecated 该方法自 v3.3.1 起废弃。
    *
-   * @note 停止接收视频流后，如果想要恢复接收，请调用 {@link muteRemoteVideoStream}(false)，
-   * 并指定你想要接收的远端用户 uid；如果想恢复接收多个用户的视频流，则需要多次调用 {@link muteRemoteVideoStream}(false)。
-   * `setDefaultMuteAllRemoteVideoStreams (false)` 只能恢复接收后面加入频道的用户的视频流。
-   * @param {boolean} mute
-   * - true：默认不接收任何视频流
-   * - false：默认继续接收所有视频流（默认）
+   * 该方法需要在加入频道后调用。调用成功后，本地用户取消或恢复订阅调用时刻之后加入频道的远端用户。
    *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @note 取消订阅视频流后，如果需要恢复订阅频道内的远端，可以进行如下操作：
+   * - 如果需要恢复订阅单个用户的视频流，调用 {@link muteRemoteVideoStream}(false)，并指定你想要订阅的远端用户 ID。
+   * - 如果想恢复订阅多个用户的视频流，则需要多次调用 {@link muteRemoteVideoStream}(false)。
+   *
+   * @param mute 是否默认取消订阅远端用户的视频流：
+   * - true: 默认取消订阅。
+   * - false:（默认）默认订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /** Stops or resumes subscribing to the video streams of all remote users
    * by default.
@@ -11614,16 +11846,21 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.setDefaultMuteAllRemoteVideoStreams(mute);
   }
   /** @zh-cn
-   * 接收／停止接收所有音频流。
+   * 取消或恢复订阅所有远端用户的音频流。
    *
+   * 自 v3.3.1 起，成功调用该方法后，本地用户会取消或恢复订阅所有远端用户的音频流，包括在调用该方法后加入频道的用户的音频流。
    *
-   * @param mute
-   * - true: 停止接收所有音频流；
-   * - false: 继续接收所有音频流（默认）。
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
    *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param mute 是否取消订阅所有远端用户的音频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes subscribing to the audio streams of all remote users.
@@ -11651,21 +11888,16 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.muteAllRemoteAudioStreams(mute);
   }
   /** @zh-cn
-   * 停止/恢复接收指定音频流。
+   * 取消或恢复订阅指定远端用户的音频流。
    *
-   * 如果之前有调用过 {@link muteAllRemoteAudioStreams}(true) 停止订阅所有远端
-   * 音频，在调用 `muteRemoteAudioStreams` 之前请确保你已调用 {@link muteAllRemoteAudioStreams}(false)。
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
    *
-   * `muteAllRemoteAudioStreams` 是全局控制，`muteRemoteAudioStream` 是精细控制。
-   *
-   * @param {number} uid 指定的用户 ID
-   * @param {boolean} mute
-   * - `true`：停止接收指定用户的音频流
-   * - `false`：继续接收指定用户的音频流
-   *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param userId 指定用户的用户 ID。
+   * @param mute 是否取消订阅指定远端用户的音频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
    */
   /**
    * Stops or resumes subscribing to the audio stream of a specified user.
@@ -11689,15 +11921,21 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.muteRemoteAudioStream(uid, mute);
   }
   /** @zh-cn
-   * 停止/恢复接收所有视频流。
+   * 取消或恢复订阅所有远端用户的视频流。
    *
-   * @param {boolean} mute
-   * - true：停止接收所有视频流
-   * - false：继续接收所有视频流（默认）
+   * 自 v3.3.1 起，成功调用该方法后，本地用户会取消或恢复订阅所有远端用户的视频流，包括在调用该方法后加入频道的用户的视频流。
    *
-   * @returns {number}
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
+   *
+   * @param mute 是否取消订阅所有远端用户的视频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
+   *
+   * @return
+   * - 0: 方法调用成功
+   * - < 0: 方法调用失败
    */
   /**
    * Stops or resumes subscribing to the video streams of all remote users.
@@ -11725,20 +11963,16 @@ class AgoraRtcChannel extends EventEmitter
     return this.rtcChannel.muteAllRemoteVideoStreams(mute);
   }
   /** @zh-cn
-   * 停止/恢复接收指定视频流。
+   * 取消或恢复订阅指定远端用户的视频流。
    *
-   * 如果之前有调用过 {@link muteAllRemoteVideoStreams}(true) 停止订阅所有远端
-   * 视频，在调用 `muteRemoteVideoStreams` 之前请确保你已调用 {@link muteAllRemoteVideoStreams}(false)。
+   * @note
+   * - 该方法需要在加入频道后调用。
+   * - 该方法的推荐设置详见《设置订阅状态》。
    *
-   * `muteAllRemoteVideoStreams` 是全局控制，`muteRemoteVideoStream` 是精细控制。
-   *
-   * @param {number} uid 指定用户的 ID
-   * @param {boolean} mute
-   * - true：停止接收指定用户的视频流
-   * - false：继续接收指定用户的视频流（默认）
-   * @returns
-   * - 0：方法调用成功
-   * - < 0：方法调用失败
+   * @param userId 指定用户的用户 ID。
+   * @param mute 是否取消订阅指定远端用户的视频流。
+   * - true: 取消订阅。
+   * - false:（默认）订阅。
    */
   /**
    * Stops or resumes subscribing to the video stream of a specified user.
@@ -11857,6 +12091,8 @@ class AgoraRtcChannel extends EventEmitter
   /** @zh-cn
    * 创建数据流。
    *
+   * @deprecated 该方法自 v3.3.1 起废弃，请改用 {@link createDataStreamWithConfig}
+   *
    * 该方法用于创建数据流。`AgoraRtcChannel` 生命周期内，每个用户最多只能创建 5 个数据流。
    *
    * @note
@@ -11905,6 +12141,21 @@ class AgoraRtcChannel extends EventEmitter
   createDataStream(reliable: boolean, ordered: boolean): number {
     return this.rtcChannel.createDataStream(reliable, ordered);
   }
+  /** @zh-cn
+   * 创建数据流。
+   *
+   * @since v3.3.1
+   *
+   * 该方法用于创建数据流。每个用户在每个频道内最多只能创建 5 个数据流。
+   *
+   * 相比 {@link createDataStream}，本方法不支持数据可靠，接收方会丢弃超出发送时间 5 秒后的数据包。
+   *
+   * @param config 数据流设置
+   *
+   * @return
+   * - 返回数据流 ID，创建数据流成功。
+   * - < 0: 创建数据流失败。
+   */
   /** Creates a data stream.
    *
    * @since v3.3.1
@@ -12694,12 +12945,9 @@ class AgoraRtcChannel extends EventEmitter
    *
    * 在安全要求较高的场景下，Agora 建议你在加入频道前，调用 `enableEncryption` 方法开启内置加密。
    *
-   * 同一频道内所有用户必须使用相同的加密模式和密钥。一旦所有用户都离开频道，该频道的加密密钥会自动清除。
+   * 同一频道内所有用户必须使用相同的加密模式和密钥。用户离开频道后，SDK 会自动关闭加密。如需重新开启加密，你需要在用户再次加入频道前调用该方法。
    *
-   * **Note**:
-   * - 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
-   * - SDK 返回错误码 `-4`，当设置的加密模式不正确或加载外部加密库失败。你需检查枚举值是否正确或
-   * 重新加载外部加密库。
+   * @note 如果开启了内置加密，则不能使用 RTMP/RTMPS 推流功能。
    *
    * @param enabled 是否开启内置加密：
    * - true: 开启
@@ -12709,6 +12957,9 @@ class AgoraRtcChannel extends EventEmitter
    * @return
    * - 0: 方法调用成功
    * - < 0: 方法调用失败
+   *  - `-2`: 调用了无效的参数。需重新指定参数。
+   *  - `-4`: 设置的加密模式不正确或加载外部加密库失败。需检查枚举值是否正确或重新加载外部加密库。
+   *  - `-7`: SDK 尚未初始化。需在调用 API 之前已创建 AgoraRtcEngine 对象并完成初始化。
    */
   /** Enables/Disables the built-in encryption.
    *
