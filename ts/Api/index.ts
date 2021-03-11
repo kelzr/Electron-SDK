@@ -1140,7 +1140,6 @@ class AgoraRtcEngine extends EventEmitter {
   /** Joins a channel with the user ID, and configures whether to
    * automatically subscribe to the audio or video streams.
    *
-   * @since v3.3.1
    *
    * Users in the same channel can talk to each other, and multiple users in
    * the same channel can start a group chat. Users with different App IDs
@@ -1168,7 +1167,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * @param token The token generated at your server. For details,
    * see [Generate a token](https://docs.agora.io/en/Interactive%20Broadcast/token_server?platform=Electron).
-   * @param channelId The unique channel name for the Agora RTC session in
+   * @param channel The unique channel name for the Agora RTC session in
    * the string format smaller than 64 bytes. Supported characters:
    * - All lowercase English letters: a to z.
    * - All uppercase English letters: A to Z.
@@ -3101,7 +3100,6 @@ class AgoraRtcEngine extends EventEmitter {
   /** Switches to a different channel, and configures whether to automatically
    * subscribe to audio or video streams in the target channel.
    *
-   * @since v3.3.1
    *
    * This method allows the audience of a `1` (live streaming) channel to
    * switch to a different channel.
@@ -3116,7 +3114,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * @param token The token generated at your server. For details,
    * see [Generate a token](https://docs.agora.io/en/Interactive%20Broadcast/token_server?platform=Electron).
-   * @param channelId The unique channel name for the Agora RTC session in
+   * @param channel The unique channel name for the Agora RTC session in
    * the string format smaller than 64 bytes. Supported characters:
    * - All lowercase English letters: a to z.
    * - All uppercase English letters: A to Z.
@@ -6536,7 +6534,7 @@ declare interface AgoraRtcEngine {
    *
    * When the camera outputs the captured video frames, if all the video
    * frames are the same for 15 consecutive frames, the SDK triggers the
-   * `videoSourceLocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 
+   * `videoSourceLocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)`
    * callback. Note that the
    * video frame duplication detection is only available for video frames
    * with a resolution greater than 200 × 200, a frame rate greater than
@@ -6547,7 +6545,7 @@ declare interface AgoraRtcEngine {
    * callback when the state of the local video changes while the local video
    * capturing device is in use, so you have to make your own timeout judgment.
    *
-   * @param cb.localVideoState The local video state.
+   * @param cb.state The local video state.
    * @param cb.error The detailed error information of the local video.
    */
   on(evt: 'videoSourceLocalVideoStateChanged', cb: (state: LOCAL_VIDEO_STREAM_STATE, error: LOCAL_VIDEO_STREAM_ERROR) => void): this;
@@ -6826,7 +6824,7 @@ declare interface AgoraRtcEngine {
    *
    * When the camera outputs the captured video frames, if all the video
    * frames are the same for 15 consecutive frames, the SDK triggers the
-   * `LocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 
+   * `LocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)`
    * callback. Note that the
    * video frame duplication detection is only available for video frames
    * with a resolution greater than 200 × 200, a frame rate greater than
@@ -7339,7 +7337,6 @@ class AgoraRtcChannel extends EventEmitter
   /** Joins a channel with the user ID, and configures whether to
    * automatically subscribe to the audio or video streams.
    *
-   * @since v3.3.1
    *
    * Users in the same channel can talk to each other, and multiple users in
    * the same channel can start a group chat. Users with different App IDs
@@ -7367,15 +7364,6 @@ class AgoraRtcChannel extends EventEmitter
    *
    * @param token The token generated at your server. For details,
    * see [Generate a token](https://docs.agora.io/en/Interactive%20Broadcast/token_server?platform=Electron).
-   * @param channelId The unique channel name for the Agora RTC session in
-   * the string format smaller than 64 bytes. Supported characters:
-   * - All lowercase English letters: a to z.
-   * - All uppercase English letters: A to Z.
-   * - All numeric characters: 0 to 9.
-   * - The space character.
-   * - Punctuation characters and other symbols, including:
-   * "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".",
-   * ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ",".
    * @param info (Optional) Reserved for future use.
    * @param uid (Optional) User ID. A 32-bit unsigned integer with a value
    * ranging from 1 to 2<sup>32</sup>-1. The @p uid must be unique. If

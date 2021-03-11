@@ -2341,20 +2341,18 @@ export interface ClientRoleOptions {
    */
   audienceLatencyLevel: AUDIENCE_LATENCY_LEVEL_TYPE;
 };
-/** The cloud proxy type.
- *
+/**
  * @since v3.3.1
+ *
+ * The cloud proxy type.
+ * - 0: Do not use the cloud proxy.
+ * - 1: The cloud proxy for the UDP protocol.
+ * - 2: Reserved type.
+ *
  */
 export type CLOUD_PROXY_TYPE =
-      /** 0: Do not use the cloud proxy.
-       */
     | 0 //NONE_PROXY
-      /** 1: The cloud proxy for the UDP protocol.
-       */
     | 1  //UDP_PROXY
-      /**
-       * 2: Reserved property.
-       */
     | 2  //TCP_PROXY
 /** The configuration of the log files.
  *
