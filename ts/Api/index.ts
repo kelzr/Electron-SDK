@@ -4652,7 +4652,7 @@ class AgoraRtcEngine extends EventEmitter {
    * a data packet five
    * seconds or more after it was sent, the SDK directly discards the data.
    *
-   * @param config The configurations for the data stream: DataStreamConfig.
+   * @param config The configurations for the data stream.
    *
    * @return
    * - Returns the ID of the created data stream, if this method call succeeds.
@@ -7950,7 +7950,7 @@ class AgoraRtcChannel extends EventEmitter
    * a data packet five
    * seconds or more after it was sent, the SDK directly discards the data.
    *
-   * @param config The configurations for the data stream: DataStreamConfig.
+   * @param config The configurations for the data stream.
    *
    * @return
    * - Returns the ID of the created data stream, if this method call succeeds.
