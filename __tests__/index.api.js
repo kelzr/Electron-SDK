@@ -2,14 +2,16 @@ require('./utils/mock')
 const AgoraRtcEngine = require('../js/AgoraSdk').default;
 const generateRandomNumber = require('./utils/index.js').generateRandomNumber;
 const generateRandomString = require('./utils/index.js').generateRandomString;
-const doJoin = require('./utils/doJoin');
+const {doJoin, doJoinWithOptions} = require('./utils/doJoin');
 const doLeave = require('./utils/doLeave');
 const channelJoin = require('./utils/channelJoin')
 const channelLeave = require('./utils/channelLeave')
 const LiveStreaming = require('./utils/cdn');
 const VideoSource = require('./utils/videosource');
 const MultiStream = require('./utils/multistream');
+const {UploadLogFile} = require('./utils/uploadLog');
 const path = require('path')
+const fs = require('fs')
 // const APPID = process.env.APPID
 const APPID = "aab8b8f5a8cd4469a63042fcfafe7063"
 let localRtcEngine = null;
@@ -112,6 +114,7 @@ describe('Basic API Coverage', () => {
 
   it('set capture preference', () => {
     expect(localRtcEngine.setCameraCapturerConfiguration({preference: 1})).toBe(0);
+    expect(localRtcEngine.setCameraCapturerConfiguration({preference: 3})).toBe(0);
   });
 
   it('setEncryptionSecret', () => {
@@ -170,7 +173,7 @@ describe('Basic API Coverage', () => {
   });
 
   it('setBeautyEffectOptions', () => {
-    let returnvalue = isMac ? -4 : 0
+    let returnvalue = 0
     expect(
       localRtcEngine.setBeautyEffectOptions(true, {
         lighteningContrastLevel: 1,
@@ -188,9 +191,44 @@ describe('Basic API Coverage', () => {
   it('leave channel', async () => {
     await doLeave(localRtcEngine);
   });
+
+  it('Join channel with options', async () => {
+    localRtcEngine.setChannelProfile(1);
+    localRtcEngine.setClientRole(1);
+    testChannel = generateRandomString(10);
+    testUid = generateRandomNumber(100000);
+    await doJoinWithOptions(localRtcEngine, testChannel, testUid, {autoSubscribeAudio:true, autoSubscribeVideo:true});
+  });
+
+  it('leave channel', async () => {
+    await doLeave(localRtcEngine);
+  });
 });
 
+describe('initialize with context', () => {
+  beforeEach(async () => {
+    let filePath = path.resolve(__dirname, "../testcontext.log")
+    try {
+      await fs.unlink(filePath);
+    } catch (e) {
+      // ignore error as we don't care
+    }
+    localRtcEngine = new AgoraRtcEngine();
+  });
+  afterEach(() => {
+    // Restore mocks after each test
+    jest.restoreAllMocks();
+    localRtcEngine.release()
+  });
 
+  it("initialize", () => {
+    let filePath = path.resolve(__dirname, "../testcontext.log")
+    expect(localRtcEngine.initialize(APPID, 0xFFFFFFFF, {logConfig: {filePath}})).toBe(0);
+    localRtcEngine.setChannelProfile(1);
+    localRtcEngine.setClientRole(1);
+    expect(fs.existsSync(filePath)).toBe(true);
+  })
+})
 
 describe('cdn coverage', () => {
   beforeAll(() => {
@@ -320,6 +358,25 @@ describe('Basic API Coverage 3', () => {
       }
     })).toBe(0);
     expect(localRtcEngine.clearVideoWatermarks()).toBe(0);
+  })
+
+  it('setCloudProxy', () => {
+    expect(localRtcEngine.setCloudProxy(0)).toBe(0);
+    expect(localRtcEngine.setCloudProxy(1)).toBe(0);
+    expect(localRtcEngine.setCloudProxy(2)).toBe(0);
+  })
+  
+  it('enableDeepLearningDenoise', () => {
+    expect(localRtcEngine.enableDeepLearningDenoise(true)).toBe(0);
+    expect(localRtcEngine.enableDeepLearningDenoise(false)).toBe(0);
+  })
+
+  it('setVoiceBeautifierParameters', () => {
+    // expect(localRtcEngine.setVoiceBeautifierParameters(0x01010100, 0, 0)).toBe(0);
+  })
+
+  it('uploadLogFile', async () => {
+    await UploadLogFile(localRtcEngine)
   })
 });
 

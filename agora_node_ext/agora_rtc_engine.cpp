@@ -298,6 +298,19 @@ namespace agora {
                 PROPERTY_METHOD_DEFINE(setAudioEffectParameters);
                 PROPERTY_METHOD_DEFINE(setClientRoleWithOptions);
 
+                /**
+                 * 3.3.0 Apis
+                 */
+                PROPERTY_METHOD_DEFINE(setCloudProxy);
+                PROPERTY_METHOD_DEFINE(enableDeepLearningDenoise);
+                PROPERTY_METHOD_DEFINE(setVoiceBeautifierParameters);
+                PROPERTY_METHOD_DEFINE(uploadLogFile);
+
+                /**
+                 * 3.3.1
+                 */ 
+                PROPERTY_METHOD_DEFINE(setVoiceConversionPreset);
+                
             EN_PROPERTY_DEFINE()
             module->Set(context, Nan::New<v8::String>("NodeRtcEngine").ToLocalChecked(), tpl->GetFunction(context).ToLocalChecked());
         }
@@ -1090,7 +1103,7 @@ namespace agora {
                     pEngine->m_audioVdm = new AAudioDeviceManager(pEngine->m_engine);
                 }
                 IAudioDeviceManager* adm = pEngine->m_audioVdm->get();
-                result = adm->startAudioDeviceLoopbackTest(interval);
+                result = adm ? adm->startAudioDeviceLoopbackTest(interval) : -1;
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -1111,7 +1124,7 @@ namespace agora {
                     pEngine->m_audioVdm = new AAudioDeviceManager(pEngine->m_engine);
                 }
                 IAudioDeviceManager* adm = pEngine->m_audioVdm->get();
-                result = adm->stopAudioDeviceLoopbackTest();
+                result = adm ? adm->stopAudioDeviceLoopbackTest() : -1;
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -1142,21 +1155,12 @@ namespace agora {
                 
                 status = napi_get_object_property_int32_(isolate, obj, "preference", preference);
                 CHECK_NAPI_STATUS(pEngine, status);
+                config.preference = (CAPTURER_OUTPUT_PREFERENCE)preference;
 
-                switch(preference) {
-                    case 0: 
-                        config.preference = CAPTURER_OUTPUT_PREFERENCE_AUTO;
-                        break;
-                    case 1: 
-                        config.preference = CAPTURER_OUTPUT_PREFERENCE_PERFORMANCE;
-                        break;
-                    case 2: 
-                        config.preference = CAPTURER_OUTPUT_PREFERENCE_PREVIEW;
-                        break;
-                    default:
-                        status = napi_invalid_arg;
-                        break;
-                }
+                status = napi_get_object_property_int32_(isolate, obj, "captureWidth", config.captureWidth);
+                CHECK_NAPI_STATUS(pEngine, status);
+
+                status = napi_get_object_property_int32_(isolate, obj, "captureWidth", config.captureHeight);
                 CHECK_NAPI_STATUS(pEngine, status);
 
                 result = param.setCameraCapturerConfiguration(config);
@@ -2611,18 +2615,58 @@ namespace agora {
             int result = -1;
             do {
                 NodeRtcEngine *pEngine = nullptr;
+                Isolate *isolate = args.GetIsolate();
                 napi_get_native_this(args, pEngine);
                 CHECK_NATIVE_THIS(pEngine);
-                NodeString appid;
+                NodeString appid, logPath;
                 napi_status status = napi_get_value_nodestring_(args[0], appid);
                 CHECK_NAPI_STATUS(pEngine, status);
                 unsigned int areaCode;
                 status = napi_get_value_uint32_(args[1], areaCode);
                 CHECK_NAPI_STATUS(pEngine, status);
                 RtcEngineContext context;
+                LogConfig logConfig;
                 context.eventHandler = pEngine->m_eventHandler.get();
                 context.appId = appid;
                 context.areaCode = areaCode;
+
+                Local<Value> vContextOptions = args[2];
+                Local<Object> oContextOptions;
+                if(vContextOptions->IsObject()) {
+                    // with options
+                    status = napi_get_value_object_(isolate, vContextOptions, oContextOptions);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    Local<Object> oLogConfigs;
+                    status = napi_get_object_property_object_(isolate, oContextOptions, "logConfig", oLogConfigs);
+                    if(status == napi_ok) {
+                        // with valid options
+                        int fileSize = -1, level = 1;
+                        status = napi_get_object_property_nodestring_(isolate, oLogConfigs, "filePath", logPath);
+                        if(status == napi_ok) {
+                            logConfig.filePath = logPath;
+                            LOG_INFO("log config: file path %s", logConfig.filePath);
+                        } else {
+                            LOG_WARNING("log config: no file path found");
+                        }
+                        status = napi_get_object_property_int32_(isolate, oLogConfigs, "fileSize", fileSize);
+                        if(status == napi_ok) {
+                            logConfig.fileSize = fileSize;
+                        }
+                        status = napi_get_object_property_int32_(isolate, oLogConfigs, "level", level);
+                        if(status == napi_ok) {
+                            logConfig.level = (LOG_LEVEL)level;
+                        }
+                        context.logConfig = logConfig;
+                    } else {
+                        LOG_INFO("no logConfig found");
+                    }
+                } else {
+                    LOG_INFO("no context config found");
+                }
+
+                
+                LOG_INFO("begin initialization...");
                 int suc = pEngine->m_engine->initialize(context);
                 if (0 != suc) {
                     LOG_ERROR("Rtc engine initialize failed with error :%d\n", suc);
@@ -2714,6 +2758,7 @@ namespace agora {
             NodeString key, name, chan_info;
             do {
                 NodeRtcEngine *pEngine = nullptr;
+                Isolate *isolate = args.GetIsolate();
                 napi_get_native_this(args, pEngine);
                 CHECK_NATIVE_THIS(pEngine);
                 uid_t uid;
@@ -2738,8 +2783,24 @@ namespace agora {
                 else{
                     extra_info = "Electron";
                 }
-               
-                result = pEngine->m_engine->joinChannel(key, name, extra_info.c_str(), uid);
+
+                Local<Value> vChannelMediaOptions = args[4];
+                Local<Object> oChannelMediaOptions;
+                if(vChannelMediaOptions->IsObject()) {
+                    // with options
+                    status = napi_get_value_object_(isolate, vChannelMediaOptions, oChannelMediaOptions);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    ChannelMediaOptions options;
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeAudio", options.autoSubscribeAudio);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeVideo", options.autoSubscribeVideo);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    result = pEngine->m_engine->joinChannel(key, name, extra_info.c_str(), uid, options);
+                } else {
+                    // without options
+                    result = pEngine->m_engine->joinChannel(key, name, extra_info.c_str(), uid);
+                }
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -2752,6 +2813,7 @@ namespace agora {
             NodeString key, name;
             do {
                 NodeRtcEngine *pEngine = nullptr;
+                Isolate *isolate = args.GetIsolate();
                 napi_get_native_this(args, pEngine);
                 CHECK_NATIVE_THIS(pEngine);
                 napi_status status = napi_get_value_nodestring_(args[0], key);
@@ -2760,7 +2822,24 @@ namespace agora {
                 status = napi_get_value_nodestring_(args[1], name);
                 CHECK_NAPI_STATUS(pEngine, status);
                
-                result = pEngine->m_engine->switchChannel(key, name);
+                Local<Value> vChannelMediaOptions = args[2];
+                Local<Object> oChannelMediaOptions;
+                if(vChannelMediaOptions->IsObject()) {
+                    // with options
+                    status = napi_get_value_object_(isolate, vChannelMediaOptions, oChannelMediaOptions);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    ChannelMediaOptions options;
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeAudio", options.autoSubscribeAudio);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeVideo", options.autoSubscribeVideo);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    result = pEngine->m_engine->switchChannel(key, name, options);
+                } else {
+                    // without options
+                    result = pEngine->m_engine->switchChannel(key, name);
+                }
+
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -3021,16 +3100,34 @@ namespace agora {
         {
             LOG_ENTER;
             do {
+                Isolate *isolate = args.GetIsolate();
                 NodeRtcEngine *pEngine = nullptr;
                 napi_get_native_this(args, pEngine);
                 CHECK_NATIVE_THIS(pEngine);
                 napi_status status = napi_ok;
+                int result = -1;
                 int streamId;
-                bool reliable, ordered;
-                napi_get_param_2(args, bool, reliable, bool, ordered);
-                CHECK_NAPI_STATUS(pEngine, status);
 
-                int result = pEngine->m_engine->createDataStream(&streamId, reliable, ordered);
+                if(!args[0]->IsObject()) {
+                    bool reliable, ordered;
+                    napi_get_param_2(args, bool, reliable, bool, ordered);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    result = pEngine->m_engine->createDataStream(&streamId, reliable, ordered);
+                } else {
+                        Local<Object> obj;
+                        DataStreamConfig config;
+                        status = napi_get_value_object_(isolate, args[0], obj);
+                        CHECK_NAPI_STATUS(pEngine, status);
+                        
+                        status = napi_get_object_property_bool_(isolate, obj, "syncWithAudio", config.syncWithAudio);
+                        CHECK_NAPI_STATUS(pEngine, status);
+
+                        status = napi_get_object_property_bool_(isolate, obj, "ordered", config.ordered);
+                        CHECK_NAPI_STATUS(pEngine, status);
+
+                        result = pEngine->m_engine->createDataStream(&streamId, config);
+                }
+                 
                 if(result < 0) {
                     napi_set_int_result(args, result);
                 } else {
@@ -4778,6 +4875,8 @@ namespace agora {
                     NODE_SET_OBJ_PROP_String(isolate, obj, "ownerName", windowInfo.ownerName.c_str());
                     NODE_SET_OBJ_PROP_UINT32(isolate, obj, "width", windowInfo.width);
                     NODE_SET_OBJ_PROP_UINT32(isolate, obj, "height", windowInfo.height);
+                    NODE_SET_OBJ_PROP_UINT32(isolate, obj, "originWidth", windowInfo.originWidth);
+                    NODE_SET_OBJ_PROP_UINT32(isolate, obj, "originHeight", windowInfo.originHeight);
 
                     if (windowInfo.imageData) {
                         buffer_info imageInfo;
@@ -4800,7 +4899,9 @@ namespace agora {
                     NODE_SET_OBJ_PROP_String(isolate, obj, "ownerName", windowInfo.ownerName.c_str());
                     NODE_SET_OBJ_PROP_UINT32(isolate, obj, "width", windowInfo.width);
                     NODE_SET_OBJ_PROP_UINT32(isolate, obj, "height", windowInfo.height);
-                    
+                    NODE_SET_OBJ_PROP_UINT32(isolate, obj, "originWidth", windowInfo.originWidth);
+                    NODE_SET_OBJ_PROP_UINT32(isolate, obj, "originHeight", windowInfo.originHeight);
+
                     if (windowInfo.imageData) {
                         buffer_info imageInfo;
                         imageInfo.buffer = windowInfo.imageData;
@@ -4900,6 +5001,7 @@ namespace agora {
             LOG_ENTER;
             int result = -1;
             do {
+                Isolate* isolate = args.GetIsolate();
                 NodeRtcEngine *pEngine = nullptr;
                 napi_get_native_this(args, pEngine);
                 CHECK_NATIVE_THIS(pEngine);
@@ -4914,8 +5016,27 @@ namespace agora {
                 
                 status = napi_get_value_nodestring_(args[2], userAccount);
                 CHECK_NAPI_STATUS(pEngine, status);
-               
-                result = pEngine->m_engine->joinChannelWithUserAccount(token, channel, userAccount);
+
+                if (args[3]->IsNullOrUndefined()) {
+                    LOG_F(INFO, "joinChannelWithUserAccount no mediaOption");
+                    result = pEngine->m_engine->joinChannelWithUserAccount(token, channel, userAccount);
+                } else if (args[3]->IsObject()){
+                    Local<Object> oChannelMediaOptions;
+                    status = napi_get_value_object_(isolate, args[3], oChannelMediaOptions);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    ChannelMediaOptions options;
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeAudio", options.autoSubscribeAudio);
+                    CHECK_NAPI_STATUS(pEngine, status);
+
+                    status = napi_get_object_property_bool_(isolate, oChannelMediaOptions, "autoSubscribeVideo", options.autoSubscribeVideo);
+                    CHECK_NAPI_STATUS(pEngine, status);
+                    LOG_F(INFO, "joinChannelWithUserAccount with mediaOption");
+                    result = pEngine->m_engine->joinChannelWithUserAccount(token, channel, userAccount, options);
+                } else {
+                    status = napi_invalid_arg;
+                    CHECK_NAPI_STATUS(pEngine, status);
+                }
             } while (false);
             napi_set_array_result(args, result);
             LOG_LEAVE;
@@ -4985,7 +5106,7 @@ namespace agora {
 
         NAPI_API_DEFINE(NodeRtcEngine, startChannelMediaRelay)
         {
-            LOG_ENTER;
+           LOG_ENTER;
             napi_status status = napi_ok;
             int result = -1;
             do {
@@ -4996,49 +5117,57 @@ namespace agora {
                 CHECK_NATIVE_THIS(pEngine);
                 ChannelMediaRelayConfiguration config;
                 Local<Object> obj;
+
                 status = napi_get_value_object_(isolate, args[0], obj);
                 CHECK_NAPI_STATUS(pEngine, status);
 
-                if (obj->IsNull()) {
-                    status = napi_invalid_arg;
-                    break;
-                }
-
+                string sourceChannel, sourceToken;
+                std::vector<string> destChannels, destTokens;
+                std::vector<ChannelMediaInfo> destInfos;
+                
                 //srcInfo
                 Local<Name> keyName = String::NewFromUtf8(args.GetIsolate(), "srcInfo", NewStringType::kInternalized).ToLocalChecked();
                 Local<Value> srcInfoValue = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
                 ChannelMediaInfo srcInfo;
-                if (!srcInfoValue->IsNull()) {
+                if (!srcInfoValue->IsNullOrUndefined()) {
                     NodeString channelName, token;
-                    Local<Object> objSrcInfo;
-                    status = napi_get_value_object_(isolate, srcInfoValue, objSrcInfo);
-                    CHECK_NAPI_STATUS(pEngine, status);
+                    Local<Object> objSrcInfo = srcInfoValue->ToObject(context).ToLocalChecked();
                     napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "channelName", channelName);
                     napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "token", token);
                     napi_get_object_property_uid_(args.GetIsolate(), objSrcInfo, "uid", srcInfo.uid);
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    
+                    if(channelName != nullptr) {
+                        sourceChannel = string(channelName);
+                        srcInfo.channelName = sourceChannel.c_str();
+                    } else {
+                        srcInfo.channelName = nullptr;
+                    }
+                    if(token != nullptr) {
+                        sourceToken = (string)token;
+                        srcInfo.token = sourceToken.c_str();
+                    } else {
+                        srcInfo.token = nullptr;
+                    }
                 }
                 
-
+                LOG_F(INFO, "startChannelMediaRelay src channelName: %s, token : %s", srcInfo.channelName, srcInfo.token);
                 //destInfos
                 keyName = String::NewFromUtf8(args.GetIsolate(), "destInfos", NewStringType::kInternalized).ToLocalChecked();
                 Local<Value> objDestInfos = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
-                if (objDestInfos->IsNull() || !objDestInfos->IsArray()) {
+                if (objDestInfos->IsNullOrUndefined() || !objDestInfos->IsArray()) {
                     status = napi_invalid_arg;
                     break;
                 }
                 auto destInfosValue = v8::Array::Cast(*objDestInfos);
                 int destInfoCount = destInfosValue->Length();
-                ChannelMediaInfo* destInfos = new ChannelMediaInfo[destInfoCount];
+                destInfos.resize(destInfoCount);
+                destChannels.resize(destInfoCount);
+                destTokens.resize(destInfoCount);
                 for (uint32 i = 0; i < destInfoCount; i++) {
+                    // ChannelMediaInfo destInfo;
                     Local<Value> value = destInfosValue->Get(context, i).ToLocalChecked();
-                    Local<Object> destInfoObj;
-                    status = napi_get_value_object_(isolate, value, destInfoObj);
-                    CHECK_NAPI_STATUS(pEngine, status);
-                    if (destInfoObj->IsNull()) {
+                    Local<Object> destInfoObj = value->ToObject(context).ToLocalChecked();
+                    if (destInfoObj->IsNullOrUndefined()) {
                         status = napi_invalid_arg;
                         break;
                     }
@@ -5046,20 +5175,27 @@ namespace agora {
                     napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "channelName", channelName);
                     napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "token", token);
                     napi_get_object_property_uid_(args.GetIsolate(), destInfoObj, "uid", destInfos[i].uid);
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    if(channelName) {
+                        destChannels[i] = string(channelName);
+                        destInfos[i].channelName = destChannels[i].c_str();
+                    } else {
+                        destChannels[i] = "";
+                    }
+                    if(token) {
+                        destTokens[i] = string(token);
+                        destInfos[i].token = destTokens[i].c_str();
+                    } else {
+                        destTokens[i] = "";
+                    }
                 }
                 config.srcInfo = &srcInfo;
                 config.destInfos = &destInfos[0];
                 config.destCount = destInfoCount;
-
+                for (int i = 0; i < destInfoCount; i++) {
+                     LOG_F(INFO, "startChannelMediaRelay src channelName: %s, token: %s,  dest channelName: %s, token : %s", config.srcInfo->channelName, config.srcInfo->token,  config.destInfos[i].channelName, config.destInfos[i].token);
+                }
                 result = pEngine->m_engine->startChannelMediaRelay(config);
                 
-                if(destInfos){
-                    delete[] destInfos;
-                }
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -5067,7 +5203,7 @@ namespace agora {
 
         NAPI_API_DEFINE(NodeRtcEngine, updateChannelMediaRelay)
         {
-            LOG_ENTER;
+             LOG_ENTER;
             napi_status status = napi_ok;
             int result = -1;
             do {
@@ -5078,49 +5214,56 @@ namespace agora {
                 CHECK_NATIVE_THIS(pEngine);
                 ChannelMediaRelayConfiguration config;
                 Local<Object> obj;
-                status = napi_get_value_object_(isolate, args[0], obj);
+                napi_status status = napi_get_value_object_(isolate, args[0], obj);
                 CHECK_NAPI_STATUS(pEngine, status);
 
-                if (obj->IsNull()) {
-                    status = napi_invalid_arg;
-                    break;
-                }
-
+                string sourceChannel, sourceToken;
+                std::vector<string> destChannels, destTokens;
+                std::vector<ChannelMediaInfo> destInfos;
+                
                 //srcInfo
                 Local<Name> keyName = String::NewFromUtf8(args.GetIsolate(), "srcInfo", NewStringType::kInternalized).ToLocalChecked();
                 Local<Value> srcInfoValue = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
                 ChannelMediaInfo srcInfo;
-                if (!srcInfoValue->IsNull()) {
+                if (!srcInfoValue->IsNullOrUndefined()) {
                     NodeString channelName, token;
-                    Local<Object> objSrcInfo;
-                    status = napi_get_value_object_(isolate, srcInfoValue, objSrcInfo);
-                    CHECK_NAPI_STATUS(pEngine, status);
+                    Local<Object> objSrcInfo = srcInfoValue->ToObject(context).ToLocalChecked();
                     napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "channelName", channelName);
                     napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "token", token);
                     napi_get_object_property_uid_(args.GetIsolate(), objSrcInfo, "uid", srcInfo.uid);
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    
+                    if(channelName != nullptr) {
+                        sourceChannel = string(channelName);
+                        srcInfo.channelName = sourceChannel.c_str();
+                    } else {
+                        srcInfo.channelName = nullptr;
+                    }
+                    if(token != nullptr) {
+                        sourceToken = (string)token;
+                        srcInfo.token = sourceToken.c_str();
+                    } else {
+                        srcInfo.token = nullptr;
+                    }
                 }
                 
 
                 //destInfos
                 keyName = String::NewFromUtf8(args.GetIsolate(), "destInfos", NewStringType::kInternalized).ToLocalChecked();
                 Local<Value> objDestInfos = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
-                if (objDestInfos->IsNull() || !objDestInfos->IsArray()) {
+                if (objDestInfos->IsNullOrUndefined() || !objDestInfos->IsArray()) {
                     status = napi_invalid_arg;
                     break;
                 }
                 auto destInfosValue = v8::Array::Cast(*objDestInfos);
                 int destInfoCount = destInfosValue->Length();
-                ChannelMediaInfo* destInfos = new ChannelMediaInfo[destInfoCount];
+                destInfos.resize(destInfoCount);
+                destChannels.resize(destInfoCount);
+                destTokens.resize(destInfoCount);
                 for (uint32 i = 0; i < destInfoCount; i++) {
+                    // ChannelMediaInfo destInfo;
                     Local<Value> value = destInfosValue->Get(context, i).ToLocalChecked();
-                    Local<Object> destInfoObj;
-                    status = napi_get_value_object_(isolate, value, destInfoObj);
-                    CHECK_NAPI_STATUS(pEngine, status);
-                    if (destInfoObj->IsNull()) {
+                    Local<Object> destInfoObj = value->ToObject(context).ToLocalChecked();
+                    if (destInfoObj->IsNullOrUndefined()) {
                         status = napi_invalid_arg;
                         break;
                     }
@@ -5128,18 +5271,26 @@ namespace agora {
                     napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "channelName", channelName);
                     napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "token", token);
                     napi_get_object_property_uid_(args.GetIsolate(), destInfoObj, "uid", destInfos[i].uid);
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    if(channelName) {
+                        destChannels[i] = string(channelName);
+                        destInfos[i].channelName = destChannels[i].c_str();
+                    } else {
+                        destChannels[i] = "";
+                    }
+                    if(token) {
+                        destTokens[i] = string(token);
+                        destInfos[i].token = destTokens[i].c_str();
+                    } else {
+                        destTokens[i] = "";
+                    }
                 }
                 config.srcInfo = &srcInfo;
                 config.destInfos = &destInfos[0];
                 config.destCount = destInfoCount;
 
                 result = pEngine->m_engine->updateChannelMediaRelay(config);
-                if(destInfos){
-                    delete[] destInfos;
+                for (int i = 0; i < destInfoCount; i++) {
+                    LOG_F(INFO, "updateChannelMediaRelay src channelName: %s, token: %s,  dest channelName: %s, token : %s", config.srcInfo->channelName, config.srcInfo->token,  config.destInfos[i].channelName, config.destInfos[i].token);
                 }
             } while (false);
             napi_set_int_result(args, result);
@@ -5729,7 +5880,91 @@ namespace agora {
             LOG_LEAVE;
         }
 
-        
+        // 3.3.0 APIs
+        NAPI_API_DEFINE(NodeRtcEngine, setCloudProxy)
+        {
+            LOG_ENTER;
+            int result = -1;
+            do {
+                NodeRtcEngine *pEngine = nullptr;
+                napi_status status = napi_ok;
+                napi_get_native_this(args, pEngine);
+                CHECK_NATIVE_THIS(pEngine);
+                int type;
+                status = napi_get_value_int32_(args[0], type);
+                CHECK_NAPI_STATUS(pEngine, status);
+                result = pEngine->m_engine->setCloudProxy(CLOUD_PROXY_TYPE(type));
+            } while (false);
+            napi_set_int_result(args, result);
+            LOG_LEAVE;
+        }
+
+        NAPI_API_DEFINE_WRAPPER_PARAM_1(enableDeepLearningDenoise, bool);
+
+        NAPI_API_DEFINE(NodeRtcEngine, setVoiceBeautifierParameters)
+        {
+            LOG_ENTER;
+            int result = -1;
+            do {
+                NodeRtcEngine *pEngine = nullptr;
+                napi_status status = napi_ok;
+                napi_get_native_this(args, pEngine);
+                CHECK_NATIVE_THIS(pEngine);
+                int preset, param1, param2;
+                status = napi_get_value_int32_(args[0], preset);
+                CHECK_NAPI_STATUS(pEngine, status);
+
+                status = napi_get_value_int32_(args[1], param1);
+                CHECK_NAPI_STATUS(pEngine, status);
+
+                status = napi_get_value_int32_(args[2], param2);
+                CHECK_NAPI_STATUS(pEngine, status);
+
+                result = pEngine->m_engine->setVoiceBeautifierParameters(VOICE_BEAUTIFIER_PRESET(preset), param1, param2);
+            } while (false);
+            napi_set_int_result(args, result);
+            LOG_LEAVE;
+        }
+
+        NAPI_API_DEFINE(NodeRtcEngine, uploadLogFile)
+        {
+            LOG_ENTER;
+            do {
+                NodeRtcEngine *pEngine = nullptr;
+                napi_get_native_this(args, pEngine);
+                CHECK_NATIVE_THIS(pEngine);
+                napi_status status = napi_ok;
+                util::AString requestId;
+
+                int result = pEngine->m_engine->uploadLogFile(requestId);
+                if(result < 0) {
+                    napi_set_string_result(args, "");
+                } else {
+                    napi_set_string_result(args, requestId->c_str());
+                }
+            } while (false);
+            LOG_LEAVE;
+        }
+
+        NAPI_API_DEFINE(NodeRtcEngine, setVoiceConversionPreset)
+        {
+            LOG_ENTER;
+            int result = -1;
+            do {
+                NodeRtcEngine *pEngine = nullptr;
+                napi_status status = napi_ok;
+                napi_get_native_this(args, pEngine);
+                CHECK_NATIVE_THIS(pEngine);
+                int preset;
+
+                status = napi_get_value_int32_(args[0], preset);
+                CHECK_NAPI_STATUS(pEngine, status);
+
+                result = pEngine->m_engine->setVoiceConversionPreset(VOICE_CONVERSION_PRESET(preset));
+            } while (false);
+            napi_set_int_result(args, result);
+            LOG_LEAVE;  
+        }
 
         /**
          * NodeRtcChannel
@@ -6130,17 +6365,29 @@ namespace agora {
             LOG_ENTER;
             int result = -1;
             do {
+                Isolate* isolate = args.GetIsolate();
                 NodeRtcChannel *pChannel = nullptr;
                 napi_get_native_channel(args, pChannel);
                 CHECK_NATIVE_CHANNEL(pChannel);
                 napi_status status;
-
                 int streamId;
-                bool reliable, ordered;
-                napi_get_param_2(args, bool, reliable, bool, ordered);
-                CHECK_NAPI_STATUS(pChannel, status);
-
-                result = pChannel->m_channel->createDataStream(&streamId, reliable, ordered);
+                if(!args[0]->IsObject()) {
+                    bool reliable, ordered;
+                    napi_get_param_2(args, bool, reliable, bool, ordered);
+                    CHECK_NAPI_STATUS(pChannel, status);
+                    result = pChannel->m_channel->createDataStream(&streamId, reliable, ordered);
+                } else {
+                    Local<Object> obj;
+                    DataStreamConfig config;
+                    status = napi_get_value_object_(isolate, args[0], obj);
+                    CHECK_NAPI_STATUS(pChannel, status);
+                    status = napi_get_object_property_bool_(isolate, obj, "syncWithAudio", config.syncWithAudio);
+                    CHECK_NAPI_STATUS(pChannel, status);
+                    status = napi_get_object_property_bool_(isolate, obj, "ordered", config.ordered);
+                    CHECK_NAPI_STATUS(pChannel, status);
+                    result = pChannel->m_channel->createDataStream(&streamId, config);
+                }
+                
                 if(result == 0) {
                     result = streamId;
                 }
@@ -6446,98 +6693,95 @@ namespace agora {
         NAPI_API_DEFINE(NodeRtcChannel, startChannelMediaRelay)
         {
             LOG_ENTER;
+            napi_status status = napi_ok;
             int result = -1;
             do {
                 Isolate* isolate = args.GetIsolate();
-                Local<Context> context = isolate->GetCurrentContext();
                 NodeRtcChannel *pChannel = nullptr;
                 napi_get_native_channel(args, pChannel);
                 CHECK_NATIVE_CHANNEL(pChannel);
-                napi_status status;
-
+                Local<Context> context = isolate->GetCurrentContext();
                 ChannelMediaRelayConfiguration config;
                 Local<Object> obj;
+
                 status = napi_get_value_object_(isolate, args[0], obj);
                 CHECK_NAPI_STATUS(pChannel, status);
 
-                if (args[0]->IsNull() || !args[0]->IsObject()) {
-                    status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
-                }
-
+                string sourceChannel, sourceToken;
+                std::vector<string> destChannels, destTokens;
+                std::vector<ChannelMediaInfo> destInfos;
+                
                 //srcInfo
-                Local<Name> keyName = String::NewFromUtf8(isolate, "srcInfo", NewStringType::kInternalized).ToLocalChecked();
-                Local<Value> srcInfoValue = obj->Get(context, keyName).ToLocalChecked();
+                Local<Name> keyName = String::NewFromUtf8(args.GetIsolate(), "srcInfo", NewStringType::kInternalized).ToLocalChecked();
+                Local<Value> srcInfoValue = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
                 ChannelMediaInfo srcInfo;
-
-                if (srcInfoValue->IsNull() || !srcInfoValue->IsObject()) {
-                    status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
+                if (!srcInfoValue->IsNullOrUndefined()) {
+                    NodeString channelName, token;
+                    Local<Object> objSrcInfo = srcInfoValue->ToObject(context).ToLocalChecked();
+                    napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "channelName", channelName);
+                    napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "token", token);
+                    napi_get_object_property_uid_(args.GetIsolate(), objSrcInfo, "uid", srcInfo.uid);
+                    
+                    if(channelName != nullptr) {
+                        sourceChannel = string(channelName);
+                        srcInfo.channelName = sourceChannel.c_str();
+                    } else {
+                        srcInfo.channelName = nullptr;
+                    }
+                    if(token != nullptr) {
+                        sourceToken = (string)token;
+                        srcInfo.token = sourceToken.c_str();
+                    } else {
+                        srcInfo.token = nullptr;
+                    }
                 }
-                NodeString channelName, token;
-                Local<Object> objSrcInfo;
-                status = napi_get_value_object_(isolate, srcInfoValue, objSrcInfo);
-                CHECK_NAPI_STATUS(pChannel, status);
-                status = napi_get_object_property_nodestring_(isolate, objSrcInfo, "channelName", channelName);
-                CHECK_NAPI_STATUS(pChannel, status);
                 
-                status = napi_get_object_property_nodestring_(isolate, objSrcInfo, "token", token);
-                CHECK_NAPI_STATUS(pChannel, status);
-                
-                status = napi_get_object_property_uid_(isolate, objSrcInfo, "uid", srcInfo.uid);
-                CHECK_NAPI_STATUS(pChannel, status);
-                
-                string mChannelName(channelName);
-                string mToken(token);
-                srcInfo.channelName = mChannelName.c_str();
-                srcInfo.token = mToken.c_str();
-                
-
+                LOG_F(INFO, "startChannelMediaRelay src channelName: %s, token : %s", srcInfo.channelName, srcInfo.token);
                 //destInfos
-                keyName = String::NewFromUtf8(isolate, "destInfos", NewStringType::kInternalized).ToLocalChecked();
-                Local<Value> objDestInfos = obj->Get(context, keyName).ToLocalChecked();
-                if (objDestInfos->IsNull() || !objDestInfos->IsArray()) {
+                keyName = String::NewFromUtf8(args.GetIsolate(), "destInfos", NewStringType::kInternalized).ToLocalChecked();
+                Local<Value> objDestInfos = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
+                if (objDestInfos->IsNullOrUndefined() || !objDestInfos->IsArray()) {
                     status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
+                    break;
                 }
                 auto destInfosValue = v8::Array::Cast(*objDestInfos);
                 int destInfoCount = destInfosValue->Length();
-                ChannelMediaInfo* destInfos = new ChannelMediaInfo[destInfoCount];
+                destInfos.resize(destInfoCount);
+                destChannels.resize(destInfoCount);
+                destTokens.resize(destInfoCount);
                 for (uint32 i = 0; i < destInfoCount; i++) {
+                    // ChannelMediaInfo destInfo;
                     Local<Value> value = destInfosValue->Get(context, i).ToLocalChecked();
-                    Local<Object> destInfoObj;
-                    status = napi_get_value_object_(isolate, value, destInfoObj);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    if (destInfoObj->IsNull() || !destInfoObj->IsObject()) {
+                    Local<Object> destInfoObj = value->ToObject(context).ToLocalChecked();
+                    if (destInfoObj->IsNullOrUndefined()) {
                         status = napi_invalid_arg;
                         break;
                     }
                     NodeString channelName, token;
-                    status = napi_get_object_property_nodestring_(isolate, destInfoObj, "channelName", channelName);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    status = napi_get_object_property_nodestring_(isolate, destInfoObj, "token", token);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    status = napi_get_object_property_uid_(isolate, destInfoObj, "uid", destInfos[i].uid);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "channelName", channelName);
+                    napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "token", token);
+                    napi_get_object_property_uid_(args.GetIsolate(), destInfoObj, "uid", destInfos[i].uid);
+                    if(channelName) {
+                        destChannels[i] = string(channelName);
+                        destInfos[i].channelName = destChannels[i].c_str();
+                    } else {
+                        destChannels[i] = "";
+                    }
+                    if(token) {
+                        destTokens[i] = string(token);
+                        destInfos[i].token = destTokens[i].c_str();
+                    } else {
+                        destTokens[i] = "";
+                    }
                 }
-                CHECK_NAPI_STATUS(pChannel, status);
-
                 config.srcInfo = &srcInfo;
                 config.destInfos = &destInfos[0];
                 config.destCount = destInfoCount;
-
+                for (int i = 0; i < destInfoCount; i++) {
+                     LOG_F(INFO, "startChannelMediaRelay src channelName: %s, token: %s,  dest channelName: %s, token : %s", config.srcInfo->channelName, config.srcInfo->token,  config.destInfos[i].channelName, config.destInfos[i].token);
+                }
                 result = pChannel->m_channel->startChannelMediaRelay(config);
                 
-                if(destInfos){
-                    delete[] destInfos;
-                }
             } while (false);
             napi_set_int_result(args, result);
             LOG_LEAVE;
@@ -6546,97 +6790,94 @@ namespace agora {
         NAPI_API_DEFINE(NodeRtcChannel, updateChannelMediaRelay)
         {
             LOG_ENTER;
+            napi_status status = napi_ok;
             int result = -1;
             do {
                 Isolate* isolate = args.GetIsolate();
-                Local<Context> context = isolate->GetCurrentContext();
                 NodeRtcChannel *pChannel = nullptr;
                 napi_get_native_channel(args, pChannel);
                 CHECK_NATIVE_CHANNEL(pChannel);
-                napi_status status;
+                Local<Context> context = isolate->GetCurrentContext();
 
                 ChannelMediaRelayConfiguration config;
                 Local<Object> obj;
-                status = napi_get_value_object_(isolate, args[0], obj);
+                napi_status status = napi_get_value_object_(isolate, args[0], obj);
                 CHECK_NAPI_STATUS(pChannel, status);
 
-                if (args[0]->IsNull() || !args[0]->IsObject()) {
-                    status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
-                }
-
+                string sourceChannel, sourceToken;
+                std::vector<string> destChannels, destTokens;
+                std::vector<ChannelMediaInfo> destInfos;
+                
                 //srcInfo
-                Local<Name> keyName = String::NewFromUtf8(isolate, "srcInfo", NewStringType::kInternalized).ToLocalChecked();
-                Local<Value> srcInfoValue = obj->Get(context, keyName).ToLocalChecked();
+                Local<Name> keyName = String::NewFromUtf8(args.GetIsolate(), "srcInfo", NewStringType::kInternalized).ToLocalChecked();
+                Local<Value> srcInfoValue = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
                 ChannelMediaInfo srcInfo;
-
-                if (srcInfoValue->IsNull() || !srcInfoValue->IsObject()) {
-                    status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
+                if (!srcInfoValue->IsNullOrUndefined()) {
+                    NodeString channelName, token;
+                    Local<Object> objSrcInfo = srcInfoValue->ToObject(context).ToLocalChecked();
+                    napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "channelName", channelName);
+                    napi_get_object_property_nodestring_(args.GetIsolate(), objSrcInfo, "token", token);
+                    napi_get_object_property_uid_(args.GetIsolate(), objSrcInfo, "uid", srcInfo.uid);
+                    
+                    if(channelName != nullptr) {
+                        sourceChannel = string(channelName);
+                        srcInfo.channelName = sourceChannel.c_str();
+                    } else {
+                        srcInfo.channelName = nullptr;
+                    }
+                    if(token != nullptr) {
+                        sourceToken = (string)token;
+                        srcInfo.token = sourceToken.c_str();
+                    } else {
+                        srcInfo.token = nullptr;
+                    }
                 }
-                NodeString channelName, token;
-                Local<Object> objSrcInfo;
-                status = napi_get_value_object_(isolate, srcInfoValue, objSrcInfo);
-                CHECK_NAPI_STATUS(pChannel, status);
-                status = napi_get_object_property_nodestring_(isolate, objSrcInfo, "channelName", channelName);
-                CHECK_NAPI_STATUS(pChannel, status);
-                
-                status = napi_get_object_property_nodestring_(isolate, objSrcInfo, "token", token);
-                CHECK_NAPI_STATUS(pChannel, status);
-                
-                status = napi_get_object_property_uid_(isolate, objSrcInfo, "uid", srcInfo.uid);
-                CHECK_NAPI_STATUS(pChannel, status);
-                
-                string mChannelName(channelName);
-                string mToken(token);
-                srcInfo.channelName = mChannelName.c_str();
-                srcInfo.token = mToken.c_str();
                 
 
                 //destInfos
-                keyName = String::NewFromUtf8(isolate, "destInfos", NewStringType::kInternalized).ToLocalChecked();
-                Local<Value> objDestInfos = obj->Get(context, keyName).ToLocalChecked();
-                if (objDestInfos->IsNull() || !objDestInfos->IsArray()) {
+                keyName = String::NewFromUtf8(args.GetIsolate(), "destInfos", NewStringType::kInternalized).ToLocalChecked();
+                Local<Value> objDestInfos = obj->Get(args.GetIsolate()->GetCurrentContext(), keyName).ToLocalChecked();
+                if (objDestInfos->IsNullOrUndefined() || !objDestInfos->IsArray()) {
                     status = napi_invalid_arg;
-                    CHECK_NAPI_STATUS(pChannel, status);
+                    break;
                 }
                 auto destInfosValue = v8::Array::Cast(*objDestInfos);
                 int destInfoCount = destInfosValue->Length();
-                ChannelMediaInfo* destInfos = new ChannelMediaInfo[destInfoCount];
+                destInfos.resize(destInfoCount);
+                destChannels.resize(destInfoCount);
+                destTokens.resize(destInfoCount);
                 for (uint32 i = 0; i < destInfoCount; i++) {
+                    // ChannelMediaInfo destInfo;
                     Local<Value> value = destInfosValue->Get(context, i).ToLocalChecked();
-                    Local<Object> destInfoObj;
-                    status = napi_get_value_object_(isolate, value, destInfoObj);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    if (destInfoObj->IsNull() || !destInfoObj->IsObject()) {
+                    Local<Object> destInfoObj = value->ToObject(context).ToLocalChecked();
+                    if (destInfoObj->IsNullOrUndefined()) {
                         status = napi_invalid_arg;
                         break;
                     }
                     NodeString channelName, token;
-                    status = napi_get_object_property_nodestring_(isolate, destInfoObj, "channelName", channelName);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    status = napi_get_object_property_nodestring_(isolate, destInfoObj, "token", token);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    status = napi_get_object_property_uid_(isolate, destInfoObj, "uid", destInfos[i].uid);
-                    CHECK_NAPI_STATUS(pChannel, status);
-                    
-                    string mChannelName(channelName);
-                    string mToken(token);
-                    srcInfo.channelName = mChannelName.c_str();
-                    srcInfo.token = mToken.c_str();
+                    napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "channelName", channelName);
+                    napi_get_object_property_nodestring_(args.GetIsolate(), destInfoObj, "token", token);
+                    napi_get_object_property_uid_(args.GetIsolate(), destInfoObj, "uid", destInfos[i].uid);
+                    if(channelName) {
+                        destChannels[i] = string(channelName);
+                        destInfos[i].channelName = destChannels[i].c_str();
+                    } else {
+                        destChannels[i] = "";
+                    }
+                    if(token) {
+                        destTokens[i] = string(token);
+                        destInfos[i].token = destTokens[i].c_str();
+                    } else {
+                        destTokens[i] = "";
+                    }
                 }
-                CHECK_NAPI_STATUS(pChannel, status);
-
                 config.srcInfo = &srcInfo;
                 config.destInfos = &destInfos[0];
                 config.destCount = destInfoCount;
 
                 result = pChannel->m_channel->updateChannelMediaRelay(config);
-                
-                if(destInfos){
-                    delete[] destInfos;
+                for (int i = 0; i < destInfoCount; i++) {
+                    LOG_F(INFO, "updateChannelMediaRelay src channelName: %s, token: %s,  dest channelName: %s, token : %s", config.srcInfo->channelName, config.srcInfo->token,  config.destInfos[i].channelName, config.destInfos[i].token);
                 }
             } while (false);
             napi_set_int_result(args, result);

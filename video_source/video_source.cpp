@@ -183,6 +183,63 @@ void AgoraVideoSource::notifyRequestNewToken()
     m_ipc->sendMessage(AGORA_IPC_RENEW_TOKEN, nullptr, 0);
 }
 
+void AgoraVideoSource::notifyLocalAudioStats(const agora::rtc::LocalAudioStats& audioStats)
+{
+    std::unique_ptr<LocalAudioStatsCmd> cmd(new LocalAudioStatsCmd());
+    cmd->numChannels = audioStats.numChannels;
+    cmd->sentSampleRate = audioStats.sentSampleRate;
+    cmd->sentBitrate = audioStats.sentBitrate;
+    cmd->txPacketLossRate = audioStats.txPacketLossRate;
+    m_ipc->sendMessage(AGORA_IPC_ON_LOCAL_AUDIO_STATS, (char*) cmd.get(), sizeof(LocalAudioStatsCmd));
+}
+
+void AgoraVideoSource::notifyLocalVideoStats(const agora::rtc::LocalVideoStats& videoStats)
+{
+    std::unique_ptr<LocalVideoStatsCmd> cmd(new LocalVideoStatsCmd());
+    cmd->sentBitrate = videoStats.sentBitrate;
+    cmd->sentFrameRate = videoStats.sentFrameRate;
+    cmd->encoderOutputFrameRate = videoStats.encoderOutputFrameRate;
+    cmd->rendererOutputFrameRate = videoStats.rendererOutputFrameRate;
+    cmd->targetBitrate = videoStats.targetBitrate;
+    cmd->targetFrameRate = videoStats.targetFrameRate;
+    cmd->qualityAdaptIndication = videoStats.qualityAdaptIndication;
+    cmd->encodedBitrate = videoStats.encodedBitrate;
+    cmd->encodedFrameWidth = videoStats.encodedFrameWidth;
+    cmd->encodedFrameHeight = videoStats.encodedFrameHeight;
+    cmd->encodedFrameCount = videoStats.encodedFrameCount;
+    cmd->codecType = videoStats.codecType;
+    cmd->txPacketLossRate = videoStats.txPacketLossRate;
+    cmd->captureFrameRate = videoStats.captureFrameRate;
+    cmd->captureBrightnessLevel = videoStats.captureBrightnessLevel;
+    m_ipc->sendMessage(AGORA_IPC_ON_LOCAL_VIDEO_STATS, (char*) cmd.get(), sizeof(LocalVideoStatsCmd));
+}
+
+void AgoraVideoSource::notifyVideoSizeChanged(agora::rtc::uid_t uid, int width, int height, int rotation)
+{
+    std::unique_ptr<VideoSizeChangedCmd> cmd(new VideoSizeChangedCmd());
+    cmd->uid = uid;
+    cmd->width = width;
+    cmd->height = height;
+    cmd->rotation = rotation;
+    m_ipc->sendMessage(AGORA_IPC_ON_VIDEO_SIZECHANGED, (char*) cmd.get(), sizeof(VideoSizeChangedCmd));
+}
+
+void AgoraVideoSource::notifyLocalVideoStateChanged(agora::rtc::LOCAL_VIDEO_STREAM_STATE localVideoState, agora::rtc::LOCAL_VIDEO_STREAM_ERROR error)
+{
+    std::unique_ptr<LocalVideoStateChangedCmd> cmd(new LocalVideoStateChangedCmd());
+    cmd->error = error;
+    cmd->localVideoState = localVideoState;
+    m_ipc->sendMessage(AGORA_IPC_ON_LOCAL_VIDEO_STATE_CHANGED, (char*)cmd.get(), sizeof(LocalVideoStateChangedCmd));
+}
+
+void AgoraVideoSource::notifyLocalAudioStateChanged(agora::rtc::LOCAL_AUDIO_STREAM_STATE state, agora::rtc::LOCAL_AUDIO_STREAM_ERROR error)
+{
+    std::unique_ptr<LocalAudioStateChangedCmd> cmd(new LocalAudioStateChangedCmd());
+    cmd->error = error;
+    cmd->localAudioState = state;
+    m_ipc->sendMessage(AGORA_IPC_ON_LOCAL_AUDIO_STATE_CHANGED, (char*)cmd.get(), sizeof(LocalAudioStateChangedCmd));
+}
+
 void AgoraVideoSource::release()
 {
     delete this;

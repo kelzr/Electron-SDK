@@ -356,6 +356,19 @@ namespace agora {
             NAPI_API(setVoiceBeautifierPreset);
             NAPI_API(setAudioEffectParameters);
             NAPI_API(setClientRoleWithOptions);
+
+            /**
+             * 3.3.0 Apis
+             */
+            NAPI_API(setCloudProxy);
+            NAPI_API(enableDeepLearningDenoise);
+            NAPI_API(setVoiceBeautifierParameters);
+            NAPI_API(uploadLogFile);
+
+            /**
+             *  3.3.1
+             */ 
+            NAPI_API(setVoiceConversionPreset);
             
         public:
             Isolate* getIsolate() { return m_isolate; }
@@ -367,9 +380,9 @@ namespace agora {
             ~NodeRtcEngine();
         private:
             DECLARE_CLASS;
-            IRtcEngine *m_engine;
+            IRtcEngine *m_engine = nullptr;
             std::unique_ptr<NodeEventHandler> m_eventHandler;
-            Isolate *m_isolate;
+            Isolate *m_isolate = nullptr;
             std::unique_ptr<IExternalVideoRenderFactory> m_externalVideoRenderFactory;
 
             /**
