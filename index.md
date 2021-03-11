@@ -18,7 +18,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.setClientRole setClientRole}           | Sets the role of the user (interactive live streaming only).             |
 | {@link AgoraRtcEngine.setClientRoleWithOptions setClientRoleWithOptions}           | Sets the role and level of the user (interactive live streaming only). |
 | {@link AgoraRtcEngine.joinChannel joinChannel}               | Allows a user to join a channel. |
-| {@link AgoraRtcEngine.switchChannel switchChannel}|Switches to a different channel (Live Broadcast only).|
+| {@link AgoraRtcEngine.switchChannel switchChannel}|Switches to a different channel (interactive live streaming only).|
 | {@link AgoraRtcEngine.leaveChannel leaveChannel}             | Allows a user to leave a channel.                            |
 | {@link AgoraRtcEngine.subscribe subscribe}                   | Subscribes to the remote user and initializes the video sink |
 | {@link AgoraRtcEngine.renewToken renewToken}                 | Renews the token.                                            |
@@ -137,7 +137,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.resumeEffect resumeEffect}           | Resumes playing a specified audio effect.               |
 | {@link AgoraRtcEngine.resumeAllEffects resumeAllEffects}   | Resumes playing all audio effects.                      |
 
-### Voice changer and reverberation
+### Voice Effect
 
 | Method                                                       | Description                                       |
 | ------------------------------------------------------------ | ------------------------------------------------- |
@@ -145,8 +145,10 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 | {@link AgoraRtcEngine.setLocalVoiceEqualization setLocalVoiceEqualization} | Sets the local video equalization effect.   |
 | {@link AgoraRtcEngine.setLocalVoiceReverb setLocalVoiceReverb} | Sets the local voice reverberation.  |
 | {@link AgoraRtcEngine.setVoiceBeautifierPreset setVoiceBeautifierPreset} | Sets an SDK preset voice beautifier effect.|
+| {@link AgoraRtcEngine.setVoiceBeautifierParameters setVoiceBeautifierParameters} | Sets parameters for SDK preset voice beautifier effects.|
 | {@link AgoraRtcEngine.setAudioEffectPreset setAudioEffectPreset} | Sets an SDK preset audio effect.   |
 | {@link AgoraRtcEngine.setAudioEffectParameters setAudioEffectParameters} | Sets parameters for SDK preset audio effects.  |
+| {@link AgoraRtcEngine.setVoiceConversionPreset setVoiceConversionPreset} | Sets an SDK preset voice conversion effect.  |
 
 ### Sound position indication
 
@@ -310,13 +312,12 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 | Method                                                   | Description      |
 | ------------------------------------------------------------ | ------------------ |
+| {@link AgoraRtcEngine.setCloudProxy setCloudProxy} | Sets the Agora cloud proxy service.  |
+| {@link AgoraRtcEngine.enableDeepLearningDenoise enableDeepLearningDenoise} | Enables/Disables deep-learning noise reduction. |
 | {@link AgoraRtcEngine.sendCustomReportMessage sendCustomReportMessage}  | Reports and analyzes customized messages.   |
 | {@link AgoraRtcEngine.getCallId getCallId}                   | Gets the current call ID. |
 | {@link AgoraRtcEngine.rate rate}                             | Allows the user to rate the call and is called after the call ends. |
 | {@link AgoraRtcEngine.complain complain}                     | Allows a user to complain about the call quality after a call ends. |
-| {@link AgoraRtcEngine.setLogFile setLogFile}                 | Specifies an SDK output log file. |
-| {@link AgoraRtcEngine.setLogFileSize setLogFileSize}         | Sets the log file size (KB). |
-| {@link AgoraRtcEngine.setLogFile setLogFilter}               | Sets the output log level of the SDK. |
 | {@link AgoraRtcEngine.getVersion getVersion}                 | Gets the SDK version number. |
 | {@link AgoraRtcEngine.getErrorDescription getErrorDescription} | Gets the warning or error description. |
 
@@ -449,6 +450,7 @@ Warning codes occur when the SDK encounters an error that might be recovered aut
 | `-121`    | The ticket to open the channel is invalid.           |
 | `-122`    | Try connecting to another server.                   |
 | `-131`    | The channel connection cannot be recovered. |
+| `-157`    |The necessary dynamical library is not integrated. For example, if you call the {@link AgoraRtcEngine.enableDeepLearningDenoise enableDeepLearningDenoise} but do not integrate the dynamical library for the deep-learning noise reduction into your project, the SDK reports this error code.|
 | `-701`    | An error occurs in opening the audio mixing file.                    |
 | `-1014`   | Audio Device Module: A warning occurs in the playback device.                   |
 | `-1016`   | Audio Device Module: A warning occurs in the recording device.     |
