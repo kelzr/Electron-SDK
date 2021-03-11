@@ -159,7 +159,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 ### CDN publisher
 
-> This group of methods apply to Live Broadcast only.
+> This group of methods apply to Live Streaming only.
 
 | Method                                                       | Description                                   |
 | ------------------------------------------------------------ | --------------------------------------------- |
@@ -169,7 +169,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 ### Channel Media Relay
 
-> This group of methods apply to Live Broadcast only.
+> This group of methods apply to Live Streaming only.
 
 | Method                                                       | Description                                    |
 | ------------------------------------------------------------ | ---------------------------------------------- |
@@ -224,7 +224,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 ### Watermark
 
-> This group of methods apply to Live Broadcast only.
+> This group of methods apply to Live Streaming only.
 
 | Method                                                       | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -293,7 +293,7 @@ This Agora Electron SDK is developed upon the Native SDK for macOS and the Nativ
 
 | Method                                                     | Description                 |
 | ---------------------------------------------------------- | --------------------------- |
-| {@link AgoraRtcEngine.createDataStream createDataStream}   | Creates a data stream.      |
+| {@link AgoraRtcEngine.createDataStreamWithConfig createDataStreamWithConfi}   | Creates a data stream.      |
 | {@link AgoraRtcEngine.sendStreamMessage sendStreamMessage} | Sends data stream messages. |
 
 ### Miscellaneous audio control
@@ -370,7 +370,7 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 | `joinedChannel`                    | Occurs when a user joins a channel.                          |
 | `rejoinedChannel`                  | Occurs when a user rejoins a channel.                        |
 | `leaveChannel`                     | Occurs when a user leaves a channel.                         |
-| `clientRoleChanged`                | Occurs when the user role in a Live Broadcast changes.       |
+| `clientRoleChanged`                | Occurs when the user role in the live streaming changes.       |
 | `userJoined`                       | Occurs when a remote user joins a channel.                   |
 | `connectionStateChanged`           | Occurs when the network connection state changes.            |
 | `connectionLost`                   | Occurs when the network connection state changes.            |
@@ -451,8 +451,8 @@ Warning codes occur when the SDK encounters an error that might be recovered aut
 | `-106`    | A timeout occurs when opening the channel. <br/>Once the specific channel is found, the SDK opens the channel. This warning usually occurs when the network condition is too poor for the SDK to connect to the server. |
 | `-107`    | The server rejects the request to open the channel. <br/>The server cannot process this request or the request is illegal. |
 | `-111`    | A timeout occurs when switching to the live video.   |
-| `-118`    | A timeout occurs when setting the client role in the live broadcast profile.     |
-| `-119`    | The client role a the live broadcast profile is unauthorized.   |
+| `-118`    | A timeout occurs when setting the client role in the live streaming profile.     |
+| `-119`    | The client role a the live streaming profile is unauthorized.   |
 | `-121`    | The ticket to open the channel is invalid.           |
 | `-122`    | Try connecting to another server.                   |
 | `-131`    | The channel connection cannot be recovered. |

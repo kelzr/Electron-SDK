@@ -681,15 +681,15 @@ class AgoraRtcEngine extends EventEmitter {
     });
 
     this.rtcEngine.onEvent('localVideoStateChanged', function(
-      localVideoState: number,
-      err: number
+      localVideoState: LOCAL_VIDEO_STREAM_STATE,
+      err: LOCAL_VIDEO_STREAM_ERROR
     ) {
       fire('localVideoStateChanged', localVideoState, err);
     });
 
     this.rtcEngine.onEvent('localAudioStateChanged', function(
-      state: number,
-      err: number
+      state: LOCAL_AUDIO_STREAM_STATE,
+      err: LOCAL_AUDIO_STREAM_ERROR
     ) {
       fire('localAudioStateChanged', state, err);
     });
@@ -6525,7 +6525,8 @@ declare interface AgoraRtcEngine {
    * camera capturing and video encoding, and allows you to troubleshoot
    * issues when exceptions occur.
    *
-   * The SDK triggers the `videoSourceLocalVideoStateChanged(3, 1)`
+   * The SDK triggers the
+   * `videoSourceLocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_FAILED, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)`
    * callback in the
    * following situations:
    * - The application exits to the background, and the system recycles
@@ -6535,7 +6536,8 @@ declare interface AgoraRtcEngine {
    *
    * When the camera outputs the captured video frames, if all the video
    * frames are the same for 15 consecutive frames, the SDK triggers the
-   * `videoSourceLocalVideoStateChanged(1, 4)` callback. Note that the
+   * `videoSourceLocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 
+   * callback. Note that the
    * video frame duplication detection is only available for video frames
    * with a resolution greater than 200 × 200, a frame rate greater than
    * or equal to 10 fps,
@@ -6813,7 +6815,9 @@ declare interface AgoraRtcEngine {
    * camera capturing and video encoding, and allows you to troubleshoot
    * issues when exceptions occur.
    *
-   * The SDK triggers the `localVideoStateChanged(3, 1)` callback in the
+   * The SDK triggers the
+   * `LocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_FAILED, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)`
+   * callback in the
    * following situations:
    * - The application exits to the background, and the system recycles
    * the camera.
@@ -6822,7 +6826,8 @@ declare interface AgoraRtcEngine {
    *
    * When the camera outputs the captured video frames, if all the video
    * frames are the same for 15 consecutive frames, the SDK triggers the
-   * `localVideoStateChanged(1, 4)` callback. Note that the
+   * `LocalVideoStateChanged(LOCAL_VIDEO_STREAM_STATE_CAPTURING, LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE)` 
+   * callback. Note that the
    * video frame duplication detection is only available for video frames
    * with a resolution greater than 200 × 200, a frame rate greater than
    * or equal to 10 fps,
@@ -6832,44 +6837,13 @@ declare interface AgoraRtcEngine {
    * callback when the state of the local video changes while the local video
    * capturing device is in use, so you have to make your own timeout judgment.
    *
-   * @param cb.localVideoState The local video state:
-   *  - 0: The local video is in the initial state.
-   *  - 1: The local video capturer starts successfully. The SDK also reports
-   * this state when you share a maximized window by calling
-   * {@link startScreenCaptureByWindow}.
-   *  - 2:  The first video frame is successfully encoded.
-   *  - 3: The local video fails to start.
+   * @param cb.localVideoState The local video state.
    *
-   * @param cb.error The detailed error information of the local video:
-   *  - 0: The local video is normal.
-   *  - 1: No specified reason for the local video failure.
-   *  - 2: No permission to use the local video device.
-   *  - 3: The local video capturer is in use.
-   *  - 4: The local video capture fails. Check whether the capturer is
-   * working properly.
-   *  - 5: The local video encoding fails.
-   *  - 11: The shared window is minimized when you call
-   * {@link startScreenCaptureByWindow} to share a window.
-   *  - 12: The error code indicates that a window shared by the window ID has
-   * been closed, or a full-screen window
-   * shared by the window ID has exited full-screen mode.
-   * After exiting full-screen mode, remote users cannot see the shared window.
-   * To prevent remote users from seeing a
-   * black screen, Agora recommends that you immediately stop screen sharing.
-   * Common scenarios for reporting this error code:
-   *   - When the local user closes the shared window, the SDK reports this
-   * error code.
-   *   - The local user shows some slides in full-screen mode first, and then
-   * shares the windows of the slides. After
-   * the user exits full-screen mode, the SDK reports this error code.
-   *   - The local user watches web video or reads web document in full-screen
-   * mode first, and then shares the window of
-   * the web video or document. After the user exits full-screen mode, the
-   * SDK reports this error code.
+   * @param cb.err The detailed error information of the local video.
    */
   on(evt: 'localVideoStateChanged', cb: (
-    localVideoState: number,
-    error: number
+    localVideoState: LOCAL_VIDEO_STREAM_STATE,
+    err: LOCAL_VIDEO_STREAM_ERROR
   ) => void): this;
   /**
    * Occurs when the local audio state changes.
@@ -6878,24 +6852,12 @@ declare interface AgoraRtcEngine {
    * including the state of the audio recording and encoding, and allows you
    * to troubleshoot issues when exceptions occur.
    *
-   * - state State of the local audio:
-   *  - 0: The local audio is in the initial state.
-   *  - 1: The recording device starts successfully.
-   *  - 2: The first audio frame encodes successfully.
-   *  - 3: The local audio fails to start.
-   *
-   * - error The error information of the local audio:
-   *  - 0: The local audio is normal.
-   *  - 1: No specified reason for the local audio failure.
-   *  - 2: No permission to use the local audio device.
-   *  - 3: The microphone is in use.
-   *  - 4: The local audio recording fails. Check whether the recording device
-   * is working properly.
-   *  - 5: The local audio encoding fails.
+   * @param cb.state State of the local audio.
+   * @param cb.err The error information of the local audio.
    */
   on(evt: 'localAudioStateChanged', cb: (
-    state: number,
-    error: number
+    state: LOCAL_AUDIO_STREAM_STATE,
+    err: LOCAL_AUDIO_STREAM_ERROR
   ) => void): this;
   /**
    * Occurs when the remote audio state changes.
