@@ -54,7 +54,11 @@ import {
   CLOUD_PROXY_TYPE,
   LogConfig,
   VOICE_CONVERSION_PRESET,
-  DataStreamConfig
+  DataStreamConfig,
+  LOCAL_AUDIO_STREAM_ERROR,
+  LOCAL_AUDIO_STREAM_STATE,
+  LOCAL_VIDEO_STREAM_STATE,
+  LOCAL_VIDEO_STREAM_ERROR
 } from './native_type';
 import { EventEmitter } from 'events';
 import { deprecate, config, Config } from '../Utils';
@@ -757,6 +761,14 @@ class AgoraRtcEngine extends EventEmitter {
 
     this.rtcEngine.onEvent('uploadLogResult', function(requestId: string, success: boolean, reason: number) {
       fire('uploadLogResult', requestId, success, reason);
+    })
+
+    this.rtcEngine.onEvent('videoSourceLocalAudioStateChanged', function(state: LOCAL_AUDIO_STREAM_STATE, error: LOCAL_AUDIO_STREAM_ERROR) {
+      fire('videoSourceLocalAudioStateChanged', state, error);
+    })
+
+    this.rtcEngine.onEvent('videoSourceLocalVideoStateChanged', function(state: LOCAL_VIDEO_STREAM_STATE, error: LOCAL_VIDEO_STREAM_ERROR) {
+      fire('videoSourceLocalVideoStateChanged', state, error);
     })
 
     this.rtcEngine.registerDeliverFrame(function(infos: any) {
@@ -2991,20 +3003,16 @@ class AgoraRtcEngine extends EventEmitter {
    * the channel is in the communication(`0`) profile, or is a host in the
    * `1` (live streaming) profile.
    *
-   * **Note**: To ensure smooth communication, use the same parameter type to
+   * @note To ensure smooth communication, use the same parameter type to
    * identify the user. For example, if a user joins the channel with a user
    * ID, then ensure all the other users use the user ID too.
    * The same applies to the user account. If a user joins the channel with
    * the Agora Web SDK, ensure that the `uid` of the user is set to the same
    * parameter type.
-   * @param {string} token The token generated at your server.
-   * - For low-security requirements: You can use the temporary token generated
-   * at Dashboard. For details, see
-   * [Get a temporary token](https://docs.agora.io/en/Voice/token?platform=All%20Platforms#get-a-temporary-token).
-   * - For high-security requirements: Set it as the token generated at your
-   * server. For details, see
-   * [Get a token](https://docs.agora.io/en/Voice/token?platform=All%20Platforms#get-a-token).
-   * @param {string} channel The channel name. The maximum length of this
+   *
+   * @param token The token generated at your server. For details,
+   * see [Generate a token](https://docs.agora.io/en/Interactive%20Broadcast/token_server?platform=Electron).
+   * @param channel The channel name. The maximum length of this
    * parameter is 64 bytes. Supported character scopes are:
    * - The 26 lowercase English letters: a to z.
    * - The 26 uppercase English letters: A to Z.
@@ -3012,32 +3020,37 @@ class AgoraRtcEngine extends EventEmitter {
    * - The space.
    * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".",
    * ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ",".
-   * @param {string} userAccount The user account. The maximum length of this
-   * parameter is 255 bytes. Ensure that you set this parameter and do not set
-   * it as null.
-   * Supported character scopes are:
-   * - The 26 lowercase English letters: a to z.
-   * - The 26 uppercase English letters: A to Z.
-   * - The 10 numbers: 0 to 9.
-   * - The space.
-   * - "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".",
-   * ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ",".
+   * @param userAccount The user account. The maximum length of this parameter
+   * is 255 bytes. Ensure that you set this parameter and do not set it as
+   * null. Supported character scopes are:
+   * - All lowercase English letters: a to z.
+   * - All uppercase English letters: A to Z.
+   * - All numeric characters: 0 to 9.
+   * - The space character.
+   * - Punctuation characters and other symbols, including: "!", "#", "$",
+   * "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@",
+   * "[", "]", "^", "_", " {", "}", "|", "~", ",".
+   * @param options The channel media options. See
+   * {@link ChannelMediaOptions}.
    * @return
    * - 0: Success.
    * - < 0: Failure.
-   *  - `ERR_INVALID_ARGUMENT (2)`
-   *  - `ERR_NOT_READY (3)`
-   *  - `ERR_REFUSED (5)`
+   *  - `-2`
+   *  - `-3`
+   *  - `-5`
+   *  - `-7`
    */
   joinChannelWithUserAccount(
     token: string,
     channel: string,
-    userAccount: string
+    userAccount: string,
+    options?: ChannelMediaOptions
   ): number {
     return this.rtcEngine.joinChannelWithUserAccount(
       token,
       channel,
-      userAccount
+      userAccount,
+      options
     );
   }
   /**
@@ -4604,6 +4617,9 @@ class AgoraRtcEngine extends EventEmitter {
    * Each user can create up to five data streams during the lifecycle of the
    * AgoraRtcEngine.
    *
+   * @deprecated This method is deprecated from v3.3.1. Use the
+   * {@link createDataStreamWithConfig} method instead.
+   *
    * **Note**:
    * Set both the `reliable` and `ordered` parameters to true or false. Do not
    * set one as true and the other as false.
@@ -4623,8 +4639,27 @@ class AgoraRtcEngine extends EventEmitter {
    * - Returns the ID of the data stream, if this method call succeeds.
    * - < 0: Failure and returns an error code.
    */
-  createDataStream(reliable: boolean|DataStreamConfig, ordered?: boolean): number {
+  createDataStream(reliable: boolean, ordered: boolean): number {
     return this.rtcEngine.createDataStream(reliable, ordered);
+  }
+  /** Creates a data stream.
+   *
+   * @since v3.3.1
+   *
+   * Each user can create up to five data streams in a single channel.
+   *
+   * This method does not support data reliability. If the receiver receives
+   * a data packet five
+   * seconds or more after it was sent, the SDK directly discards the data.
+   *
+   * @param config The configurations for the data stream: DataStreamConfig.
+   *
+   * @return
+   * - Returns the ID of the created data stream, if this method call succeeds.
+   * - < 0: Fails to create the data stream.
+   */
+  createDataStreamWithConfig(config: DataStreamConfig): number {
+    return this.rtcEngine.createDataStream(config);
   }
 
   /**
@@ -6429,33 +6464,102 @@ declare interface AgoraRtcEngine {
   ): this;
   /** Occurs when the volume of the playback device, microphone, or
    * application changes.
-   * - deviceType: Device type. See {
-   * @link AgoraRtcEngine.MediaDeviceType MediaDeviceType}.
-   * - volume: Volume of the device. The value ranges between 0 and 255.
-   * - muted:
-   *  - true: Volume of the device. The value ranges between 0 and 255.
-   *  - false: The audio device is not muted.
+   *
+   * @param cb.deviceType Device type.
+   * See {@link AgoraRtcEngine.MediaDeviceType MediaDeviceType}.
+   * @param cb.volume Volume of the device. The value ranges between 0 and 255.
+   * @param cb.muted
+   * - true: The audio device is muted.
+   * - false: The audio device is not muted.
    */
   on(
     evt: 'audioDeviceVolumeChanged',
     cb: (deviceType: MediaDeviceType, volume: number, muted: boolean) => void
   ): this;
-  /** Occurs when the user for sharing screen joined the channel.
-   * - uid: The User ID.
+  /** Occurs when the local video source joins the channel.
+   * @param cb.uid The User ID.
    */
   on(evt: 'videoSourceJoinedSuccess', cb: (uid: number) => void): this;
   /** Occurs when the token expires. */
   on(evt: 'videoSourceRequestNewToken', cb: () => void): this;
-  /** Occurs when the user for sharing screen leaved the channel.
-   * - uid: The User ID.
+  /** Occurs when the video source leaves the channel.
    */
   on(evt: 'videoSourceLeaveChannel', cb: () => void): this;
-
+  /** Reports the statistics of the audio stream of the local video source.
+   *
+   * The SDK triggers this callback once every two seconds.
+   *
+   * @param cb.stats The statistics of the local audio stream.
+   */
   on(evt: 'videoSourceLocalAudioStats', cb: (stats: LocalAudioStats) => void): this;
-
+  /** Reports the statistics of the video stream of the local video source.
+   *
+   * The SDK triggers this callback once every two seconds for each
+   * user/host. If there are multiple users/hosts in the channel, the SDK
+   * triggers this callback as many times.
+   *
+   * @note
+   * If you have called the {@link videoSourceEnableDualStreamMode}
+	 * method, this callback
+   * reports the statistics of the high-video
+   * stream (high bitrate, and high-resolution video stream).
+   *
+   * @param cb.stats Statistics of the local video stream.
+   */
   on(evt: 'videoSourceLocalVideoStats', cb: (stats: LocalVideoStats) => void): this;
-
+  /** Occurs when the video size or rotation of the video source
+   * changes.
+   *
+   * @param cb.uid User ID of the remote video source or local video source
+   * (`0`) whose video size
+   * or rotation changes.
+   * @param cb.width New width (pixels) of the video.
+   * @param cb.height New height (pixels) of the video.
+   * @param cb.rotation New rotation of the video [0 to 360).
+   */
   on(evt: 'videoSourceVideoSizeChanged', cb: (uid: number, width: number, height: number, rotation: number) => void): this;
+  /**
+   * Occurs when the local video state of the video source changes.
+   *
+   * This callback indicates the state of the local video stream, including
+   * camera capturing and video encoding, and allows you to troubleshoot
+   * issues when exceptions occur.
+   *
+   * The SDK triggers the `videoSourceLocalVideoStateChanged(3, 1)`
+   * callback in the
+   * following situations:
+   * - The application exits to the background, and the system recycles
+   * the camera.
+   * - The camera starts normally, but the captured video is not output for
+   * four seconds.
+   *
+   * When the camera outputs the captured video frames, if all the video
+   * frames are the same for 15 consecutive frames, the SDK triggers the
+   * `videoSourceLocalVideoStateChanged(1, 4)` callback. Note that the
+   * video frame duplication detection is only available for video frames
+   * with a resolution greater than 200 × 200, a frame rate greater than
+   * or equal to 10 fps,
+   * and a bitrate less than 20 Kbps.
+   *
+   * @note For some Windows device models, the SDK will not trigger this
+   * callback when the state of the local video changes while the local video
+   * capturing device is in use, so you have to make your own timeout judgment.
+   *
+   * @param cb.localVideoState The local video state.
+   * @param cb.error The detailed error information of the local video.
+   */
+  on(evt: 'videoSourceLocalVideoStateChanged', cb: (state: LOCAL_VIDEO_STREAM_STATE, error: LOCAL_VIDEO_STREAM_ERROR) => void): this;
+  /**
+   * Occurs when the local audio state of the video source changes.
+   *
+   * This callback indicates the state change of the local audio stream,
+   * including the state of the audio recording and encoding, and allows you
+   * to troubleshoot issues when exceptions occur.
+   *
+   * @param cb.state State of the local audio.
+   * @param cb.error The error information of the local audio.
+   */
+  on(evt: 'videoSourceLocalAudioStateChanged', cb: (state: LOCAL_AUDIO_STREAM_STATE, error: LOCAL_AUDIO_STREAM_ERROR) => void): this;
   /** Occurs when the remote video state changes.
    *
    * @param cb.uid ID of the user whose video state changes.
@@ -6773,9 +6877,6 @@ declare interface AgoraRtcEngine {
    * This callback indicates the state change of the local audio stream,
    * including the state of the audio recording and encoding, and allows you
    * to troubleshoot issues when exceptions occur.
-   *
-   * **Note**:
-   * When the state is 3 in the `state` code, see the `error` code.
    *
    * - state State of the local audio:
    *  - 0: The local audio is in the initial state.
@@ -7851,6 +7952,9 @@ class AgoraRtcChannel extends EventEmitter
    * Each user can create up to five data streams during the lifecycle of the
    * AgoraRtcChannel.
    *
+   * @deprecated This method is deprecated from v3.3.1. Use the
+   * {@link createDataStreamWithConfig} method instead.
+   *
    * @note Set both the `reliable` and `ordered` parameters to `true` or
    * `false`. Do not set one as `true` and the other as `false`.
    *
@@ -7871,8 +7975,27 @@ class AgoraRtcChannel extends EventEmitter
    * - 0: Success
    * - < 0: Failure
    */
-  createDataStream(reliable: boolean|DataStreamConfig, ordered?: boolean): number {
+  createDataStream(reliable: boolean, ordered: boolean): number {
     return this.rtcChannel.createDataStream(reliable, ordered);
+  }
+  /** Creates a data stream.
+   *
+   * @since v3.3.1
+   *
+   * Each user can create up to five data streams in a single channel.
+   *
+   * This method does not support data reliability. If the receiver receives
+   * a data packet five
+   * seconds or more after it was sent, the SDK directly discards the data.
+   *
+   * @param config The configurations for the data stream: DataStreamConfig.
+   *
+   * @return
+   * - Returns the ID of the created data stream, if this method call succeeds.
+   * - < 0: Fails to create the data stream.
+   */
+  createDataStreamWithConfig(config: DataStreamConfig) {
+    return this.rtcChannel.createDataStream(config);
   }
   /**
    * Sends data stream messages to all users in the channel.

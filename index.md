@@ -339,6 +339,7 @@ Agora Electron SDK provides the methods for the second instance `videoSource` to
 | {@link AgoraRtcEngine.setupLocalVideoSource setupLocalVideoSource} | Sets the local video view of `videoSource`         |
 | {@link AgoraRtcEngine.videoSourceJoin videoSourceJoin}       | Allows `videoSource` to join a channel.     |
 | {@link AgoraRtcEngine.videoSourceLeave videoSourceLeave}     | Allows `videoSource` to leave a channel.    |
+| {@link AgoraRtcEngine.videoSourceSetChannelProfile videoSourceSetChannelProfile}|Sets the channel profile.|
 | {@link AgoraRtcEngine.videoSourceRenewToken videoSourceRenewToken} | Renews the Token when using the video source.                 |
 | {@link AgoraRtcEngine.videoSourceEnableAudio videoSourceEnableAudio} | Enables the audio module.       |
 | {@link AgoraRtcEngine.videoSourceEnableLoopbackRecording videoSourceEnableLoopbackRecording} | Enables loopback audio capturing.                |
@@ -426,6 +427,11 @@ Agora Electron SDK use the {@link AgoraRtcEngine.on} listens to the events above
 | `videoSourceJoinedSuccess`         | Occurs when a user joins a channel. (The second instance)    |
 | `videoSourceRequestNewToken`       | Occurs when the token expires. (The second instance)         |
 | `videoSourceLeaveChannel`          | Occurs when a user leaves a channel. (The second instance)   |
+| `videoSourceLocalAudioStats`|Reports the statistics of the local audio stream. (The second instance) |
+| `videoSourceLocalVideoStats`| Reports the statistics of the uploading local video stream. (The second instance)|
+| `videoSourceVideoSizeChanged`| Occurs when the video size or rotation information of a specified remote user changes. (The second instance)|
+| `videoSourceLocalVideoStateChanged`|Occurs when the local video state changes. (The second instance)  |
+| `videoSourceLocalAudioStateChanged`|Occurs when the local audio state changes. (The second instance) |
 
 
 <a name = "warn"></a>

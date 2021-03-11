@@ -251,7 +251,7 @@ export interface TranscodingConfig {
    * Once a background image is added, the audience of the CDN live publishing
    * stream can see the background image.
    */
-  background: {
+  backgroundImage: {
     /**
      * The HTTP or HTTPS address of the image. The length must not
      * exceed 1,024 bytes.
@@ -2356,7 +2356,7 @@ export type CLOUD_PROXY_TYPE =
        * 2: Reserved property.
        */
     | 2  //TCP_PROXY
-//TODO6
+
 export interface RtcContext {
   logConfig: LogConfig
 };
@@ -2365,15 +2365,7 @@ export interface RtcContext {
  * @since v3.3.1
  */
 export interface LogConfig {
-  /** The absolute path of log files. //TODO(check filepath)
-   *
-   * The default file path is:
-   * - macOS:
-   *  - Sandbox enabled: `App Sandbox/Library/Logs/agorasdk.log`, such as
-   * `/Users/<username>/Library/Containers/<App Bundle Identifier>/Data/Library/Logs/agorasdk.log`.
-   *  - Sandbox disabled: `～/Library/Logs/agorasdk.log`.
-   * - Windows:
-   * `C:\Users\<user_name>\AppData\Local\Agora\<process_name>\agorasdk.log`
+  /** The absolute path of log files.
    *
    * Ensure that the directory for the log files exists and is writable.
    * You can use this parameter to rename the log files.
@@ -2423,6 +2415,94 @@ export enum VOICE_CONVERSION_PRESET
      */
     VOICE_CHANGER_BASS = 0x03010400
 };
+
+/** Local video state types.
+ */
+export enum LOCAL_VIDEO_STREAM_STATE
+{
+    /** 0: Initial state. */
+    LOCAL_VIDEO_STREAM_STATE_STOPPED = 0,
+    /** 1: The local video capturing device starts successfully.
+     *
+     * The SDK also reports this state when you share a maximized window by calling \ref IRtcEngine::startScreenCaptureByWindowId "startScreenCaptureByWindowId".
+     */
+    LOCAL_VIDEO_STREAM_STATE_CAPTURING = 1,
+   /** 2: The first video frame is successfully encoded. */
+    LOCAL_VIDEO_STREAM_STATE_ENCODING = 2,
+    /** 3: The local video fails to start. */
+    LOCAL_VIDEO_STREAM_STATE_FAILED = 3
+};
+
+/** Local video state error codes.
+ */
+export enum LOCAL_VIDEO_STREAM_ERROR {
+    /** 0: The local video is normal. */
+    LOCAL_VIDEO_STREAM_ERROR_OK = 0,
+    /** 1: No specified reason for the local video failure. */
+    LOCAL_VIDEO_STREAM_ERROR_FAILURE = 1,
+    /** 2: No permission to use the local video capturing device. */
+    LOCAL_VIDEO_STREAM_ERROR_DEVICE_NO_PERMISSION = 2,
+    /** 3: The local video capturing device is in use. */
+    LOCAL_VIDEO_STREAM_ERROR_DEVICE_BUSY = 3,
+    /** 4: The local video capture fails. Check whether the capturing device
+     * is working properly.
+     */
+    LOCAL_VIDEO_STREAM_ERROR_CAPTURE_FAILURE = 4,
+    /** 5: The local video encoding fails. */
+    LOCAL_VIDEO_STREAM_ERROR_ENCODE_FAILURE = 5,
+    /** 6: The local video capturing device cannot be found. */
+    LOCAL_VIDEO_STREAM_ERROR_DEVICE_NOT_FOUND = 6,
+};
+
+/** Local audio state types.
+ */
+export enum LOCAL_AUDIO_STREAM_STATE
+{
+    /** 0: The local audio is in the initial state.
+     */
+    LOCAL_AUDIO_STREAM_STATE_STOPPED = 0,
+    /** 1: The recording device starts successfully.
+     */
+    LOCAL_AUDIO_STREAM_STATE_RECORDING = 1,
+    /** 2: The first audio frame encodes successfully.
+     */
+    LOCAL_AUDIO_STREAM_STATE_ENCODING = 2,
+    /** 3: The local audio fails to start.
+     */
+    LOCAL_AUDIO_STREAM_STATE_FAILED = 3
+};
+
+/** Local audio state error codes.
+ */
+export enum LOCAL_AUDIO_STREAM_ERROR
+{
+    /** 0: The local audio is normal.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_OK = 0,
+    /** 1: No specified reason for the local audio failure.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_FAILURE = 1,
+    /** 2: No permission to use the local audio device.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_DEVICE_NO_PERMISSION = 2,
+    /** 3: The microphone is in use.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_DEVICE_BUSY = 3,
+    /** 4: The local audio recording fails. Check whether the recording device
+     * is working properly.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_RECORD_FAILURE = 4,
+    /** 5: The local audio encoding fails.
+     */
+    LOCAL_AUDIO_STREAM_ERROR_ENCODE_FAILURE = 5,
+    /** 6: No recording audio device.
+    */
+    LOCAL_AUDIO_STREAM_ERROR_NO_RECORDING_DEVICE = 6,
+    /** 7: No playout audio device.
+    */
+    LOCAL_AUDIO_STREAM_ERROR_NO_PLAYOUT_DEVICE = 7
+};
+
 /** The configurations for the data stream.
  *
  * @since v3.3.1
@@ -2472,7 +2552,34 @@ export enum VOICE_CONVERSION_PRESET
  */
 export interface DataStreamConfig
 {
+  /** Whether to synchronize the data packet with the published audio packet.
+   *
+   * - true: Synchronize the data packet with the audio packet.
+   * - false: Do not synchronize the data packet with the audio packet.
+   *
+   * When you set the data packet to synchronize with the audio, then if the
+   * data
+   * packet delay is within the audio delay, the SDK triggers the
+   * `streamMessage` callback when
+   * the synchronized audio packet is played out. Do not set this parameter
+   * as `true` if you
+   * need the receiver to receive the data packet immediately. Agora
+   * recommends that you set
+   * this parameter to `true` only when you need to implement specific
+   * functions, for example
+   * lyric synchronization.
+   */
   syncWithAudio: boolean,
+  /** Whether the SDK guarantees that the receiver receives the data in the
+   * sent order.
+   *
+   * - true: Guarantee that the receiver receives the data in the sent order.
+   * - false: Do not guarantee that the receiver receives the data in the sent
+   * order.
+   *
+   * Do not set this parameter to `true` if you need the receiver to receive
+   * the data immediately.
+   */
   ordered: boolean
 };
 
@@ -3340,7 +3447,8 @@ export interface NodeRtcEngine {
   joinChannelWithUserAccount(
     token: string,
     channel: string,
-    userAccount: string
+    userAccount: string,
+    options?: ChannelMediaOptions
   ): number;
   /**
    * @ignore
