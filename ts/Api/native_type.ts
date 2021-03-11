@@ -4040,7 +4040,18 @@ export type STREAM_PUBLISH_STATE =
     | 2 //PUB_STATE_PUBLISHING
     | 3 //PUB_STATE_PUBLISHED
 /** @zh-cn
- * //TOOD
+ * 音频路由：
+ * - -1: 使用默认的音频路由
+ * - 0: 使用耳机为音频路由
+ * - 1: 使用听筒为音频路由
+ * - 2: 使用不带麦的耳机为音频路由
+ * - 3: 使用手机的扬声器为音频路由
+ * - 4: 使用外接的扬声器为音频路由
+ * - 5: 使用蓝牙耳机为音频路由
+ * - 6: 使用 USB 外接设备为音频路由（仅适用于 macOS）
+ * - 7: 使用 HDMI 外接设备为音频路由（仅适用于 macOS）
+ * - 8: 使用 DisplayPort 外接设备为音频路由（仅适用于 macOS）
+ * - 9: 使用 Apple AirPlay 为音频路由（仅适用于 macOS）
  */
 /**
  * Audio output routing.

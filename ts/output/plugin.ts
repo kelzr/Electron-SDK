@@ -7,7 +7,7 @@ export interface PluginInfo {
 }
 
 /** 
- * @ignore 
+ * @ignore
  */
 export interface Plugin {
   id: string;
