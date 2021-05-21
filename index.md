@@ -534,6 +534,7 @@ Error codes occur when the SDK encounters an error that cannot be recovered auto
 | `-154`    | An error occurs in Agora's streaming server. <br/> Call the `addPublishStreamUrl` method to publish the streaming again.|
 | `-155`    | The server fails to find the stream.          |
 | `-156`    | The format of the RTMP stream URL is not supported. <br/>Check whether the URL format is correct.  |
+| `-160`| The client is already recording audio. To start a new recording, call `stopAudioRecording` to stop the current recording first, and then call `startAudioRecording`. |
 | `-1001`   | Fails to load the media engine.                                  |
 | `-1002`   | Fails to start the call after enabling the media engine.  |
 | `-1003`   | **DEPRECATED** Please use `error (4)` in `localVideoStateChanged` instead.<br/>Fails to start the camera. |

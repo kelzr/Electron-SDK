@@ -3170,24 +3170,119 @@ class AgoraRtcEngine extends EventEmitter {
   adjustRecordingSignalVolume(volume: number): number {
     return this.rtcEngine.adjustRecordingSignalVolume(volume);
   }
+  /**
+   * Adjusts the volume of the signal captured by the sound card.
+   *
+   * @since v3.4.2
+   *
+   * After calling enableLoopbackRecording to enable loopback audio capturing,
+   * you can call this method to adjust the volume of the signal captured by
+   * the sound card.
+   *
+   * @note This method applies to Windows and macOS only.
+   *
+   * @param volume The volume of the signal captured by the sound card.
+   * The range is 0 to 100. The default value is 100, which represents the
+   * unadjusted volume.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   adjustLoopbackRecordingSignalVolume(volume: number): number {
     return this.rtcEngine.adjustLoopbackRecordingSignalVolume(volume);
   }
+  /**
+   * Sets the playback position of an audio effect file.
+   *
+   * @since v3.4.2
+   *
+   * After a successful setting, the local audio effect file starts playing at
+   * the specified position.
+   *
+   * @note Call this method after {@link playEffect}.
+   *
+   * @param soundId Audio effect ID. Ensure that this parameter is set to the
+   * same value as in `playEffect`.
+   * @param pos The playback position (ms) of the audio effect file.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   *  - `-22`: Cannot find the audio effect file. Please
+   * set a correct `soundId`.
+   */
   setEffectPosition(soundId: number, pos: number): number {
     return this.rtcEngine.setEffectPosition(soundId, pos);
   }
+  /**
+   * Gets the duration of the audio effect file.
+   *
+   * @since v3.4.2
+   *
+   * @note Call this method after joining a channel.
+   *
+   * @param filePath The absolute path or URL address (including the filename
+   * extensions)
+   * of the music file. For example: `C:\music\audio.mp4`. Supported audio
+   * formats include MP3, AAC, M4A, MP4, WAV, and 3GP.
+   * For more information, see
+   * [Supported Media Formats in Media Foundation](https://docs.microsoft.com/en-us/windows/desktop/medfound/supported-media-formats-in-media-foundation).
+   *
+   * @return
+   * - &ge; 0: A successful method call. Returns the total duration (ms) of
+   * the specified audio effect file.
+   * - < 0: Failure.
+   *  - `-22`: Cannot find the audio effect file. Please
+   * set a correct `filePath`.
+   */
   getEffectDuration(filePath: string): number {
     return this.rtcEngine.getEffectDuration(filePath);
   }
+  /**
+   * Gets the playback position of the audio effect file.
+   *
+   * @since v3.4.2
+   *
+   * @note Call this method after {@link playEffect}.
+   *
+   * @param soundId Audio effect ID. Ensure that this parameter is set to the
+   * same value as in `playEffect`.
+   *
+   * @return
+   * - &ge; 0: A successful method call. Returns the playback position (ms) of
+   * the specified audio effect file.
+   * - < 0: Failure.
+   *  - `-22`: Cannot find the audio effect file. Please
+   * set a correct `soundId`.
+   */
   getEffectCurrentPosition(soundId: number): number {
     return this.rtcEngine.getEffectCurrentPosition(soundId);
   }
+  /**
+   * Gets the total duration of the music file.
+   *
+   * @since v3.4.2
+   *
+   * @note Call this method after joining a channel.
+   *
+   * @param filePath The absolute path or URL address (including the filename
+   * extensions)
+   * of the music file. For example: `C:\music\audio.mp4`. Supported audio
+   * formats include MP3, AAC, M4A, MP4, WAV, and 3GP.
+   * For more information, see
+   * [Supported Media Formats in Media Foundation](https://docs.microsoft.com/en-us/windows/desktop/medfound/supported-media-formats-in-media-foundation).
+   *
+   * @return
+   * - &ge; 0: A successful method call. Returns the total duration (ms) of the specified music file.
+   * - < 0: Failure.
+   */
   getAudioMixingFileDuration
   (filePath: string): number {
     return this.rtcEngine.  getAudioMixingFileDuration
     (filePath);
   }
-  
+
   /**
    * Adjusts the playback volume of the voice.
    * @param volume Playback volume of the voice. To avoid echoes and improve
@@ -4392,9 +4487,12 @@ class AgoraRtcEngine extends EventEmitter {
   /**
    * Gets the duration (ms) of the music file.
    *
+   * @deprecated Deprecated from v3.4.2. Use
+   * {@link getAudioMixingFileDuration} instead.
+   *
    * Call this API when you are in a channel.
    * @return
-   * - ≥ 0: The audio mixing duration, if this method call succeeds.
+   * - &ge; 0: The audio mixing duration, if this method call succeeds.
    * - < 0: Failure.
    */
   getAudioMixingDuration(): number {
@@ -4406,7 +4504,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * Call this API when you are in a channel.
    * @return
-   * - ≥ 0: The current playback position of the audio mixing, if this method
+   * - &ge; 0: The current playback position of the audio mixing, if this method
    * call succeeds.
    * - < 0: Failure.
    */
@@ -4420,7 +4518,7 @@ class AgoraRtcEngine extends EventEmitter {
    * Call this API when you are in a channel.
    *
    * @return
-   * - ≥ 0: The audio mixing volume for local playout, if this method call
+   * - &ge; 0: The audio mixing volume for local playout, if this method call
    * succeeds. The value range is [0,100].
    * - < 0: Failure.
    */
@@ -4434,7 +4532,7 @@ class AgoraRtcEngine extends EventEmitter {
    * Call this API when you are in a channel.
    *
    * @return
-   * - ≥ 0: The audio mixing volume for publishing, if this method call
+   * - &ge; 0: The audio mixing volume for publishing, if this method call
    * succeeds. The value range is [0,100].
    * - < 0: Failure.
    */
@@ -4824,7 +4922,7 @@ class AgoraRtcEngine extends EventEmitter {
    *
    * The value ranges between 0.0 and 100.0.
    * @return
-   * - ≥ 0: Volume of the audio effects, if this method call succeeds.
+   * - &ge; 0: Volume of the audio effects, if this method call succeeds.
    * - < 0: Failure.
    */
   getEffectsVolume(): number {
@@ -5832,7 +5930,7 @@ class AgoraRtcEngine extends EventEmitter {
 
   videoSourceSetProcessDpiAwareness(): number {
     return this.rtcEngine.videoSourceSetProcessDpiAwareness();
-  } 
+  }
 }
 /** The AgoraRtcEngine interface. */
 declare interface AgoraRtcEngine {
